@@ -1,8 +1,8 @@
 {
-    "Name": "CustomMuseumFramework",
+    "Name": "Custom Museum Framework",
     "Author": "Spiderbuttons",
     "Version": "1.0.0",
-    "Description": "A template for a Stardew Valley mod.",
+    "Description": "A framework for mod authors to create custom museums that offer feature parity with Gunther's museum.",
     "UniqueID": "Spiderbuttons.CustomMuseumFramework",
     "EntryDll": "CustomMuseumFramework.dll",
     "UpdateKeys": [],
