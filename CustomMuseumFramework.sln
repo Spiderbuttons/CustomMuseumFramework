@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomMuseumFramework", "CustomMuseumFramework\CustomMuseumFramework.csproj", "{7CBF46AB-F56F-4B1F-B4C5-811746E37D82}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7CBF46AB-F56F-4B1F-B4C5-811746E37D82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CBF46AB-F56F-4B1F-B4C5-811746E37D82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CBF46AB-F56F-4B1F-B4C5-811746E37D82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CBF46AB-F56F-4B1F-B4C5-811746E37D82}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

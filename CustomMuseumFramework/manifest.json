@@ -1,0 +1,12 @@
+{
+    "Name": "CustomMuseumFramework",
+    "Author": "Spiderbuttons",
+    "Version": "1.0.0",
+    "Description": "A template for a Stardew Valley mod.",
+    "UniqueID": "Spiderbuttons.CustomMuseumFramework",
+    "EntryDll": "CustomMuseumFramework.dll",
+    "UpdateKeys": [],
+    "Dependencies": [
+        { "UniqueID": "spacechase0.SpaceCore", "MinimumVersion": "1.25.2" }
+    ]
+}
