@@ -275,7 +275,7 @@ public class CustomMuseum : GameLocation
         {
             mutex.RequestLock(delegate
             {
-                Game1.activeClickableMenu = new MuseumMenu(InventoryMenu.highlightNoItems)
+                Game1.activeClickableMenu = new CustomMuseumMenu(InventoryMenu.highlightNoItems)
                 {
                     exitFunction = mutex.ReleaseLock
                 };
@@ -292,7 +292,7 @@ public class CustomMuseum : GameLocation
     {
         mutex.RequestLock(delegate
         {
-            Game1.activeClickableMenu = new MuseumMenu(IsItemSuitableForDonation)
+            Game1.activeClickableMenu = new CustomMuseumMenu(IsItemSuitableForDonation)
             {
                 exitFunction = OnDonationMenuClosed
             };
