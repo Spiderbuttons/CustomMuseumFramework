@@ -24,7 +24,6 @@ public class CustomMuseum : GameLocation
 {
     private int _totalPossibleDonations = -1;
     
-    [XmlElement("donatedItems")]
     private NetVector2Dictionary<string, NetString> _donatedItems = new NetVector2Dictionary<string, NetString>();
 
     public readonly NetMutex mutex = new NetMutex();
@@ -50,6 +49,7 @@ public class CustomMuseum : GameLocation
         }
     }
     
+    [XmlElement("DonatedItems")]
     public NetVector2Dictionary<string, NetString> DonatedItems => _donatedItems;
 
     public CustomMuseum()
