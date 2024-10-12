@@ -19,9 +19,13 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
 
+[XmlType("Mods_Spiderbuttons_CustomMuseum")]
 public class CustomMuseum : GameLocation
 {
     private int _totalPossibleDonations = -1;
+    
+    [XmlElement("donatedItems")]
+    private NetVector2Dictionary<string, NetString> _donatedItems = new NetVector2Dictionary<string, NetString>();
 
     public readonly NetMutex mutex = new NetMutex();
 
@@ -37,14 +41,16 @@ public class CustomMuseum : GameLocation
             _totalPossibleDonations = 0;
             foreach (string itemId in ItemRegistry.RequireTypeDefinition("(O)").GetAllIds())
             {
-                _totalPossibleDonations++;
+                if (IsItemSuitableForDonation("(O)" + itemId, checkDonatedItems: false))
+                {
+                    _totalPossibleDonations++;
+                }
             }
             return _totalPossibleDonations;
         }
     }
-
-    [XmlElement("donatedItems")]
-    public NetVector2Dictionary<string, NetString> DonatedItems => new();
+    
+    public NetVector2Dictionary<string, NetString> DonatedItems => _donatedItems;
 
     public CustomMuseum()
     {
@@ -61,6 +67,13 @@ public class CustomMuseum : GameLocation
         base.initNetFields();
         base.NetFields.AddField(this.mutex.NetFields);
         base.NetFields.AddField(this.DonatedItems.NetFields);
+    }
+
+    public override void TransferDataFromSavedLocation(GameLocation l)
+    {
+        var savedMuseum = l as CustomMuseum;
+        DonatedItems.MoveFrom(savedMuseum?.DonatedItems);
+        base.TransferDataFromSavedLocation(l);
     }
 
     public override void updateEvenIfFarmerIsntHere(GameTime time, bool skipWasUpdatedFlush = false)
@@ -92,8 +105,9 @@ public class CustomMuseum : GameLocation
         return false;
     }
 
-    public bool IsItemSuitableForDonation(Item i)
+    public bool IsItemSuitableForDonation(Item? i)
     {
+        if (i is null) return false;
         return IsItemSuitableForDonation(i.QualifiedItemId);
     }
 
@@ -378,7 +392,7 @@ public class CustomMuseum : GameLocation
     {
         if (DonatedItems.TryGetValue(new Vector2(tileLocation.X, tileLocation.Y), out var itemId) || DonatedItems.TryGetValue(new Vector2(tileLocation.X, tileLocation.Y - 1), out itemId))
         {
-            ParsedItemData data = ItemRegistry.GetDataOrErrorItem("(O)" + itemId);
+            ParsedItemData data = ItemRegistry.GetDataOrErrorItem(itemId);
             Game1.drawObjectDialogue(Game1.parseText(" - " + data.DisplayName + " - " + "^" + data.Description));
             return true;
         }
@@ -545,7 +559,7 @@ public class CustomMuseum : GameLocation
         foreach (KeyValuePair<Vector2, string> v in DonatedItems.Pairs)
         {
             b.Draw(Game1.shadowTexture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f + new Vector2(32f, 52f)), Game1.shadowTexture.Bounds, Color.White, 0f, new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f, SpriteEffects.None, (v.Key.Y * 64f - 2f) / 10000f);
-            ParsedItemData data = ItemRegistry.GetDataOrErrorItem("(O)" + v.Value);
+            ParsedItemData data = ItemRegistry.GetDataOrErrorItem(v.Value);
             b.Draw(data.GetTexture(), Game1.GlobalToLocal(Game1.viewport, v.Key * 64f), data.GetSourceRect(), Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, v.Key.Y * 64f / 10000f);
         }
     }

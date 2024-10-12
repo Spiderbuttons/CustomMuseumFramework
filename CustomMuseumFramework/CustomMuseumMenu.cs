@@ -1,4 +1,6 @@
 ﻿using System;
+using CustomMuseumFramework.Helpers;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -201,7 +203,7 @@ public class CustomMuseumMenu : MenuWithInventory
 			{
 				string itemId2 = base.heldItem.QualifiedItemId;
 				int rewardsCount = museum.GetRewardsForPlayer(Game1.player).Count;
-				museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), base.heldItem.ItemId);
+				museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), base.heldItem.QualifiedItemId);
 				Game1.playSound("stoneStep");
 				if (museum.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
 				{
@@ -290,7 +292,7 @@ public class CustomMuseumMenu : MenuWithInventory
 		if (heldItem is not null && holdingMuseumItem)
 		{
 			Vector2 tile = Museum.GetFreeDonationSpot();
-			if (Museum.DonatedItems.TryAdd(tile, heldItem.ItemId))
+			if (Museum.DonatedItems.TryAdd(tile, heldItem.QualifiedItemId))
 			{
 				heldItem = null;
 				holdingMuseumItem = false;
