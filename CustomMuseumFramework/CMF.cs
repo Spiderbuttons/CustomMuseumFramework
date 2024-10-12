@@ -38,6 +38,7 @@ namespace CustomMuseumFramework
                 return;
             }
             Log.Alert("Found SpaceCore API!");
+            SpaceCoreAPI.RegisterSerializerType(typeof(CustomMuseum));
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
