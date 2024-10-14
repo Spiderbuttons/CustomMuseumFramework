@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
@@ -11,14 +10,13 @@ using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.GameData.Museum;
 using StardewValley.ItemTypeDefinitions;
-using StardewValley.Logging;
 using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Triggers;
 using xTile.Dimensions;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace CustomMuseumFramework.GameLocations;
+namespace CustomMuseumFramework;
 
 [XmlType("Mods_Spiderbuttons_CustomMuseum")]
 public class CustomMuseum : GameLocation
