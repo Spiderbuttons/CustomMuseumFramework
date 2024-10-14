@@ -3,12 +3,14 @@ using System.Linq;
 using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
+using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.GameData.Museum;
+using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
@@ -174,7 +176,7 @@ public class CustomMuseum : GameLocation
 
     public override void cleanupBeforePlayerExit()
     {
-        _itemToRewardsLookup?.Clear();
+        _itemToRewardsLookup.Clear();
         base.cleanupBeforePlayerExit();
     }
 
@@ -200,7 +202,7 @@ public class CustomMuseum : GameLocation
 
     public string GetRewardItemKey(Item item)
     {
-        return "museumCollectedReward" + Utility.getStandardDescriptionFromItem(item, 1, '_'); // TODO: Change this to use ItemRegistry.
+        return $"{Name}_museumCollectedReward" + Utility.getStandardDescriptionFromItem(item, 1, '_'); // TODO: Change this to use ItemRegistry.
     }
 
     public override bool performAction(string[] action, Farmer who, Location tileLocation)
@@ -231,23 +233,33 @@ public class CustomMuseum : GameLocation
     public List<Item> GetRewardsForPlayer(Farmer player)
     {
         this._itemToRewardsLookup.Clear();
-        Dictionary<string, MuseumRewards> museumRewardData = DataLoader.MuseumRewards(Game1.content);
-        Dictionary<string, int> countsByTag = GetDonatedByContextTag(museumRewardData);
-        List<Item> rewards = new List<Item>();
-        foreach (KeyValuePair<string, MuseumRewards> pair in museumRewardData)
+        if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
         {
-            string id = pair.Key;
-            MuseumRewards value = pair.Value;
-            if (!CanCollectReward(value, id, player, countsByTag))
+            Log.Error("No museum data found for this location! Make sure your Museums entry key matches the location ID.");
+            return new List<Item>();
+        }
+
+        List<CustomMuseumRewardData> museumRewardData = museumData.Rewards;
+        Log.Debug("Checking for rewards...");
+        Dictionary<string, bool> metRequirements = RewardRequirementsCheck(museumRewardData);
+        foreach (var pair in metRequirements)
+        {
+            Log.Debug($"Reward '{pair.Key}' met requirements: {pair.Value}");
+        }
+        List<Item> rewards = new List<Item>();
+        foreach (CustomMuseumRewardData reward in museumRewardData)
+        {
+            string id = reward.Id;
+            if (!CanCollectReward(reward, id, player, metRequirements))
             {
                 continue;
             }
             bool rewardAdded = false;
-            if (value.RewardItemId != null)
+            if (reward.RewardItems.Any())
             {
-                Item item = ItemRegistry.Create(value.RewardItemId, value.RewardItemCount);
-                item.IsRecipe = value.RewardItemIsRecipe;
-                item.specialItem = value.RewardItemIsSpecial;
+                Item? item = GetFirstAvailableReward(reward);
+                if (item is null) continue;
+                item.specialItem = reward.RewardIsSpecial;
                 if (AddRewardItemIfUncollected(player, rewards, item))
                 {
                     this._itemToRewardsLookup[item] = id;
@@ -256,29 +268,95 @@ public class CustomMuseum : GameLocation
             }
             if (!rewardAdded)
             {
-                AddNonItemRewards(value, id, player);
+                AddNonItemRewards(reward, id, player);
             }
         }
         return rewards;
     }
 
-    public void AddNonItemRewards(MuseumRewards data, string rewardId, Farmer player)
+    public Dictionary<string, bool> RewardRequirementsCheck(List<CustomMuseumRewardData> rewardDataList)
+    {
+        var results = new Dictionary<string, bool>();
+
+        foreach (var reward in rewardDataList)
+        {
+            results[reward.Id] = true;
+            if (reward.Requirements is null) continue;
+            foreach (var requirement in reward.Requirements)
+            {
+                bool shouldBreak = false;
+                if (requirement.ItemId is null && requirement.Category is null && requirement.ContextTag is null)
+                {
+                    if (requirement.Count == -1)
+                    {
+                        if (DonatedItems.Count() < TotalPossibleDonations)
+                        {
+                            results[reward.Id] = false;
+                            shouldBreak = true;
+                        }
+                    }
+                    else if (requirement.Count > DonatedItems.Count())
+                    {
+                        results[reward.Id] = false;
+                        shouldBreak = true;
+                    }
+                }
+                else
+                {
+                    int count = 0;
+                    foreach (var item in DonatedItems.Values)
+                    {
+                        bool hasMatchingId = requirement.ItemId is null || item.Equals(requirement.ItemId);
+                        bool hasMatchingCategory = requirement.Category is null ||
+                                                   ItemRegistry.GetDataOrErrorItem(item).Category.ToString() ==
+                                                   requirement.Category;
+                        bool hasMatchingContextTag = requirement.ContextTag is null ||
+                                                     ItemContextTagManager.HasBaseTag(item, requirement.ContextTag);
+                        if (hasMatchingId && hasMatchingCategory && hasMatchingContextTag)
+                        {
+                            count++;
+                        }
+
+                        if (count >= requirement.Count)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (count < requirement.Count)
+                    {
+                        results[reward.Id] = false;
+                        shouldBreak = true;
+                    }
+                }
+
+                if (shouldBreak)
+                {
+                    break;
+                }
+            }
+        }
+        
+        return results;
+    }
+
+    public void AddNonItemRewards(CustomMuseumRewardData data, string rewardId, Farmer player)
     {
         if (data.FlagOnCompletion)
         {
             player.mailReceived.Add(rewardId);
         }
 
-        if (data.RewardActions is null)
+        if (data.Actions is null)
         {
             return;
         }
 
-        foreach (string action in data.RewardActions)
+        foreach (string action in data.Actions)
         {
-            if (!TriggerActionManager.TryRunAction(action, out var error, out var ex))
+            if (!TriggerActionManager.TryRunAction(action, out var error, out _))
             {
-                Log.Error($"Museum reward {rewardId} ignored invalid event action '{action}': {error}");
+                Log.Error($"Custom museum ({Name}) reward {rewardId} ignored invalid event action '{action}': {error}");
             }
         }
     }
@@ -342,11 +420,11 @@ public class CustomMuseum : GameLocation
             return;
         }
 
-        if (item is Object && _itemToRewardsLookup.TryGetValue(item, out var rewardKey))
+        if (item is Object && _itemToRewardsLookup.TryGetValue(item, out var rewardId))
         {
-            if (DataLoader.MuseumRewards(Game1.content).TryGetValue(rewardKey, out var rewardData))
+            if (CMF.MuseumData.TryGetValue(Name, out var museumData))
             {
-                AddNonItemRewards(rewardData, rewardKey, who);
+                AddNonItemRewards(museumData.Rewards.First(r => r.Id == rewardId), rewardId, who);
             }
 
             _itemToRewardsLookup.Remove(item);
@@ -456,31 +534,19 @@ public class CustomMuseum : GameLocation
         return counts;
     }
     
-    public bool CanCollectReward(MuseumRewards reward, string rewardId, Farmer player, Dictionary<string, int> countsByTag)
+    public bool CanCollectReward(CustomMuseumRewardData reward, string rewardId, Farmer player, Dictionary<string, bool> metRequirements)
     {
         if (reward.FlagOnCompletion && player.mailReceived.Contains(rewardId))
         {
             return false;
         }
-        foreach (MuseumDonationRequirement targetTags in reward.TargetContextTags)
+
+        if (!metRequirements[rewardId]) return false;
+        if (reward.RewardItems is not null)
         {
-            if (targetTags.Tag == "" && targetTags.Count == -1)
+            if (reward.RewardIsSpecial)
             {
-                if (countsByTag[targetTags.Tag] < TotalPossibleDonations)
-                {
-                    return false;
-                }
-            }
-            else if (countsByTag[targetTags.Tag] < targetTags.Count)
-            {
-                return false;
-            }
-        }
-        if (reward.RewardItemId != null)
-        {
-            if (reward.RewardItemIsSpecial)
-            {
-                ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(reward.RewardItemId);
+                ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(GetFirstAvailableReward(reward)?.QualifiedItemId);
                 if (((itemData.HasTypeId("(F)") || itemData.HasTypeBigCraftable()) ? player.specialBigCraftables : player.specialItems).Contains(itemData.ItemId))
                 {
                     return false;
@@ -488,6 +554,39 @@ public class CustomMuseum : GameLocation
             }
         }
         return true;
+    }
+
+    public Item? GetFirstAvailableReward(CustomMuseumRewardData rewardData)
+    {
+        if (rewardData.RewardItems is null) return null;
+        var museumRandom = Utility.CreateDaySaveRandom();
+        ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom);
+        foreach (var entry in rewardData.RewardItems)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Id))
+            {
+                Log.Error("Ignored museum reward item entry with no Id field.");
+                continue;
+            }
+
+            if (!GameStateQuery.CheckConditions(entry.Condition, this, null, null, null, museumRandom))
+            {
+                continue;
+            }
+
+            bool error = false;
+            Item result = ItemQueryResolver.TryResolveRandomItem(entry, itemQueryContext, avoidRepeat: false, null,
+                null, null,
+                delegate(string query, string message)
+                {
+                    error = true;
+                    Log.Error($"Failed parsing item quiery '{query}': {message}");
+                });
+            if (error) continue;
+            return result;
+        }
+        
+        return null;
     }
 
     public Rectangle GetMuseumDonationBounds()
