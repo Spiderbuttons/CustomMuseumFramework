@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
@@ -17,6 +18,8 @@ using StardewValley.Menus;
 using StardewValley.Network;
 using StardewValley.Triggers;
 using xTile.Dimensions;
+using xTile.Tiles;
+using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
@@ -504,9 +507,24 @@ public class CustomMuseum : GameLocation
             {
                 return true;
             }
+            if (IsTileDonationSpot(x, y))
+            {
+                return true;
+            }
         }
 
         return false;
+    }
+
+    public bool IsTileDonationSpot(int x, int y)
+    {
+        Tile tile = this.map.RequireLayer("Buildings").PickTile(new Location(x * Game1.tileSize, y * Game1.tileSize), Game1.viewport.Size);
+        if (tile == null || !tile.Properties.TryGetValue("Spiderbuttons.CustomMuseumFramework", out string value))
+        {
+            value = this.doesTileHaveProperty(x, y, "Spiderbuttons.CustomMuseumFramework", "Buildings");
+        }
+
+        return (value is not null && value.Equals("DonationSpot", StringComparison.OrdinalIgnoreCase));
     }
     
     public bool CanCollectReward(CustomMuseumRewardData reward, string rewardId, Farmer player, Dictionary<string, bool> metRequirements)
