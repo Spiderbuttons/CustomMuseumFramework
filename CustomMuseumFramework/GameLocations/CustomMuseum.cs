@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
+using CustomMuseumFramework.Menus;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
@@ -17,7 +18,7 @@ using StardewValley.Triggers;
 using xTile.Dimensions;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace CustomMuseumFramework;
+namespace CustomMuseumFramework.GameLocations;
 
 [XmlType("Mods_Spiderbuttons_CustomMuseum")]
 public class CustomMuseum : GameLocation
@@ -118,6 +119,7 @@ public class CustomMuseum : GameLocation
         itemId = ItemRegistry.QualifyItemId(itemId);
         ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(itemId);
         HashSet<string> tags = ItemContextTagManager.GetBaseContextTags(itemId);
+        
         if (!itemData.HasTypeObject() || tags.Contains("not_museum_donatable"))
         {
             return false;
@@ -128,12 +130,28 @@ public class CustomMuseum : GameLocation
             return false;
         }
 
-        if (!tags.Contains("modded_museum_donatable"))
+        if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
         {
+            Log.Error("No museum data found for this location! Make sure your Museums entry key matches the location ID.");
             return false;
         }
+        
+        if (museumData.ValidContextTags.Any() && museumData.ValidContextTags.Any(tag => tags.Contains(tag)))
+        {
+            return true;
+        }
 
-        return true;
+        if (museumData.ValidItemIds.Any() && museumData.ValidItemIds.Contains(itemId))
+        {
+            return true;
+        }
+
+        if (museumData.ValidCategories.Any() && museumData.ValidCategories.Contains(itemData.Category))
+        {
+            return true;
+        }
+        
+        return false;
     }
 
     public bool DoesFarmerHaveAnythingToDonate(Farmer who)

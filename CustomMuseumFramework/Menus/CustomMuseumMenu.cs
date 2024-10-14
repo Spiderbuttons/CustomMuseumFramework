@@ -1,4 +1,5 @@
 ﻿using System;
+using CustomMuseumFramework.GameLocations;
 using CustomMuseumFramework.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -11,7 +12,7 @@ using StardewValley.Menus;
 using StardewValley.TokenizableStrings;
 using xTile.Dimensions;
 
-namespace CustomMuseumFramework;
+namespace CustomMuseumFramework.Menus;
 
 public class CustomMuseumMenu : MenuWithInventory
 {
