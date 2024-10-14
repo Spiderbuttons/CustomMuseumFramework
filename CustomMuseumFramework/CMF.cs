@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CustomMuseumFramework.GameLocations;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -41,6 +40,8 @@ namespace CustomMuseumFramework
 
             Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            Helper.Events.Content.AssetRequested += this.OnAssetRequested;
+            Helper.Events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
         }
 
         private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
