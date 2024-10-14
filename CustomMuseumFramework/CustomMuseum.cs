@@ -213,7 +213,7 @@ public class CustomMuseum : GameLocation
             string text = ArgUtility.Get(action, 0);
             if (text.Equals("Gunther"))
             {
-                OpenGuntherDialogueMenu();
+                OpenMuseumDialogueMenu();
                 return true;
             }
 
@@ -434,7 +434,7 @@ public class CustomMuseum : GameLocation
         }
     }
     
-    private void OpenGuntherDialogueMenu()
+    private void OpenMuseumDialogueMenu()
 	{
 		if (DoesFarmerHaveAnythingToDonate(Game1.player) && !this.mutex.IsLocked())
 		{
@@ -463,19 +463,23 @@ public class CustomMuseum : GameLocation
 			Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy", Game1.RequireCharacter("Gunther").displayName));
 		}
 		else
-		{
-			NPC gunther = Game1.getCharacterFromName("Gunther");
-			if (Game1.player.achievements.Contains(5))
+        {
+            NPC? owner = null;
+            if (CMF.MuseumData.TryGetValue(Name, out var museumData))
+            {
+                owner = Game1.getCharacterFromName(museumData.Owner);
+            }
+			if (DonatedItems.Count() >= TotalPossibleDonations)
 			{
-				Game1.DrawDialogue(new Dialogue(gunther, "Data\\ExtraDialogue:Gunther_MuseumComplete", Game1.parseText(Game1.content.LoadString("Data\\ExtraDialogue:Gunther_MuseumComplete"))));
+				Game1.DrawDialogue(new Dialogue(owner, "Data\\ExtraDialogue:Gunther_MuseumComplete", Game1.parseText(Game1.content.LoadString("Data\\ExtraDialogue:Gunther_MuseumComplete"))));
 			}
 			else if (Game1.player.mailReceived.Contains("artifactFound"))
 			{
-				Game1.DrawDialogue(new Dialogue(gunther, "Data\\ExtraDialogue:Gunther_NothingToDonate", Game1.parseText(Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NothingToDonate"))));
+				Game1.DrawDialogue(new Dialogue(owner, "Data\\ExtraDialogue:Gunther_NothingToDonate", Game1.parseText(Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NothingToDonate"))));
 			}
 			else
 			{
-				Game1.DrawDialogue(gunther, "Data\\ExtraDialogue:Gunther_NoArtifactsFound");
+				Game1.DrawDialogue(owner, "Data\\ExtraDialogue:Gunther_NoArtifactsFound");
 			}
 		}
 	}
