@@ -12,11 +12,9 @@ namespace CustomMuseumFramework.Models;
 
 public class CustomMuseumRewardData : GenericSpawnItemData
 {
-    public string Id;
-    public List<CustomMuseumRewardRequirement> Requirements;
-    public List<GenericSpawnItemDataWithCondition> RewardItems;
-    public bool RewardIsSpecial;
-    public bool RewardIsRecipe;
-    public List<string> Actions;
-    public bool FlagOnCompletion;
+    public List<CustomMuseumRewardRequirement>? Requirements;
+    public List<GenericSpawnItemDataWithCondition>? RewardItems;
+    public bool RewardIsSpecial = false;
+    public List<string>? Actions;
+    public bool FlagOnCompletion = true;
 }
