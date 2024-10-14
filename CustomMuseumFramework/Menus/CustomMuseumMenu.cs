@@ -1,5 +1,4 @@
 ﻿using System;
-using CustomMuseumFramework.GameLocations;
 using CustomMuseumFramework.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -230,7 +229,7 @@ public class CustomMuseumMenu : MenuWithInventory
 					{
 						Game1.Multiplayer.globalChatInfoMessage("MuseumComplete", Game1.player.farmName.Value);
 					}
-					else if (pieces == 40)
+					else if (pieces == 40) // TODO: Custom milestones.
 					{
 						Game1.Multiplayer.globalChatInfoMessage("Museum40", Game1.player.farmName.Value);
 					}
@@ -254,7 +253,7 @@ public class CustomMuseumMenu : MenuWithInventory
 				location.DonatedItems.Remove(v);
 				if (base.heldItem != null)
 				{
-					this.holdingMuseumItem = !LibraryMuseum.HasDonatedArtifact(base.heldItem.QualifiedItemId);
+					this.holdingMuseumItem = !Museum.HasDonatedItem(base.heldItem.QualifiedItemId);
 				}
 			}
 		}
