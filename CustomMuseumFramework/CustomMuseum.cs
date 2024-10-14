@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
@@ -240,12 +241,7 @@ public class CustomMuseum : GameLocation
         }
 
         List<CustomMuseumRewardData> museumRewardData = museumData.Rewards;
-        Log.Debug("Checking for rewards...");
         Dictionary<string, bool> metRequirements = RewardRequirementsCheck(museumRewardData);
-        foreach (var pair in metRequirements)
-        {
-            Log.Debug($"Reward '{pair.Key}' met requirements: {pair.Value}");
-        }
         List<Item> rewards = new List<Item>();
         foreach (CustomMuseumRewardData reward in museumRewardData)
         {
@@ -255,15 +251,17 @@ public class CustomMuseum : GameLocation
                 continue;
             }
             bool rewardAdded = false;
-            if (reward.RewardItems.Any())
+            if (reward.RewardItems is not null)
             {
-                Item? item = GetFirstAvailableReward(reward);
-                if (item is null) continue;
-                item.specialItem = reward.RewardIsSpecial;
-                if (AddRewardItemIfUncollected(player, rewards, item))
+                List<Item> items = GetAllAvailableRewards(reward);
+                foreach (var item in items)
                 {
-                    this._itemToRewardsLookup[item] = id;
-                    rewardAdded = true;
+                    item.specialItem = reward.RewardIsSpecial;
+                    if (AddRewardItemIfUncollected(player, rewards, item))
+                    {
+                        this._itemToRewardsLookup[item] = id;
+                        rewardAdded = true;
+                    }
                 }
             }
             if (!rewardAdded)
@@ -538,7 +536,16 @@ public class CustomMuseum : GameLocation
     {
         if (reward.FlagOnCompletion && player.mailReceived.Contains(rewardId))
         {
-            return false;
+            if (reward.RewardItems is not null)
+            {
+                foreach (var item in reward.RewardItems)
+                {
+                    if (GetFirstAvailableReward(reward) is not null)
+                    {
+                        return true;
+                    }
+                }
+            }
         }
 
         if (!metRequirements[rewardId]) return false;
@@ -546,26 +553,33 @@ public class CustomMuseum : GameLocation
         {
             if (reward.RewardIsSpecial)
             {
-                ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(GetFirstAvailableReward(reward)?.QualifiedItemId);
-                if (((itemData.HasTypeId("(F)") || itemData.HasTypeBigCraftable()) ? player.specialBigCraftables : player.specialItems).Contains(itemData.ItemId))
+                var items = GetAllAvailableRewards(reward);
+                foreach (var item in items)
                 {
-                    return false;
+                    ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(item.QualifiedItemId);
+                    if (((itemData.HasTypeId("(F)") || itemData.HasTypeBigCraftable())
+                            ? player.specialBigCraftables
+                            : player.specialItems).Contains(itemData.ItemId))
+                    {
+                        return false;
+                    }
                 }
             }
         }
         return true;
     }
-
-    public Item? GetFirstAvailableReward(CustomMuseumRewardData rewardData)
+    
+    public List<Item> GetAllAvailableRewards(CustomMuseumRewardData rewardData)
     {
-        if (rewardData.RewardItems is null) return null;
-        var museumRandom = Utility.CreateDaySaveRandom();
+        var results = new List<Item>();
+        if (rewardData.RewardItems is null) return results;
+        var museumRandom = Utility.CreateRandom(rewardData.Id.GetHashCode());
         ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom);
         foreach (var entry in rewardData.RewardItems)
         {
             if (string.IsNullOrWhiteSpace(entry.Id))
             {
-                Log.Error("Ignored museum reward item entry with no Id field.");
+                Log.Error($"Ignored custom museum ({Name}) reward item entry with no Id field.");
                 continue;
             }
 
@@ -580,7 +594,40 @@ public class CustomMuseum : GameLocation
                 delegate(string query, string message)
                 {
                     error = true;
-                    Log.Error($"Failed parsing item quiery '{query}': {message}");
+                    Log.Error($"Failed parsing item query '{query}': {message}");
+                });
+            if (error) continue;
+            results.Add(result);
+        }
+        
+        return results;
+    }
+
+    public Item? GetFirstAvailableReward(CustomMuseumRewardData rewardData)
+    {
+        if (rewardData.RewardItems is null) return null;
+        var museumRandom = Utility.CreateDaySaveRandom();
+        ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom);
+        foreach (var entry in rewardData.RewardItems)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Id))
+            {
+                Log.Error($"Ignored custom museum ({Name}) reward item entry with no Id field.");
+                continue;
+            }
+
+            if (!GameStateQuery.CheckConditions(entry.Condition, this, null, null, null, museumRandom))
+            {
+                continue;
+            }
+
+            bool error = false;
+            Item result = ItemQueryResolver.TryResolveRandomItem(entry, itemQueryContext, avoidRepeat: false, null,
+                null, null,
+                delegate(string query, string message)
+                {
+                    error = true;
+                    Log.Error($"Failed parsing item query '{query}': {message}");
                 });
             if (error) continue;
             return result;
