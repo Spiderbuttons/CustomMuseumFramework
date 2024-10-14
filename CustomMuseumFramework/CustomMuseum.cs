@@ -508,33 +508,6 @@ public class CustomMuseum : GameLocation
 
         return false;
     }
-
-    public Dictionary<string, int> GetDonatedByContextTag(Dictionary<string, MuseumRewards> museumRewardData)
-    {
-        Dictionary<string, int> counts = new Dictionary<string, int>();
-        foreach (MuseumRewards value in museumRewardData.Values)
-        {
-            foreach (MuseumDonationRequirement targetTags in value.TargetContextTags)
-            {
-                counts[targetTags.Tag] = 0;
-            }
-        }
-
-        string[] contextTags = counts.Keys.ToArray();
-        foreach (string itemId in DonatedItems.Values)
-        {
-            string[] array = contextTags;
-            foreach (string tag in array)
-            {
-                if (tag.Equals("") || ItemContextTagManager.HasBaseTag(itemId, tag))
-                {
-                    counts[tag]++;
-                }
-            }
-        }
-
-        return counts;
-    }
     
     public bool CanCollectReward(CustomMuseumRewardData reward, string rewardId, Farmer player, Dictionary<string, bool> metRequirements)
     {
