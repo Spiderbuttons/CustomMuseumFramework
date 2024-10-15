@@ -475,8 +475,16 @@ public class CustomMuseum : GameLocation
         }
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && this.mutex.IsLocked())
         {
-            Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                Game1.RequireCharacter("Gunther").displayName)); // TODO: Handle this for different owners.
+            if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
+            {
+                Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
+                    "The museum"));
+            }
+            else
+            {
+                Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
+                    Game1.RequireCharacter(museumData.Owner).displayName));
+            }
         }
         else
         {
