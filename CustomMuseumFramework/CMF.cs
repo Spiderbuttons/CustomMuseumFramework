@@ -17,6 +17,8 @@ namespace CustomMuseumFramework
     {
         internal static IModHelper ModHelper { get; set; } = null!;
         internal static IMonitor ModMonitor { get; set; } = null!;
+        
+        internal static IManifest Manifest { get; set; } = null!;
         internal static Harmony Harmony { get; set; } = null!;
         internal static ISpaceCoreApi? SpaceCoreAPI { get; set; } = null!;
 
@@ -34,6 +36,7 @@ namespace CustomMuseumFramework
         {
             ModHelper = helper;
             ModMonitor = Monitor;
+            Manifest = ModManifest;
             Harmony = new Harmony(ModManifest.UniqueID);
 
             Harmony.PatchAll();
@@ -48,6 +51,18 @@ namespace CustomMuseumFramework
         {
             if (e.NameWithoutLocale.IsEquivalentTo("Spiderbuttons.CustomMuseumFramework/Museums")) {
                 e.LoadFrom(() => new Dictionary<string, CustomMuseumData>(), AssetLoadPriority.Exclusive);
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Strings\\UI"))
+            {
+                Log.Alert("editing UI strings");
+                e.Edit(asset =>
+                {
+                    var editor = asset.AsDictionary<string, string>();
+                    editor.Data[$"Chat_{ModManifest.UniqueID}_OnDonation"] = "{0} donated '{1}' to the {2} museum.";
+                    editor.Data[$"Chat_{ModManifest.UniqueID}_OnMilestone"] = "{0} Farm has donated {1} pieces to the {2} museum.";
+                    editor.Data[$"Chat_{ModManifest.UniqueID}_OnCompletion"] = "{0} Farm has completed the {1} museum collection.";
+                });
             }
         }
         
@@ -73,6 +88,11 @@ namespace CustomMuseumFramework
         {
             if (!Context.IsWorldReady)
                 return;
+
+            if (e.Button is not SButton.F5) return;
+
+            var mus = Game1.currentLocation as CustomMuseum;
+            Log.Debug(mus.TotalPossibleDonations);
         }
     }
 }

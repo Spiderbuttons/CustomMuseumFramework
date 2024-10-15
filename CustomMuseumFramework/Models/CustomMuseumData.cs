@@ -21,7 +21,7 @@ public class CustomMuseumData
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
     public List<int> Milestones { get; set; } = [];
     
-    public string MessageOnDonate { get; set; } = "{0} donated '{1}' to the {2} museum.";
-    public string MessageOnMilestone { get; set; } = "{0} Farm has donated {1} pieces to the {2} museum.";
-    public string MessageOnCompletion { get; set; } = "{0} Farm has completed the {1} museum collection.";
+    public string MessageOnDonation { get; set; } = $"{CMF.Manifest.UniqueID}_OnDonation";
+    public string MessageOnMilestone { get; set; } = $"{CMF.Manifest.UniqueID}_OnMilestone";
+    public string MessageOnCompletion { get; set; } = $"{CMF.Manifest.UniqueID}_OnCompletion";
 }
