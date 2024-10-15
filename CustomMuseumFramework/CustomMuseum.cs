@@ -211,9 +211,30 @@ public class CustomMuseum : GameLocation
     {
         if (who.IsLocalPlayer)
         {
+            CMF.MuseumData.TryGetValue(Name, out var museumData);
             string text = ArgUtility.Get(action, 0);
             if (text.Equals("MuseumMenu"))
             {
+                if (museumData is not null && museumData.RequireOwnerForDonation)
+                {
+                    Log.Debug("Requiring owner for donation.");
+                    foreach (NPC npc in characters)
+                    {
+                        if (!npc.Name.Equals(museumData.Owner)) continue;
+                        if (museumData.OwnerTile.X < 0 && museumData.OwnerTile.Y < 0)
+                        {
+                            OpenMuseumDialogueMenu();
+                            return true;
+                        }
+                        
+                        if (npc.Tile != museumData.OwnerTile) return false;
+                        
+                        OpenMuseumDialogueMenu();
+                        return true;
+                    }
+                    
+                    return false;
+                }
                 OpenMuseumDialogueMenu();
                 return true;
             }
@@ -475,7 +496,7 @@ public class CustomMuseum : GameLocation
         }
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && this.mutex.IsLocked())
         {
-            if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
+            if (!CMF.MuseumData.TryGetValue(Name, out var museumData) || museumData.Owner is null)
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
                     "The museum"));

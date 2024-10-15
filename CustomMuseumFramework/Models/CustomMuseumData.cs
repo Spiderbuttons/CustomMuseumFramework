@@ -6,8 +6,8 @@ namespace CustomMuseumFramework.Models;
 public class CustomMuseumData
 {
     public string Id { get; set; } = "";
-    public string Owner { get; set; } = "";
-    public Vector2 OwnerTile { get; set; } = Vector2.Zero;
+    public string? Owner { get; set; } = null;
+    public Vector2 OwnerTile { get; set; } = new Vector2(-1f, -1f);
     public bool RequireOwnerForDonation { get; set; } = false;
     
     public List<string> ValidItemIds { get; set; } = [];
