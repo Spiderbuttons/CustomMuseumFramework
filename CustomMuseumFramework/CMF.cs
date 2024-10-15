@@ -10,6 +10,7 @@ using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using SpaceShared.APIs;
+using StardewValley.TokenizableStrings;
 
 namespace CustomMuseumFramework
 {
@@ -90,9 +91,6 @@ namespace CustomMuseumFramework
                 return;
 
             if (e.Button is not SButton.F5) return;
-
-            var mus = Game1.currentLocation as CustomMuseum;
-            Log.Debug(mus.TotalPossibleDonations);
         }
     }
 }
