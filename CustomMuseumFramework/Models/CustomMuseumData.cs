@@ -1,11 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
-using StardewValley.Extensions;
-using StardewValley.ItemTypeDefinitions;
+using Microsoft.Xna.Framework;
 
 namespace CustomMuseumFramework.Models;
 
@@ -13,6 +7,8 @@ public class CustomMuseumData
 {
     public string Id { get; set; } = "";
     public string Owner { get; set; } = "";
+    public Vector2 OwnerTile { get; set; } = Vector2.Zero;
+    public bool RequireOwnerForDonation { get; set; } = false;
     
     public List<string> ValidItemIds { get; set; } = [];
     public List<string> ValidContextTags { get; set; } = [];
