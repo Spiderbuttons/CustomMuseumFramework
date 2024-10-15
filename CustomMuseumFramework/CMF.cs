@@ -56,7 +56,6 @@ namespace CustomMuseumFramework
 
             if (e.NameWithoutLocale.IsEquivalentTo("Strings\\UI"))
             {
-                Log.Alert("editing UI strings");
                 e.Edit(asset =>
                 {
                     var editor = asset.AsDictionary<string, string>();
@@ -81,7 +80,6 @@ namespace CustomMuseumFramework
                 Log.Error("SpaceCore not found! Custom Museum Framework requires SpaceCore to be installed or it will break your saves!");
                 return;
             }
-            Log.Alert("Found SpaceCore API!");
             SpaceCoreAPI.RegisterSerializerType(typeof(CustomMuseum));
         }
 

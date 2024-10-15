@@ -133,8 +133,7 @@ public class CustomMuseum : GameLocation
 
         if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
         {
-            Log.Error(
-                "No museum data found for this location! Make sure your Museums entry key matches the location ID.");
+            Log.Error("No museum data found for this location! Make sure your Museums entry key matches the location ID.");
             return false;
         }
 
@@ -240,8 +239,7 @@ public class CustomMuseum : GameLocation
         this._itemToRewardsLookup.Clear();
         if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
         {
-            Log.Error(
-                "No museum data found for this location! Make sure your Museums entry key matches the location ID.");
+            Log.Error("No museum data found for this location! Make sure your Museums entry key matches the location ID.");
             return new List<Item>();
         }
 
