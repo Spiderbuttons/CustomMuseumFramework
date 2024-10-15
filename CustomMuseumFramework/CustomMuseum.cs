@@ -594,7 +594,7 @@ public class CustomMuseum : GameLocation
         foreach (var entry in rewardData.RewardItems)
         {
             var randomSeed = Game1.hash.GetDeterministicHashCode(rewardData.Id + entry.Id);
-            var museumRandom = Utility.CreateRandom(randomSeed);
+            var museumRandom = Utility.CreateRandom(randomSeed, Game1.uniqueIDForThisGame);
             ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom);
             if (string.IsNullOrWhiteSpace(entry.Id))
             {
