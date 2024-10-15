@@ -262,8 +262,7 @@ public class CustomMuseumMenu : MenuWithInventory
                 {
                     Game1.playSound("newArtifact");
                 }
-
-                Game1.player.completeQuest("24");
+                CheckForCustomMuseumQuests();
                 base.heldItem.Stack--;
                 if (base.heldItem.Stack <= 0)
                 {
@@ -279,11 +278,13 @@ public class CustomMuseumMenu : MenuWithInventory
                         {
                             Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnCompletion,
                                 Game1.player.farmName.Value, museum.DisplayName);
+                            Game1.addMail($"{museum.Name}_MuseumCompletion", true, true);
                         }
                         else if (museumData.Milestones.Contains(pieces))
                         {
                             Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnMilestone,
                                 Game1.player.farmName.Value, pieces.ToString(), Museum.DisplayName);
+                            Game1.addMail($"{museum.Name}_MuseumMilestone{pieces}", true, true);
                         }
 
                         Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnDonation,
@@ -329,6 +330,11 @@ public class CustomMuseumMenu : MenuWithInventory
             this.fadeTimer = 800;
             this.fadeIntoBlack = true;
         }
+    }
+
+    public void CheckForCustomMuseumQuests()
+    {
+        // TODO: Implement custom museum quests
     }
 
     public virtual void ReturnToDonatableItems()
