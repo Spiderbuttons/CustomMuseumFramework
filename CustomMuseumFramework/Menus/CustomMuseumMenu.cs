@@ -46,7 +46,7 @@ public class CustomMuseumMenu : MenuWithInventory
                      "The custom museum donation menu must be used from within a custom museum.");
         if (!CMF.MuseumData.TryGetValue(Museum.Name, out museumData))
         {
-            throw new InvalidOperationException($"No custom museum data found for museum '{Museum.Name}'.");
+            throw new InvalidOperationException($"No custom museum data found for museum with name '{Museum.Name}'");
         }
 
         if (Game1.options.SnappyMenus)
@@ -238,15 +238,16 @@ public class CustomMuseumMenu : MenuWithInventory
              (base.height - (IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 192)) ||
              this.menuMovingDown))
         {
+            Item item = this.heldItem;
             CustomMuseum museum = Museum;
             int mapXTile2 = (int)(Utility.ModifyCoordinateFromUIScale(x) + (float)Game1.viewport.X) / 64;
             int mapYTile2 = (int)(Utility.ModifyCoordinateFromUIScale(y) + (float)Game1.viewport.Y) / 64;
             if (museum.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
-                museum.IsItemSuitableForDonation(base.heldItem))
+                museum.IsItemSuitableForDonation(item))
             {
-                string itemId2 = base.heldItem.QualifiedItemId;
+                // string itemId2 = base.heldItem.QualifiedItemId;
                 int rewardsCount = museum.GetRewardsForPlayer(Game1.player).Count;
-                museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), base.heldItem.QualifiedItemId);
+                museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId);
                 Game1.playSound("stoneStep");
                 if (museum.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
                 {
@@ -263,33 +264,33 @@ public class CustomMuseumMenu : MenuWithInventory
                     Game1.playSound("newArtifact");
                 }
                 CheckForCustomMuseumQuests();
-                base.heldItem.Stack--;
-                if (base.heldItem.Stack <= 0)
-                {
-                    base.heldItem = null;
-                }
+                base.heldItem = item.ConsumeStack(1);
 
                 int pieces = museum.DonatedItems.Length;
                 if (!this.holdingMuseumItem)
                 {
                     if (museumData is not null)
                     {
-                        if (pieces == museum.TotalPossibleDonations)
+                        MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnDonation,
+                            Game1.player.Name,
+                            TokenStringBuilder.ItemNameFor(item), museum.DisplayName);
+                        
+                        if (pieces >= museum.TotalPossibleDonations)
                         {
-                            Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnCompletion,
-                                Game1.player.farmName.Value, museum.DisplayName);
-                            Game1.addMail($"{museum.Name}_MuseumCompletion", true, true);
+                            if (!Game1.MasterPlayer.mailReceived.Contains($"{museum.Name}_MuseumCompletion"))
+                            {
+                                MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnCompletion,
+                                    Game1.player.farmName.Value, museum.DisplayName);
+                                Game1.addMail($"{museum.Name}_MuseumCompletion", true, true);
+                            }
                         }
+                        // TODO: If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this TODO here to prove that I at least recognized the possibility.
                         else if (museumData.Milestones.Contains(pieces))
                         {
-                            Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnMilestone,
+                            MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnMilestone,
                                 Game1.player.farmName.Value, pieces.ToString(), Museum.DisplayName);
                             Game1.addMail($"{museum.Name}_MuseumMilestone{pieces}", true, true);
                         }
-
-                        Game1.Multiplayer.globalChatInfoMessage(museumData.MessageOnDonation,
-                            Game1.player.Name,
-                            TokenStringBuilder.ItemName(itemId2), museum.DisplayName);
                     }
                 }
 

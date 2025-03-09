@@ -1,20 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
-using StardewValley.Extensions;
 using StardewValley.GameData;
-using StardewValley.ItemTypeDefinitions;
 
 namespace CustomMuseumFramework.Models;
 
-public class CustomMuseumRewardData : GenericSpawnItemData
+public class CustomMuseumRewardData
 {
-    public List<CustomMuseumRewardRequirement>? Requirements;
-    public List<GenericSpawnItemDataWithCondition>? RewardItems;
+    public string Id;
+    public List<CustomMuseumRewardRequirement>? Requirements = null;
+    public List<GenericSpawnItemDataWithCondition>? RewardItems = null;
+    public List<string>? Actions = null;
     public bool RewardIsSpecial = false;
-    public List<string>? Actions;
     public bool FlagOnCompletion = true;
 }
