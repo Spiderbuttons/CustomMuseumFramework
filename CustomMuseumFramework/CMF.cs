@@ -32,6 +32,29 @@ namespace CustomMuseumFramework
                 return _museumData ??= Game1.content.Load<Dictionary<string, CustomMuseumData>>("Spiderbuttons.CustomMuseumFramework/Museums");
             }
         }
+        
+        public static Dictionary<string, string> DefaultStrings =>
+            new()
+            {
+                { "OnDonation", "{0} donated '{1}' to the {2} museum." },
+                { "OnMilestone", "{0} Farm has donated {1} pieces to the {2} museum." },
+                { "OnCompletion", "{0} Farm has completed the {1} museum collection." },
+                { "MenuDonate", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Donate]" },
+                { "MenuCollect", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Collect]" },
+                { "MenuRearrange", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Rearrange]" },
+                
+                { "Busy_Owner", @"[LocalizedText Strings\UI:NPC_Busy]" },
+                { "Busy_NoOwner", "Someone else is donating to the museum right now." },
+                
+                { "MuseumComplete_Owner", @"[LocalizedText Strings\ExtraDialogue:Gunther_MuseumComplete]" },
+                { "MuseumComplete_NoOwner", "The museum has been completed." },
+                
+                { "NothingToDonate_Owner", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_NothingToDonate]" },
+                { "NothingToDonate_NoOwner", "You have nothing to donate to the museum." },
+                
+                { "NoDonations_Owner", "Welcome to the {0} museum! We don't have anything on display right now." },
+                { "NoDonations_NoOwner", "The museum has nothing on display right now." }
+            };
 
         public override void Entry(IModHelper helper)
         {
@@ -46,6 +69,7 @@ namespace CustomMuseumFramework
             Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             Helper.Events.Content.AssetRequested += this.OnAssetRequested;
             Helper.Events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
+            Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveChatMessage;
         }
 
         private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -59,6 +83,7 @@ namespace CustomMuseumFramework
                 e.Edit(asset =>
                 {
                     var editor = asset.AsDictionary<string, string>();
+                    // TODO: These need i18n.
                     editor.Data[$"Chat_{ModManifest.UniqueID}_OnDonation"] = "{0} donated '{1}' to the {2} museum.";
                     editor.Data[$"Chat_{ModManifest.UniqueID}_OnMilestone"] = "{0} Farm has donated {1} pieces to the {2} museum.";
                     editor.Data[$"Chat_{ModManifest.UniqueID}_OnCompletion"] = "{0} Farm has completed the {1} museum collection.";
@@ -85,10 +110,15 @@ namespace CustomMuseumFramework
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
+            // Log.Alert(typeof(CustomMuseum).AssemblyQualifiedName);
+            
             if (!Context.IsWorldReady)
                 return;
 
             if (e.Button is not SButton.F5) return;
+            
+            Log.Debug("yaaa");
+            MultiplayerUtils.broadcastChatMessage("Test! {0} {1} {2}", ["ttt", "dfgfd"]);
         }
     }
 }

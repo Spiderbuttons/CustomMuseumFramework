@@ -10,14 +10,41 @@ public class CustomMuseumData
     public Vector2 OwnerTile { get; set; } = new Vector2(-1f, -1f);
     public bool RequireOwnerForDonation { get; set; } = false;
     
-    public List<string> ValidItemIds { get; set; } = [];
-    public List<string> ValidContextTags { get; set; } = [];
-    public List<int> ValidCategories { get; set; } = [];
+    public DonationCriteria DonationCriteria { get; set; } = new DonationCriteria();
     
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
     public List<int> Milestones { get; set; } = [];
     
-    public string MessageOnDonation { get; set; } = $"{CMF.Manifest.UniqueID}_OnDonation";
-    public string MessageOnMilestone { get; set; } = $"{CMF.Manifest.UniqueID}_OnMilestone";
-    public string MessageOnCompletion { get; set; } = $"{CMF.Manifest.UniqueID}_OnCompletion";
+    public MuseumStrings Strings { get; set; } = new MuseumStrings();
+}
+
+public class DonationCriteria
+{
+    public List<string>? ItemIds { get; set; } = null;
+    public List<string>? ContextTags { get; set; } = null;
+    public List<int>? Categories { get; set; } = null;
+}
+
+public class MuseumStrings
+{
+    // TODO: These need i18n.
+    public string? OnDonation { get; set; } = null;
+    public string? OnMilestone { get; set; } = null;
+    public string? OnCompletion { get; set; } = null;
+    
+    public string? MenuDonate { get; set; } = null;
+    public string? MenuCollect { get; set; } = null;
+    public string? MenuRearrange { get; set; } = null;
+    
+    public string? Busy_Owner { get; set; } = null;
+    public string? Busy_NoOwner { get; set; } = null;
+    
+    public string? MuseumComplete_Owner { get; set; } = null;
+    public string? MuseumComplete_NoOwner { get; set; } = null;
+    
+    public string? NothingToDonate_Owner { get; set; } = null;
+    public string? NothingToDonate_NoOwner { get; set; } = null;
+    
+    public string? NoDonations_Owner { get; set; } = null;
+    public string? NoDonations_NoOwner { get; set; } = null;
 }
