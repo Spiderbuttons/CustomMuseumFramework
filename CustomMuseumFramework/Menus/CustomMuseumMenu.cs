@@ -271,7 +271,7 @@ public class CustomMuseumMenu : MenuWithInventory
                 {
                     if (museumData is not null)
                     {
-                        MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnDonation,
+                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnDonation ?? CMF.DefaultStrings.OnDonation!),
                             Game1.player.Name,
                             TokenStringBuilder.ItemNameFor(item), museum.DisplayName);
                         
@@ -279,7 +279,7 @@ public class CustomMuseumMenu : MenuWithInventory
                         {
                             if (!Game1.MasterPlayer.mailReceived.Contains($"{museum.Name}_MuseumCompletion"))
                             {
-                                MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnCompletion,
+                                MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnCompletion ?? CMF.DefaultStrings.OnCompletion!),
                                     Game1.player.farmName.Value, museum.DisplayName);
                                 Game1.addMail($"{museum.Name}_MuseumCompletion", true, true);
                             }
@@ -287,7 +287,7 @@ public class CustomMuseumMenu : MenuWithInventory
                         // TODO: If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this TODO here to prove that I at least recognized the possibility.
                         else if (museumData.Milestones.Contains(pieces))
                         {
-                            MultiplayerUtils.broadcastChatMessage(museumData.Strings.OnMilestone,
+                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
                                 Game1.player.farmName.Value, pieces.ToString(), Museum.DisplayName);
                             Game1.addMail($"{museum.Name}_MuseumMilestone{pieces}", true, true);
                         }

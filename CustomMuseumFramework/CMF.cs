@@ -33,27 +33,28 @@ namespace CustomMuseumFramework
             }
         }
         
-        public static Dictionary<string, string> DefaultStrings =>
+        public static readonly MuseumStrings DefaultStrings =
             new()
             {
-                { "OnDonation", "{0} donated '{1}' to the {2} museum." },
-                { "OnMilestone", "{0} Farm has donated {1} pieces to the {2} museum." },
-                { "OnCompletion", "{0} Farm has completed the {1} museum collection." },
-                { "MenuDonate", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Donate]" },
-                { "MenuCollect", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Collect]" },
-                { "MenuRearrange", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Rearrange]" },
+                OnDonation = "{0} donated '{1}' to the {2} museum.",
+                OnMilestone = "{0} Farm has donated {1} pieces to the {2} museum.",
+                OnCompletion = "{0} Farm has completed the {1} museum collection.",
                 
-                { "Busy_Owner", @"[LocalizedText Strings\UI:NPC_Busy]" },
-                { "Busy_NoOwner", "Someone else is donating to the museum right now." },
+                MenuDonate = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Donate]",
+                MenuCollect = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Collect]",
+                MenuRearrange = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Rearrange]",
                 
-                { "MuseumComplete_Owner", @"[LocalizedText Strings\ExtraDialogue:Gunther_MuseumComplete]" },
-                { "MuseumComplete_NoOwner", "The museum has been completed." },
+                Busy_Owner = @"[LocalizedText Strings\UI:NPC_Busy]",
+                Busy_NoOwner = "Someone else is donating to the museum right now.",
                 
-                { "NothingToDonate_Owner", @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_NothingToDonate]" },
-                { "NothingToDonate_NoOwner", "You have nothing to donate to the museum." },
+                MuseumComplete_Owner = @"[LocalizedText Strings\ExtraDialogue:Gunther_MuseumComplete]",
+                MuseumComplete_NoOwner = "The museum has been completed.",
                 
-                { "NoDonations_Owner", "Welcome to the {0} museum! We don't have anything on display right now." },
-                { "NoDonations_NoOwner", "The museum has nothing on display right now." }
+                NothingToDonate_Owner = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_NothingToDonate]",
+                NothingToDonate_NoOwner = "You have nothing to donate to the museum.",
+                
+                NoDonations_Owner = "Welcome to the {0} museum! We don't have anything on display right now.",
+                NoDonations_NoOwner = "The museum has nothing on display right now."
             };
 
         public override void Entry(IModHelper helper)
