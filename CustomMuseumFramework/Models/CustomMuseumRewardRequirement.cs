@@ -1,10 +1,19 @@
-﻿namespace CustomMuseumFramework.Models;
+﻿using System.Collections.Generic;
+
+namespace CustomMuseumFramework.Models;
 
 public class CustomMuseumRewardRequirement
 {
-    public string? ContextTag;
-    public string? ItemId;
-    public int? Category;
+    public List<string>? ContextTags;
+    public List<string>? ItemIds;
+    public List<int>? Categories;
 
+    public MatchType MatchType = MatchType.Any;
     public int Count;
+}
+
+public enum MatchType
+{
+    Any,
+    All
 }
