@@ -226,18 +226,18 @@ public class CustomMuseum : GameLocation
         string text = ArgUtility.Get(action, 0);
         if (text.Equals("MuseumMenu"))
         {
-            if (museumData is not null && museumData.RequireOwnerForDonation)
+            if (museumData is not null && museumData.Owner.RequiredForDonation)
             {
                 foreach (NPC npc in characters)
                 {
-                    if (!npc.Name.Equals(museumData.Owner)) continue;
-                    if (museumData.OwnerTile is { X: < 0, Y: < 0 })
+                    if (!npc.Name.Equals(museumData.Owner.Name)) continue;
+                    if (museumData.Owner.Area is null || museumData.Owner.Area.Value.IsEmpty)
                     {
                         OpenMuseumDialogueMenu();
                         return true;
                     }
-
-                    if (npc.Tile != museumData.OwnerTile) return false;
+                    
+                    if (!IsNpcClockedIn(npc, museumData.Owner.Area.Value)) return false;
 
                     OpenMuseumDialogueMenu();
                     return true;
@@ -519,13 +519,13 @@ public class CustomMuseum : GameLocation
             else
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    Game1.RequireCharacter(museumData.Owner).displayName));
+                    Game1.RequireCharacter(museumData.Owner.Name).displayName));
             }
         }
         else
         {
-            NPC? owner = Game1.getCharacterFromName(museumData?.Owner);
-            bool isOwnerClockedIn = IsOwnerClockedIn(owner, museumData?.OwnerTile);
+            NPC? owner = Game1.getCharacterFromName(museumData?.Owner.Name);
+            bool isOwnerClockedIn = IsNpcClockedIn(owner, museumData?.Owner.Area);
 
             // TODO: Check to make sure the owner is actually around first, if they exist.
             if (DonatedItems.Count() >= TotalPossibleDonations)
@@ -571,13 +571,18 @@ public class CustomMuseum : GameLocation
         }
     }
 
-    private bool IsOwnerClockedIn(NPC? npc, Vector2? tile)
+    private bool IsNpcClockedIn(NPC? npc, Rectangle? area)
     {
-        if (npc is null || tile is null || tile is { X: -1, Y: -1 }) return false;
+        if (npc is null || area is null || area.Value.IsEmpty) return false;
+        var areaToCheck = area.Value.Size.Equals(Point.Zero) switch
+        {
+            true => new Rectangle(area.Value.X, area.Value.Y, 1, 1),
+            false => area.Value
+        };
 
         foreach (var character in Game1.currentLocation.characters)
         {
-            if (character.Name.Equals(npc.Name) && character.Tile == tile)
+            if (character.Name.Equals(npc.Name) && areaToCheck.Contains(character.Tile))
             {
                 return true;
             }
