@@ -68,7 +68,7 @@ public class CustomMuseum : GameLocation
                 return data;
             }
 
-            CMF.ModMonitor.LogOnce($"No museum data found for '{Name}'! Make sure your Spiderbuttons.CustomMuseumFramework/Museums entry key matches the location ID.", LogLevel.Error);
+            CMF.ModMonitor.LogOnce($"No museum data found for '{Name}'! Make sure your Spiderbuttons.CustomMuseumFramework/Museums entry key matches the location ID. Please fix this error before proceeding any further!", LogLevel.Error);
             return null;
         }
     }
