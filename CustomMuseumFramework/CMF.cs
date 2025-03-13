@@ -47,10 +47,10 @@ namespace CustomMuseumFramework
                 Busy_Owner = @"[LocalizedText Strings\UI:NPC_Busy]",
                 Busy_NoOwner = "Someone else is donating to the museum right now.",
                 
-                MuseumComplete_Owner = @"[LocalizedText Strings\ExtraDialogue:Gunther_MuseumComplete]",
+                MuseumComplete_Owner = @"[LocalizedText Data\ExtraDialogue:Gunther_MuseumComplete]",
                 MuseumComplete_NoOwner = "The museum has been completed.",
                 
-                NothingToDonate_Owner = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_NothingToDonate]",
+                NothingToDonate_Owner = @"[LocalizedText Data\ExtraDialogue:Gunther_NothingToDonate]",
                 NothingToDonate_NoOwner = "You have nothing to donate to the museum.",
                 
                 NoDonations_Owner = "Welcome to the {0} museum! We don't have anything on display right now.",
@@ -111,22 +111,20 @@ namespace CustomMuseumFramework
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            // Log.Alert(typeof(CustomMuseum).AssemblyQualifiedName);
-            
             if (!Context.IsWorldReady)
                 return;
 
             if (e.Button is not SButton.F5) return;
 
             if (Game1.currentLocation is not CustomMuseum museum) return;
-            museum.TotalPossibleDonations = -1;
+            // museum.TotalPossibleDonations = -1;
             
             if (MuseumData.TryGetValue(museum.Name, out var data))
             {
                 Log.Debug($"Museum ID: {data.Id}");
-                Log.Debug($"Owner: {data.Owner}");
-                Log.Debug($"OwnerTile: {data.OwnerTile}");
-                Log.Debug($"RequireOwnerForDonation: {data.RequireOwnerForDonation}");
+                Log.Debug($"Owner: {data.Owner.Name}");
+                Log.Debug($"OwnerTile: {data.Owner.Area}");
+                Log.Debug($"RequireOwnerForDonation: {data.Owner.RequiredForDonation}");
                 Log.Debug($"DonationCriteria:");
                 if (data.DonationCriteria.ItemIds != null)
                     Log.Debug($"  ItemIds: {string.Join(", ", data.DonationCriteria.ItemIds)}");
