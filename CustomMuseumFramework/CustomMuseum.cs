@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
@@ -11,7 +10,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using StardewValley;
 using StardewValley.Extensions;
-using StardewValley.GameData.Museum;
 using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
@@ -29,11 +27,11 @@ public class CustomMuseum : GameLocation
 {
     private int _totalPossibleDonations = -1;
 
-    private NetVector2Dictionary<string, NetString> _donatedItems = new NetVector2Dictionary<string, NetString>();
+    private readonly NetVector2Dictionary<string, NetString> _donatedItems = new NetVector2Dictionary<string, NetString>();
 
-    public readonly NetMutex mutex = new NetMutex();
+    private readonly NetMutex mutex = new NetMutex();
 
-    [XmlIgnore] private Dictionary<Item, string> _itemToRewardsLookup = new Dictionary<Item, string>();
+    [XmlIgnore] private readonly Dictionary<Item, string> _itemToRewardsLookup = new Dictionary<Item, string>();
 
     public int TotalPossibleDonations
     {
@@ -68,8 +66,8 @@ public class CustomMuseum : GameLocation
     protected override void initNetFields()
     {
         base.initNetFields();
-        base.NetFields.AddField(this.mutex.NetFields);
-        base.NetFields.AddField(this.DonatedItems.NetFields);
+        NetFields.AddField(mutex.NetFields);
+        NetFields.AddField(DonatedItems.NetFields);
     }
 
     public override void TransferDataFromSavedLocation(GameLocation l)
@@ -81,16 +79,16 @@ public class CustomMuseum : GameLocation
 
     public override void updateEvenIfFarmerIsntHere(GameTime time, bool skipWasUpdatedFlush = false)
     {
-        this.mutex.Update(this);
+        mutex.Update(this);
         base.updateEvenIfFarmerIsntHere(time, skipWasUpdatedFlush);
     }
 
-    public bool HasDonatedItem()
+    private bool HasDonatedItem()
     {
         return DonatedItems.Values.Any();
     }
 
-    public bool HasDonatedItemAt(Vector2 tile)
+    private bool HasDonatedItemAt(Vector2 tile)
     {
         return DonatedItems.ContainsKey(tile);
     }
@@ -114,7 +112,7 @@ public class CustomMuseum : GameLocation
         return IsItemSuitableForDonation(i.QualifiedItemId);
     }
 
-    public bool IsItemSuitableForDonation(string? itemId, bool checkDonatedItems = true)
+    private bool IsItemSuitableForDonation(string? itemId, bool checkDonatedItems = true)
     {
         if (itemId is null) return false;
 
@@ -158,7 +156,7 @@ public class CustomMuseum : GameLocation
         return false;
     }
 
-    public bool DoesFarmerHaveAnythingToDonate(Farmer who)
+    private bool DoesFarmerHaveAnythingToDonate(Farmer who)
     {
         for (int i = 0; i < who.MaxItems; i++)
         {
@@ -174,7 +172,6 @@ public class CustomMuseum : GameLocation
     protected override void resetLocalState()
     {
         base.resetLocalState();
-        return;
         // TODO: Mail flag stuff later
         // if (!Game1.player.eventsSeen.Contains("0") && this.doesFarmerHaveAnythingToDonate(Game1.player))
         // {
@@ -214,8 +211,7 @@ public class CustomMuseum : GameLocation
 
     public string GetRewardItemKey(Item item)
     {
-        return $"{Name}_museumCollectedReward" +
-               Utility.getStandardDescriptionFromItem(item, 1, '_'); // TODO: Change this to use ItemRegistry.
+        return $"{Name}_RewardItem_{item.QualifiedItemId}_{item.Stack}";
     }
 
     public override bool performAction(string[] action, Farmer who, Location tileLocation)
