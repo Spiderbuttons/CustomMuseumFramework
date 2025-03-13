@@ -38,11 +38,14 @@ public class CustomMuseum : GameLocation
 
             _totalPossibleDonations = -1;
 
-            foreach (var itemId in Game1.objectData.Keys)
+            foreach (var type in ItemRegistry.ItemTypes)
             {
-                if (IsItemSuitableForDonation(itemId, checkDonatedItems: false))
+                foreach (var item in type.GetAllIds())
                 {
-                    _totalPossibleDonations++;
+                    if (IsItemSuitableForDonation(item, checkDonatedItems: false))
+                    {
+                        _totalPossibleDonations++;
+                    }
                 }
             }
 
