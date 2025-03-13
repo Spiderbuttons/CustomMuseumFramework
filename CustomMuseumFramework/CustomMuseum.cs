@@ -266,7 +266,7 @@ public class CustomMuseum : GameLocation
 
     public List<Item> GetRewardsForPlayer(Farmer player)
     {
-        this._itemToRewardsLookup.Clear();
+        _itemToRewardsLookup.Clear();
         if (!CMF.MuseumData.TryGetValue(Name, out var museumData))
         {
             Log.Error(
@@ -285,7 +285,7 @@ public class CustomMuseum : GameLocation
                 continue;
             }
 
-            player.mailReceived.Add(id);
+            player.mailReceived.Add($"{Name}_MuseumReward_{id}");
             bool rewardAdded = false;
             if (reward.RewardItems is not null)
             {
@@ -295,7 +295,7 @@ public class CustomMuseum : GameLocation
                     item.specialItem = reward.RewardIsSpecial;
                     if (AddRewardItemIfUncollected(player, rewards, item))
                     {
-                        this._itemToRewardsLookup[item] = id;
+                        _itemToRewardsLookup[item] = id;
                         rewardAdded = true;
                     }
                 }
@@ -478,7 +478,7 @@ public class CustomMuseum : GameLocation
 
     private void OpenMuseumDialogueMenu()
     {
-        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !this.mutex.IsLocked())
+        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !mutex.IsLocked())
         {
             Response[] choice = ((GetRewardsForPlayer(Game1.player).Count <= 0)
                 ? new Response[2]
