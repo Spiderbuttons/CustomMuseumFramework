@@ -77,6 +77,16 @@ public class CustomMuseum : GameLocation
     {
         var savedMuseum = l as CustomMuseum;
         DonatedItems.MoveFrom(savedMuseum?.DonatedItems);
+        
+        // If an item is already donated but is no longer donatable (due to a mod changing things or something), pop em onto the ground.
+        foreach (var item in DonatedItems.Pairs)
+        {
+            if (!IsItemSuitableForDonation(item.Value, checkDonatedItems: false))
+            {
+                Game1.createItemDebris(ItemRegistry.Create(item.Value), item.Key, 0, this);
+                DonatedItems.Remove(item.Key);
+            }
+        }
         base.TransferDataFromSavedLocation(l);
     }
 
@@ -511,6 +521,7 @@ public class CustomMuseum : GameLocation
         }
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && mutex.IsLocked())
         {
+            // TODO: These need to be customizable.
             if (museumData?.Owner is null)
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
