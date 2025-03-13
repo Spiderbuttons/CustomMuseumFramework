@@ -17,7 +17,6 @@ using StardewValley.Network;
 using StardewValley.Triggers;
 using xTile.Dimensions;
 using xTile.Tiles;
-using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
@@ -39,10 +38,11 @@ public class CustomMuseum : GameLocation
         {
             if (_totalPossibleDonations >= 0) return _totalPossibleDonations;
 
-            _totalPossibleDonations = 0;
-            foreach (string itemId in ItemRegistry.RequireTypeDefinition("(O)").GetAllIds())
+            _totalPossibleDonations = -1;
+
+            foreach (var itemId in Game1.objectData.Keys)
             {
-                if (IsItemSuitableForDonation("(O)" + itemId, checkDonatedItems: false)) // TODO: Don't hardcode Objects maybe?
+                if (IsItemSuitableForDonation(itemId, checkDonatedItems: false))
                 {
                     _totalPossibleDonations++;
                 }
@@ -50,6 +50,7 @@ public class CustomMuseum : GameLocation
 
             return _totalPossibleDonations;
         }
+        internal set => _totalPossibleDonations = value;
     }
 
     [XmlElement("DonatedItems")]
@@ -120,7 +121,7 @@ public class CustomMuseum : GameLocation
         ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(itemId);
         HashSet<string> tags = ItemContextTagManager.GetBaseContextTags(itemId);
 
-        if (!itemData.HasTypeObject() || tags.Contains("not_museum_donatable")) // TODO: Maybe don't hardcode to Objects only?
+        if (tags.Contains("not_museum_donatable"))
         {
             return false;
         }
@@ -160,7 +161,7 @@ public class CustomMuseum : GameLocation
     {
         for (int i = 0; i < who.MaxItems; i++)
         {
-            if (i < who.Items.Count && who.Items[i] is Object obj && IsItemSuitableForDonation(obj)) // TODO: Again, maybe consider not hardcoding to just Objects?
+            if (i < who.Items.Count && IsItemSuitableForDonation(who.Items[i]))
             {
                 return true;
             }
@@ -209,9 +210,9 @@ public class CustomMuseum : GameLocation
         return base.answerDialogueAction(questionAndAnswer, questionParams);
     }
 
-    public string GetRewardItemKey(Item item)
+    private string GetRewardItemKey(Item item)
     {
-        return $"{Name}_RewardItem_{item.QualifiedItemId}_{item.Stack}";
+        return $"{Name}_MuseumRewardItem_{item.QualifiedItemId}_{item.Stack}";
     }
 
     public override bool performAction(string[] action, Farmer who, Location tileLocation)
@@ -227,7 +228,7 @@ public class CustomMuseum : GameLocation
                 foreach (NPC npc in characters)
                 {
                     if (!npc.Name.Equals(museumData.Owner)) continue;
-                    if (museumData.OwnerTile.X < 0 && museumData.OwnerTile.Y < 0)
+                    if (museumData.OwnerTile is { X: < 0, Y: < 0 })
                     {
                         OpenMuseumDialogueMenu();
                         return true;
@@ -245,12 +246,12 @@ public class CustomMuseum : GameLocation
             return true;
         }
 
-        if (text.Equals("Rearrange") && !DoesFarmerHaveAnythingToDonate(Game1.player))
+        if (text.Equals("Rearrange"))
         {
             if (HasDonatedItem())
             {
                 base.createQuestionDialogue(
-                    Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Rearrange"),
+                    Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Rearrange"), // TODO: Customizable.
                     base.createYesNoResponses(), "Museum_Rearrange");
             }
 
@@ -280,6 +281,7 @@ public class CustomMuseum : GameLocation
                 continue;
             }
 
+            player.mailReceived.Add(id);
             bool rewardAdded = false;
             if (reward.RewardItems is not null)
             {
@@ -452,7 +454,7 @@ public class CustomMuseum : GameLocation
             return;
         }
 
-        if (item is Object && _itemToRewardsLookup.TryGetValue(item, out var rewardId)) // TODO: Yet another consideration for not hardcoding as objects.
+        if (_itemToRewardsLookup.TryGetValue(item, out var rewardId))
         {
             if (CMF.MuseumData.TryGetValue(Name, out var museumData))
             {
@@ -522,6 +524,11 @@ public class CustomMuseum : GameLocation
             // TODO: Make these customizable. Also, check to make sure the owner is actually around first, if they exist.
             if (DonatedItems.Count() >= TotalPossibleDonations)
             {
+                Log.Warn(TotalPossibleDonations);
+                foreach (var item in DonatedItems.Pairs)
+                {
+                    Log.Debug($"Item: {item.Key} - {item.Value}");
+                }
                 Game1.DrawDialogue(new Dialogue(owner, "Data\\ExtraDialogue:Gunther_MuseumComplete",
                     Game1.parseText(Game1.content.LoadString("Data\\ExtraDialogue:Gunther_MuseumComplete"))));
             }
@@ -776,13 +783,19 @@ public class CustomMuseum : GameLocation
         base.draw(b);
         foreach (KeyValuePair<Vector2, string> v in DonatedItems.Pairs)
         {
-            b.Draw(Game1.shadowTexture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f + new Vector2(32f, 52f)),
-                Game1.shadowTexture.Bounds, Color.White, 0f,
-                new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f,
-                SpriteEffects.None, (v.Key.Y * 64f - 2f) / 10000f);
             ParsedItemData data = ItemRegistry.GetDataOrErrorItem(v.Value);
-            b.Draw(data.GetTexture(), Game1.GlobalToLocal(Game1.viewport, v.Key * 64f), data.GetSourceRect(),
-                Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, v.Key.Y * 64f / 10000f);
+            if (data.HasTypeObject())
+            {
+                b.Draw(Game1.shadowTexture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f + new Vector2(32f, 52f)),
+                    Game1.shadowTexture.Bounds, Color.White, 0f,
+                    new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f,
+                    SpriteEffects.None, (v.Key.Y * 64f - 2f) / 10000f);
+            }
+            var texture = data.GetTexture();
+            var sourceRect = data.GetSourceRect();
+            int textureOffset = data.GetSourceRect().Height - 16;
+            b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f) + new Vector2(0, -textureOffset * 4), sourceRect,
+                Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, (v.Key.Y + 2f) * 64f / 10000f);
         }
     }
 }

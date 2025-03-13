@@ -245,7 +245,6 @@ public class CustomMuseumMenu : MenuWithInventory
             if (museum.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
                 museum.IsItemSuitableForDonation(item))
             {
-                // string itemId2 = base.heldItem.QualifiedItemId;
                 int rewardsCount = museum.GetRewardsForPlayer(Game1.player).Count;
                 museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId);
                 Game1.playSound("stoneStep");

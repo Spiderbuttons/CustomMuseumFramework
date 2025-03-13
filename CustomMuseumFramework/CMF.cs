@@ -117,9 +117,35 @@ namespace CustomMuseumFramework
                 return;
 
             if (e.Button is not SButton.F5) return;
+
+            if (Game1.currentLocation is not CustomMuseum museum) return;
+            museum.TotalPossibleDonations = -1;
             
-            Log.Debug("yaaa");
-            MultiplayerUtils.broadcastChatMessage("Test! {0} {1} {2}", ["ttt", "dfgfd"]);
+            if (MuseumData.TryGetValue(museum.Name, out var data))
+            {
+                Log.Debug($"Museum ID: {data.Id}");
+                Log.Debug($"Owner: {data.Owner}");
+                Log.Debug($"OwnerTile: {data.OwnerTile}");
+                Log.Debug($"RequireOwnerForDonation: {data.RequireOwnerForDonation}");
+                Log.Debug($"DonationCriteria:");
+                if (data.DonationCriteria.ItemIds != null)
+                    Log.Debug($"  ItemIds: {string.Join(", ", data.DonationCriteria.ItemIds)}");
+                if (data.DonationCriteria.ContextTags != null)
+                    Log.Debug($"  ContextTags: {string.Join(", ", data.DonationCriteria.ContextTags)}");
+                if (data.DonationCriteria.Categories != null)
+                    Log.Debug($"  Categories: {string.Join(", ", data.DonationCriteria.Categories)}");
+                Log.Debug($"Rewards: {string.Join(", ", data.Rewards.Select(r => r.Id))}");
+                Log.Debug($"Milestones: {string.Join(", ", data.Milestones)}");
+            }
+            else
+            {
+                Log.Error("Museum data not found!");
+            }
+            
+            foreach (var mail in Game1.player.mailReceived)
+            {
+                Log.Debug(mail);
+            }
         }
     }
 }
