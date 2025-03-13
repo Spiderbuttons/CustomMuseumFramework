@@ -6,9 +6,8 @@ namespace CustomMuseumFramework.Models;
 public class CustomMuseumData
 {
     public string Id { get; set; } = "";
-    public string? Owner { get; set; } = null;
-    public Vector2 OwnerTile { get; set; } = new Vector2(-1f, -1f);
-    public bool RequireOwnerForDonation { get; set; } = false;
+    
+    public OwnerData Owner { get; set; } = new OwnerData();
     
     public DonationCriteria DonationCriteria { get; set; } = new DonationCriteria();
     
@@ -16,6 +15,13 @@ public class CustomMuseumData
     public List<int> Milestones { get; set; } = [];
     
     public MuseumStrings Strings { get; set; } = new MuseumStrings();
+}
+
+public class OwnerData
+{
+    public string? Name { get; set; } = null;
+    public Rectangle? Area { get; set; } = null;
+    public bool RequiredForDonation { get; set; } = false;
 }
 
 public class DonationCriteria
