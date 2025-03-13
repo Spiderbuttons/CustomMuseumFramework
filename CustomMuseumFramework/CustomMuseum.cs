@@ -530,7 +530,6 @@ public class CustomMuseum : GameLocation
             // TODO: Make these customizable. Also, check to make sure the owner is actually around first, if they exist.
             if (DonatedItems.Count() >= TotalPossibleDonations)
             {
-                Log.Warn(TotalPossibleDonations);
                 foreach (var item in DonatedItems.Pairs)
                 {
                     Log.Debug($"Item: {item.Key} - {item.Value}");

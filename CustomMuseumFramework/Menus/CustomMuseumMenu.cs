@@ -1,7 +1,6 @@
 ﻿using System;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,32 +13,32 @@ using xTile.Dimensions;
 
 namespace CustomMuseumFramework.Menus;
 
-public class CustomMuseumMenu : MenuWithInventory
+public sealed class CustomMuseumMenu : MenuWithInventory
 {
     public const int startingState = 0;
     public const int placingInMuseumState = 1;
     public const int exitingState = 2;
 
-    public int fadeTimer;
-    public int state;
-    public int menuPositionOffset;
-    public bool fadeIntoBlack;
-    public bool menuMovingDown;
-    public float blackFadeAlpha;
-    public SparklingText? sparkleText;
-    public Vector2 globalLocationOfSparklingItem;
+    private int fadeTimer;
+    private int state;
+    private int menuPositionOffset;
+    private bool fadeIntoBlack;
+    private bool menuMovingDown;
+    private float blackFadeAlpha;
+    private SparklingText? sparkleText;
+    private Vector2 globalLocationOfSparklingItem;
 
-    public CustomMuseum Museum;
-    public CustomMuseumData? museumData;
+    private readonly CustomMuseum Museum;
+    private readonly CustomMuseumData? museumData;
 
     private bool holdingMuseumItem;
-    public bool reorganizing;
+    private bool reorganizing;
 
     public CustomMuseumMenu(InventoryMenu.highlightThisItem highlighterMethod) : base(highlighterMethod, okButton: true)
     {
         fadeTimer = 800;
         fadeIntoBlack = true;
-        base.movePosition(0, Game1.uiViewport.Height - base.yPositionOnScreen - base.height);
+        movePosition(0, Game1.uiViewport.Height - yPositionOnScreen - height);
         Game1.player.forceCanMove();
         Museum = Game1.currentLocation as CustomMuseum ??
                  throw new InvalidOperationException(
@@ -51,14 +50,14 @@ public class CustomMuseumMenu : MenuWithInventory
 
         if (Game1.options.SnappyMenus)
         {
-            if (base.okButton is not null)
+            if (okButton is not null)
             {
-                base.okButton.myID = 106;
+                okButton.myID = 106;
             }
 
-            this.populateClickableComponentList();
-            base.currentlySnappedComponent = base.getComponentWithID(0);
-            this.snapCursorToCurrentSnappedComponent();
+            populateClickableComponentList();
+            currentlySnappedComponent = getComponentWithID(0);
+            snapCursorToCurrentSnappedComponent();
         }
 
         Game1.displayHUD = false;
@@ -71,32 +70,32 @@ public class CustomMuseumMenu : MenuWithInventory
 
     public override void receiveKeyPress(Keys key)
     {
-        if (this.fadeTimer > 0)
+        if (fadeTimer > 0)
         {
             return;
         }
 
         if (Game1.options.doesInputListContain(Game1.options.menuButton, key) &&
-            !Game1.isOneOfTheseKeysDown(Game1.oldKBState, Game1.options.menuButton) && this.readyToClose())
+            !Game1.isOneOfTheseKeysDown(Game1.oldKBState, Game1.options.menuButton) && readyToClose())
         {
-            this.state = 2;
-            this.fadeTimer = 500;
-            this.fadeIntoBlack = true;
+            state = 2;
+            fadeTimer = 500;
+            fadeIntoBlack = true;
         }
         else if (Game1.options.doesInputListContain(Game1.options.menuButton, key) &&
-                 !Game1.isOneOfTheseKeysDown(Game1.oldKBState, Game1.options.menuButton) && !this.holdingMuseumItem &&
-                 this.menuMovingDown)
+                 !Game1.isOneOfTheseKeysDown(Game1.oldKBState, Game1.options.menuButton) && !holdingMuseumItem &&
+                 menuMovingDown)
         {
-            if (base.heldItem != null)
+            if (heldItem != null)
             {
                 Game1.playSound("bigDeSelect");
-                Utility.CollectOrDrop(base.heldItem);
-                base.heldItem = null;
+                Utility.CollectOrDrop(heldItem);
+                heldItem = null;
             }
 
-            this.ReturnToDonatableItems();
+            ReturnToDonatableItems();
         }
-        else if (Game1.options.SnappyMenus && base.heldItem == null && !this.reorganizing)
+        else if (Game1.options.SnappyMenus && heldItem == null && !reorganizing)
         {
             base.receiveKeyPress(key);
         }
@@ -122,7 +121,7 @@ public class CustomMuseumMenu : MenuWithInventory
         }
         else
         {
-            if (base.heldItem == null && !reorganizing)
+            if (heldItem == null && !reorganizing)
             {
                 return;
             }
@@ -130,16 +129,16 @@ public class CustomMuseumMenu : MenuWithInventory
             CustomMuseum museum = Museum;
             Vector2 newCursorPositionTile =
                 new Vector2(
-                    (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseX()) + (float)Game1.viewport.X) / 64f),
-                    (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseY()) + (float)Game1.viewport.Y) / 64f));
+                    (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseX()) + Game1.viewport.X) / 64f),
+                    (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseY()) + Game1.viewport.Y) / 64f));
             if (!museum.IsTileSuitableForMuseumItem((int)newCursorPositionTile.X, (int)newCursorPositionTile.Y) &&
                 (!reorganizing || !LibraryMuseum.HasDonatedArtifactAt(newCursorPositionTile)))
             {
                 newCursorPositionTile = museum.GetFreeDonationSpot();
                 Game1.setMousePosition(
-                    (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.X * 64f - (float)Game1.viewport.X +
+                    (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.X * 64f - Game1.viewport.X +
                                                             32f),
-                    (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.Y * 64f - (float)Game1.viewport.Y +
+                    (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.Y * 64f - Game1.viewport.Y +
                                                             32f));
                 return;
             }
@@ -168,12 +167,12 @@ public class CustomMuseumMenu : MenuWithInventory
             if (!Game1.viewport.Contains(new Location((int)(newCursorPositionTile.X * 64f + 32f),
                     Game1.viewport.Y + 1)))
             {
-                Game1.panScreen((int)(newCursorPositionTile.X * 64f - (float)Game1.viewport.X), 0);
+                Game1.panScreen((int)(newCursorPositionTile.X * 64f - Game1.viewport.X), 0);
             }
             else if (!Game1.viewport.Contains(new Location(Game1.viewport.X + 1,
                          (int)(newCursorPositionTile.Y * 64f + 32f))))
             {
-                Game1.panScreen(0, (int)(newCursorPositionTile.Y * 64f - (float)Game1.viewport.Y));
+                Game1.panScreen(0, (int)(newCursorPositionTile.Y * 64f - Game1.viewport.Y));
             }
 
             Game1.setMousePosition(
@@ -189,13 +188,12 @@ public class CustomMuseumMenu : MenuWithInventory
 
     public override void receiveGamePadButton(Buttons b)
     {
-        if (!menuMovingDown && (b == Buttons.DPadUp || b == Buttons.LeftThumbstickUp) && Game1.options.SnappyMenus &&
-            currentlySnappedComponent != null && currentlySnappedComponent.myID < 12)
-        {
-            reorganizing = true;
-            menuMovingDown = true;
-            receiveKeyPress(Game1.options.moveUpButton[0].key);
-        }
+        if (menuMovingDown || b is not (Buttons.DPadUp or Buttons.LeftThumbstickUp) || !Game1.options.SnappyMenus ||
+            currentlySnappedComponent is not { myID: < 12 }) return;
+        
+        reorganizing = true;
+        menuMovingDown = true;
+        receiveKeyPress(Game1.options.moveUpButton[0].key);
     }
 
     public override void receiveLeftClick(int x, int y, bool playSound = true)
@@ -205,43 +203,43 @@ public class CustomMuseumMenu : MenuWithInventory
             return;
         }
 
-        Item oldItem = base.heldItem;
+        Item oldItem = heldItem;
         if (!holdingMuseumItem)
         {
-            int inventory_index = base.inventory.getInventoryPositionOfClick(x, y);
-            if (base.heldItem == null)
+            int inventory_index = inventory.getInventoryPositionOfClick(x, y);
+            if (heldItem == null)
             {
-                if (inventory_index >= 0 && inventory_index < base.inventory.actualInventory.Count &&
-                    base.inventory.highlightMethod(base.inventory.actualInventory[inventory_index]))
+                if (inventory_index >= 0 && inventory_index < inventory.actualInventory.Count &&
+                    inventory.highlightMethod(inventory.actualInventory[inventory_index]))
                 {
-                    base.heldItem = base.inventory.actualInventory[inventory_index].getOne();
-                    base.inventory.actualInventory[inventory_index].Stack--;
-                    if (base.inventory.actualInventory[inventory_index].Stack <= 0)
+                    heldItem = inventory.actualInventory[inventory_index].getOne();
+                    inventory.actualInventory[inventory_index].Stack--;
+                    if (inventory.actualInventory[inventory_index].Stack <= 0)
                     {
-                        base.inventory.actualInventory[inventory_index] = null;
+                        inventory.actualInventory[inventory_index] = null;
                     }
                 }
             }
             else
             {
-                base.heldItem = base.inventory.leftClick(x, y, base.heldItem);
+                heldItem = inventory.leftClick(x, y, heldItem);
             }
         }
 
-        if (oldItem == null && base.heldItem != null && Game1.isAnyGamePadButtonBeingPressed())
+        if (oldItem == null && heldItem != null && Game1.isAnyGamePadButtonBeingPressed())
         {
-            this.receiveGamePadButton(Buttons.DPadUp);
+            receiveGamePadButton(Buttons.DPadUp);
         }
 
-        if (oldItem != null && base.heldItem != null &&
+        if (oldItem != null && heldItem != null &&
             (y < Game1.viewport.Height -
-             (base.height - (IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 192)) ||
-             this.menuMovingDown))
+             (height - (borderWidth + spaceToClearTopBorder + 192)) ||
+             menuMovingDown))
         {
-            Item item = this.heldItem;
+            Item item = heldItem;
             CustomMuseum museum = Museum;
-            int mapXTile2 = (int)(Utility.ModifyCoordinateFromUIScale(x) + (float)Game1.viewport.X) / 64;
-            int mapYTile2 = (int)(Utility.ModifyCoordinateFromUIScale(y) + (float)Game1.viewport.Y) / 64;
+            int mapXTile2 = (int)(Utility.ModifyCoordinateFromUIScale(x) + Game1.viewport.X) / 64;
+            int mapYTile2 = (int)(Utility.ModifyCoordinateFromUIScale(y) + Game1.viewport.Y) / 64;
             if (museum.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
                 museum.IsItemSuitableForDonation(item))
             {
@@ -250,12 +248,12 @@ public class CustomMuseumMenu : MenuWithInventory
                 Game1.playSound("stoneStep");
                 if (museum.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
                 {
-                    this.sparkleText = new SparklingText(Game1.dialogueFont,
+                    sparkleText = new SparklingText(Game1.dialogueFont,
                         Game1.content.LoadString("Strings\\StringsFromCSFiles:NewReward"), Color.MediumSpringGreen,
                         Color.White);
                     Game1.playSound("reward");
-                    this.globalLocationOfSparklingItem =
-                        new Vector2((float)(mapXTile2 * 64 + 32) - this.sparkleText.textWidth / 2f,
+                    globalLocationOfSparklingItem =
+                        new Vector2(mapXTile2 * 64 + 32 - sparkleText.textWidth / 2f,
                             mapYTile2 * 64 - 48);
                 }
                 else
@@ -263,10 +261,10 @@ public class CustomMuseumMenu : MenuWithInventory
                     Game1.playSound("newArtifact");
                 }
                 CheckForCustomMuseumQuests();
-                base.heldItem = item.ConsumeStack(1);
+                heldItem = item.ConsumeStack(1);
 
                 int pieces = museum.DonatedItems.Length;
-                if (!this.holdingMuseumItem)
+                if (!holdingMuseumItem)
                 {
                     if (museumData is not null)
                     {
@@ -296,57 +294,57 @@ public class CustomMuseumMenu : MenuWithInventory
                 ReturnToDonatableItems();
             }
         }
-        else if (base.heldItem == null && !base.inventory.isWithinBounds(x, y))
+        else if (heldItem == null && !inventory.isWithinBounds(x, y))
         {
-            int mapXTile = (int)(Utility.ModifyCoordinateFromUIScale(x) + (float)Game1.viewport.X) / 64;
-            int mapYTile = (int)(Utility.ModifyCoordinateFromUIScale(y) + (float)Game1.viewport.Y) / 64;
+            int mapXTile = (int)(Utility.ModifyCoordinateFromUIScale(x) + Game1.viewport.X) / 64;
+            int mapYTile = (int)(Utility.ModifyCoordinateFromUIScale(y) + Game1.viewport.Y) / 64;
             Vector2 v = new Vector2(mapXTile, mapYTile);
             CustomMuseum location = Museum;
             if (location.DonatedItems.TryGetValue(v, out var itemId))
             {
-                base.heldItem = ItemRegistry.Create(itemId, 1, 0, allowNull: true);
+                heldItem = ItemRegistry.Create(itemId, allowNull: true);
                 location.DonatedItems.Remove(v);
-                if (base.heldItem != null)
+                if (heldItem != null)
                 {
-                    this.holdingMuseumItem = !Museum.HasDonatedItem(base.heldItem.QualifiedItemId);
+                    holdingMuseumItem = !Museum.HasDonatedItem(heldItem.QualifiedItemId);
                 }
             }
         }
 
-        if (base.heldItem != null && oldItem == null)
+        if (heldItem != null && oldItem == null)
         {
             menuMovingDown = true;
             reorganizing = false;
         }
 
-        if (base.okButton != null && base.okButton.containsPoint(x, y) && this.readyToClose())
+        if (okButton != null && okButton.containsPoint(x, y) && readyToClose())
         {
-            if (this.fadeTimer <= 0)
+            if (fadeTimer <= 0)
             {
                 Game1.playSound("bigDeSelect");
             }
 
-            this.state = 2;
-            this.fadeTimer = 800;
-            this.fadeIntoBlack = true;
+            state = 2;
+            fadeTimer = 800;
+            fadeIntoBlack = true;
         }
     }
 
-    public void CheckForCustomMuseumQuests()
+    private void CheckForCustomMuseumQuests()
     {
         // TODO: Implement custom museum quests
     }
 
-    public virtual void ReturnToDonatableItems()
+    private void ReturnToDonatableItems()
     {
         menuMovingDown = false;
         holdingMuseumItem = false;
         reorganizing = false;
         if (Game1.options.SnappyMenus)
         {
-            base.movePosition(0, -this.menuPositionOffset);
-            this.menuPositionOffset = 0;
-            base.snapCursorToCurrentSnappedComponent();
+            movePosition(0, -menuPositionOffset);
+            menuPositionOffset = 0;
+            snapCursorToCurrentSnappedComponent();
         }
     }
 
@@ -395,7 +393,7 @@ public class CustomMuseumMenu : MenuWithInventory
         Item oldItem = heldItem;
         if (fadeTimer <= 0)
         {
-            base.receiveRightClick(x, y);
+            base.receiveRightClick(x, y, playSound: true);
         }
 
         if (heldItem is not null && oldItem is null)
@@ -407,57 +405,57 @@ public class CustomMuseumMenu : MenuWithInventory
     public override void update(GameTime time)
     {
         base.update(time);
-        if (sparkleText != null && this.sparkleText.update(time))
+        if (sparkleText != null && sparkleText.update(time))
         {
-            this.sparkleText = null;
+            sparkleText = null;
         }
 
-        if (this.fadeTimer > 0)
+        if (fadeTimer > 0)
         {
-            this.fadeTimer -= time.ElapsedGameTime.Milliseconds;
-            if (this.fadeIntoBlack)
+            fadeTimer -= time.ElapsedGameTime.Milliseconds;
+            if (fadeIntoBlack)
             {
-                this.blackFadeAlpha = 0f + (1500f - (float)this.fadeTimer) / 1500f;
+                blackFadeAlpha = 0f + (1500f - fadeTimer) / 1500f;
             }
             else
             {
-                this.blackFadeAlpha = 1f - (1500f - (float)this.fadeTimer) / 1500f;
+                blackFadeAlpha = 1f - (1500f - fadeTimer) / 1500f;
             }
 
-            if (this.fadeTimer <= 0)
+            if (fadeTimer <= 0)
             {
-                switch (this.state)
+                switch (state)
                 {
                     case 0:
-                        this.state = 1;
+                        state = 1;
                         Game1.viewportFreeze = true;
                         Game1.viewport.Location = new Location(1152, 128);
                         Game1.clampViewportToGameMap();
-                        this.fadeTimer = 800;
-                        this.fadeIntoBlack = false;
+                        fadeTimer = 800;
+                        fadeIntoBlack = false;
                         break;
                     case 2:
                         Game1.viewportFreeze = false;
-                        this.fadeIntoBlack = false;
-                        this.fadeTimer = 800;
-                        this.state = 3;
+                        fadeIntoBlack = false;
+                        fadeTimer = 800;
+                        state = 3;
                         break;
                     case 3:
-                        base.exitThisMenuNoSound();
+                        exitThisMenuNoSound();
                         break;
                 }
             }
         }
 
-        if (this.menuMovingDown && this.menuPositionOffset < base.height / 3)
+        if (menuMovingDown && menuPositionOffset < height / 3)
         {
-            this.menuPositionOffset += 8;
-            base.movePosition(0, 8);
+            menuPositionOffset += 8;
+            movePosition(0, 8);
         }
-        else if (!this.menuMovingDown && this.menuPositionOffset > 0)
+        else if (!menuMovingDown && menuPositionOffset > 0)
         {
-            this.menuPositionOffset -= 8;
-            base.movePosition(0, -8);
+            menuPositionOffset -= 8;
+            movePosition(0, -8);
         }
 
         int mouseX = Game1.getOldMouseX(ui_scale: false) + Game1.viewport.X;
@@ -468,7 +466,7 @@ public class CustomMuseumMenu : MenuWithInventory
             Game1.panScreen(-4, 0);
             if (Game1.input.GetGamePadState().ThumbSticks.Right.X < 0f)
             {
-                this.snapCursorToCurrentMuseumSpot();
+                snapCursorToCurrentMuseumSpot();
             }
         }
         else if ((!Game1.options.SnappyMenus && Game1.lastCursorMotionWasMouse &&
@@ -478,7 +476,7 @@ public class CustomMuseumMenu : MenuWithInventory
             Game1.panScreen(4, 0);
             if (Game1.input.GetGamePadState().ThumbSticks.Right.X > 0f)
             {
-                this.snapCursorToCurrentMuseumSpot();
+                snapCursorToCurrentMuseumSpot();
             }
         }
 
@@ -488,7 +486,7 @@ public class CustomMuseumMenu : MenuWithInventory
             Game1.panScreen(0, -4);
             if (Game1.input.GetGamePadState().ThumbSticks.Right.Y > 0f)
             {
-                this.snapCursorToCurrentMuseumSpot();
+                snapCursorToCurrentMuseumSpot();
             }
         }
         else if ((!Game1.options.SnappyMenus && Game1.lastCursorMotionWasMouse &&
@@ -498,22 +496,24 @@ public class CustomMuseumMenu : MenuWithInventory
             Game1.panScreen(0, 4);
             if (Game1.input.GetGamePadState().ThumbSticks.Right.Y < 0f)
             {
-                this.snapCursorToCurrentMuseumSpot();
+                snapCursorToCurrentMuseumSpot();
             }
         }
 
         Keys[] pressedKeys = Game1.oldKBState.GetPressedKeys();
         foreach (Keys key in pressedKeys)
         {
-            this.receiveKeyPress(key);
+            receiveKeyPress(key);
         }
     }
 
     private void snapCursorToCurrentMuseumSpot()
     {
-        if (this.menuMovingDown)
+        if (menuMovingDown)
         {
+            // ReSharper disable once PossibleLossOfFraction
             Vector2 newCursorPositionTile = new Vector2((Game1.getMouseX(ui_scale: false) + Game1.viewport.X) / 64,
+                // ReSharper disable once PossibleLossOfFraction
                 (Game1.getMouseY(ui_scale: false) + Game1.viewport.Y) / 64);
             Game1.setMousePosition((int)newCursorPositionTile.X * 64 - Game1.viewport.X + 32,
                 (int)newCursorPositionTile.Y * 64 - Game1.viewport.Y + 32, ui_scale: false);
@@ -524,22 +524,22 @@ public class CustomMuseumMenu : MenuWithInventory
         Microsoft.Xna.Framework.Rectangle newBounds)
     {
         base.gameWindowSizeChanged(oldBounds, newBounds);
-        base.movePosition(0, Game1.viewport.Height - base.yPositionOnScreen - base.height);
+        movePosition(0, Game1.viewport.Height - yPositionOnScreen - height);
         Game1.player.forceCanMove();
     }
 
     public override void draw(SpriteBatch b)
     {
-        if ((this.fadeTimer <= 0 || !this.fadeIntoBlack) && this.state != 3)
+        if ((fadeTimer <= 0 || !fadeIntoBlack) && state != 3)
         {
-            if (base.heldItem != null)
+            if (heldItem != null)
             {
                 Game1.StartWorldDrawInUI(b);
                 for (int y = Game1.viewport.Y / 64 - 1; y < (Game1.viewport.Y + Game1.viewport.Height) / 64 + 2; y++)
                 {
                     for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; x++)
                     {
-                        if (this.Museum.IsTileSuitableForMuseumItem(x, y))
+                        if (Museum.IsTileSuitableForMuseumItem(x, y))
                         {
                             b.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y) * 64f),
                                 Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29), Color.LightGreen);
@@ -550,25 +550,25 @@ public class CustomMuseumMenu : MenuWithInventory
                 Game1.EndWorldDrawInUI(b);
             }
 
-            if (!this.holdingMuseumItem)
+            if (!holdingMuseumItem)
             {
                 base.draw(b, drawUpperPortion: false, drawDescriptionArea: false);
             }
 
-            if (!base.hoverText.Equals(""))
+            if (!hoverText.Equals(""))
             {
-                IClickableMenu.drawHoverText(b, base.hoverText, Game1.smallFont);
+                drawHoverText(b, hoverText, Game1.smallFont);
             }
 
-            base.heldItem?.drawInMenu(b, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
-            base.drawMouse(b);
-            this.sparkleText?.draw(b,
+            heldItem?.drawInMenu(b, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
+            drawMouse(b);
+            sparkleText?.draw(b,
                 Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(Game1.viewport,
-                    this.globalLocationOfSparklingItem)));
+                    globalLocationOfSparklingItem)));
         }
 
         b.Draw(Game1.fadeToBlackRect,
             new Microsoft.Xna.Framework.Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
-            Color.Black * this.blackFadeAlpha);
+            Color.Black * blackFadeAlpha);
     }
 }
