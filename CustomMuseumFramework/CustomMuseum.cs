@@ -12,6 +12,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Internal;
+using StardewValley.Inventories;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
@@ -37,6 +38,7 @@ public class CustomMuseum : GameLocation
     {
         get
         {
+            var inv = new Inventory();
             if (_totalPossibleDonations.Count > 0) return _totalPossibleDonations;
 
             CalculateDonatables();
@@ -91,25 +93,8 @@ public class CustomMuseum : GameLocation
     {
         base.initNetFields();
         NetFields.AddField(mutex.NetFields);
-        NetFields.AddField(DonatedItems.NetFields);
     }
-
-    public override void TransferDataFromSavedLocation(GameLocation l)
-    {
-        var savedMuseum = l as CustomMuseum;
-        DonatedItems.MoveFrom(savedMuseum?.DonatedItems);
-        
-        // If an item is already donated but is no longer donatable (due to a mod changing things or something), pop em onto the ground.
-        foreach (var item in DonatedItems.Pairs)
-        {
-            if (!IsItemSuitableForDonation(item.Value, checkDonatedItems: false))
-            {
-                Game1.createItemDebris(ItemRegistry.Create(item.Value), item.Key, 0, this);
-                DonatedItems.Remove(item.Key);
-            }
-        }
-        base.TransferDataFromSavedLocation(l);
-    }
+    
 
     public override void updateEvenIfFarmerIsntHere(GameTime time, bool skipWasUpdatedFlush = false)
     {

@@ -18,7 +18,7 @@ public class CustomMuseumData
     public MuseumStrings Strings { get; set; } = new MuseumStrings();
 
     [JsonIgnore] // TODO: Store possible donatables.
-    public string TestString;
+    public HashSet<string> DonatableItems { get; set; } = new HashSet<string>();
 }
 
 public class OwnerData
