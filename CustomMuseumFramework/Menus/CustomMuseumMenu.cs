@@ -272,7 +272,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                             Game1.player.Name,
                             TokenStringBuilder.ItemNameFor(item), museum.DisplayName);
                         
-                        if (pieces >= museum.TotalPossibleDonations)
+                        if (pieces >= museum.TotalPossibleDonations.Count)
                         {
                             if (!Game1.MasterPlayer.mailReceived.Contains($"{museum.Name}_MuseumCompletion"))
                             {

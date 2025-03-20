@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace CustomMuseumFramework.Models;
 
@@ -15,6 +16,9 @@ public class CustomMuseumData
     public List<int> Milestones { get; set; } = [];
     
     public MuseumStrings Strings { get; set; } = new MuseumStrings();
+
+    [JsonIgnore] // TODO: Store possible donatables.
+    public string TestString;
 }
 
 public class OwnerData

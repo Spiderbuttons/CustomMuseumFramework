@@ -26,6 +26,9 @@
 	
 	<ItemGroup>
         <Reference Include="SpaceCore" HintPath="$(GameModsPath)\SpaceCore\SpaceCore.dll" Private="False" />
+        <Reference Include="Newtonsoft.Json" Private="False">
+            <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
 

@@ -26,31 +26,20 @@ namespace CustomMuseumFramework;
 [XmlType("Mods_Spiderbuttons_CustomMuseum")]
 public class CustomMuseum : GameLocation
 {
-    private int _totalPossibleDonations = -1;
+    private HashSet<string> _totalPossibleDonations = [];
 
     private readonly NetMutex mutex = new NetMutex();
 
     [XmlIgnore] private readonly Dictionary<Item, string> _itemToRewardsLookup = new Dictionary<Item, string>();
 
-    public int TotalPossibleDonations
+    [XmlIgnore]
+    public HashSet<string> TotalPossibleDonations
     {
         get
         {
-            if (_totalPossibleDonations > 0) return _totalPossibleDonations;
+            if (_totalPossibleDonations.Count > 0) return _totalPossibleDonations;
 
-            _totalPossibleDonations = 0;
-
-            foreach (var type in ItemRegistry.ItemTypes)
-            {
-                foreach (var item in type.GetAllIds())
-                {
-                    if (IsItemSuitableForDonation($"{type.Identifier}{item}", checkDonatedItems: false))
-                    {
-                        _totalPossibleDonations++;
-                    }
-                }
-            }
-
+            CalculateDonatables();
             return _totalPossibleDonations;
         }
         set => _totalPossibleDonations = value;
@@ -79,6 +68,23 @@ public class CustomMuseum : GameLocation
 
     public CustomMuseum(string mapPath, string name) : base(mapPath, name)
     {
+    }
+
+    private void CalculateDonatables()
+    {
+        _totalPossibleDonations.Clear();
+
+        Log.Alert("Recalculating...");
+        foreach (var type in ItemRegistry.ItemTypes)
+        {
+            foreach (var item in type.GetAllIds())
+            {
+                if (IsItemSuitableForDonation($"{type.Identifier}{item}", checkDonatedItems: false))
+                {
+                    _totalPossibleDonations.Add($"{type.Identifier}{item}");
+                }
+            }
+        }
     }
 
     protected override void initNetFields()
@@ -337,7 +343,7 @@ public class CustomMuseum : GameLocation
                 {
                     if (requirement.Count == -1)
                     {
-                        if (DonatedItems.Count() < TotalPossibleDonations)
+                        if (DonatedItems.Count() < TotalPossibleDonations.Count)
                         {
                             results[reward.Id] = false;
                             shouldBreak = true;
@@ -540,9 +546,8 @@ public class CustomMuseum : GameLocation
             bool isOwnerClockedIn = IsNpcClockedIn(owner, LocalData?.Owner.Area);
 
             // TODO: Check to make sure the owner is actually around first, if they exist.
-            if (DonatedItems.Count() >= TotalPossibleDonations)
+            if (DonatedItems.Count() >= TotalPossibleDonations.Count)
             {
-                Log.Alert(TotalPossibleDonations);
                 string completeText = isOwnerClockedIn switch 
                 {
                     true => LocalData?.Strings.MuseumComplete_Owner ?? CMF.DefaultStrings.MuseumComplete_Owner,

@@ -32,6 +32,33 @@ namespace CustomMuseumFramework
                 return _museumData ??= Game1.content.Load<Dictionary<string, CustomMuseumData>>("Spiderbuttons.CustomMuseumFramework/Museums");
             }
         }
+
+        private static Dictionary<string, HashSet<CustomMuseum>>? _globalDonatableItems = null;
+        
+        public static Dictionary<string, HashSet<CustomMuseum>>? GlobalDonatableItems {
+            get
+            {
+                if (_globalDonatableItems == null) {
+                    _globalDonatableItems = new();
+                    foreach (var museum in MuseumData.Values)
+                    {
+                        var loc = Game1.RequireLocation<CustomMuseum>(museum.Id);
+                        foreach (var itemId in loc.TotalPossibleDonations)
+                        {
+                            if (!_globalDonatableItems.ContainsKey(itemId))
+                                _globalDonatableItems[itemId] = [];
+                            _globalDonatableItems[itemId].Add(loc);
+                            Log.Alert("Added " + itemId + " to " + museum.Id);
+                        }
+                    }
+                }
+                
+                return _globalDonatableItems;
+            }
+            set => _globalDonatableItems = value;
+        }
+
+        // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
         
         public static readonly MuseumStrings DefaultStrings =
             new()
@@ -94,7 +121,13 @@ namespace CustomMuseumFramework
         
         public void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e) {
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CustomMuseumFramework/Museums"))) {
+                Log.Debug("Invalidating museum data.");
+                foreach (var museum in MuseumData)
+                {
+                    Game1.RequireLocation<CustomMuseum>(museum.Key).TotalPossibleDonations.Clear();
+                }
                 _museumData = null;
+                _globalDonatableItems = null;
             }
         }
 
@@ -111,38 +144,25 @@ namespace CustomMuseumFramework
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            if (!Context.IsWorldReady)
-                return;
-
-            if (e.Button is not SButton.F5) return;
-
-            if (Game1.currentLocation is not CustomMuseum museum) return;
-            // museum.TotalPossibleDonations = -1;
-            
-            if (MuseumData.TryGetValue(museum.Name, out var data))
+            if (e.Button is SButton.F2)
             {
-                Log.Debug($"Museum ID: {data.Id}");
-                Log.Debug($"Owner: {data.Owner.Name}");
-                Log.Debug($"OwnerTile: {data.Owner.Area}");
-                Log.Debug($"RequireOwnerForDonation: {data.Owner.RequiredForDonation}");
-                Log.Debug($"DonationCriteria:");
-                if (data.DonationCriteria.ItemIds != null)
-                    Log.Debug($"  ItemIds: {string.Join(", ", data.DonationCriteria.ItemIds)}");
-                if (data.DonationCriteria.ContextTags != null)
-                    Log.Debug($"  ContextTags: {string.Join(", ", data.DonationCriteria.ContextTags)}");
-                if (data.DonationCriteria.Categories != null)
-                    Log.Debug($"  Categories: {string.Join(", ", data.DonationCriteria.Categories)}");
-                Log.Debug($"Rewards: {string.Join(", ", data.Rewards.Select(r => r.Id))}");
-                Log.Debug($"Milestones: {string.Join(", ", data.Milestones)}");
+                // log all the global donatables and the names of the museums they go to
+                if (GlobalDonatableItems != null)
+                    Log.Alert(GlobalDonatableItems.Count);
+                    foreach (var pair in GlobalDonatableItems)
+                    {
+                        Log.Debug($"{pair.Key}: {string.Join(", ", pair.Value.Select(m => m.Name))}");
+                    }
             }
-            else
+
+            if (e.Button is SButton.F5 && Game1.currentLocation is CustomMuseum museum)
             {
-                Log.Error("Museum data not found!");
+                Log.Alert(museum.TotalPossibleDonations.Join(null, ", "));
             }
-            
-            foreach (var mail in Game1.player.mailReceived)
+
+            if (e.Button is SButton.F6)
             {
-                Log.Debug(mail);
+                Helper.GameContent.InvalidateCache("Spiderbuttons.CustomMuseumFramework/Museums");
             }
         }
     }
