@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
-using StardewValley.Objects;
-using StardewValley.TokenizableStrings;
 
 namespace CustomMuseumFramework
 {
     internal sealed class CMF : Mod
     {
-        internal static IModHelper ModHelper { get; set; } = null!;
-        internal static IMonitor ModMonitor { get; set; } = null!;
+        internal static IModHelper ModHelper { get; private set; } = null!;
+        internal static IMonitor ModMonitor { get; private set; } = null!;
         
-        internal static IManifest Manifest { get; set; } = null!;
-        internal static Harmony Harmony { get; set; } = null!;
+        internal static IManifest Manifest { get; private set; } = null!;
+        private static Harmony Harmony { get; set; } = null!;
 
-        private static Dictionary<string, CustomMuseumData>? _museumData = null;
+        private static Dictionary<string, CustomMuseumData>? _museumData;
 
         public static Dictionary<string, CustomMuseumData> MuseumData
         {
@@ -34,9 +29,9 @@ namespace CustomMuseumFramework
         
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
 
-        private static Dictionary<string, HashSet<MuseumManager>>? _globalDonatableItems = null;
+        private static Dictionary<string, HashSet<MuseumManager>>? _globalDonatableItems;
         
-        public static Dictionary<string, HashSet<MuseumManager>>? GlobalDonatableItems {
+        private static Dictionary<string, HashSet<MuseumManager>> GlobalDonatableItems {
             get
             {
                 if (_globalDonatableItems == null) {
@@ -125,44 +120,26 @@ namespace CustomMuseumFramework
             }
         }
         
-        public void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e) {
-            if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums"))) {
-                Log.Debug("Invalidating museum data.");
-                foreach (var manager in MuseumManagers.Values)
-                {
-                    manager.TotalPossibleDonations.Clear();
-                }
-                _museumData = null;
-                _globalDonatableItems = null;
-            }
-            else
-            {
-                foreach (var name in e.NamesWithoutLocale)
-                {
-                    Log.Alert(name.BaseName);
-                }
-            }
+        private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
+        {
+            if (!e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums"))) return;
+            
+            Log.Trace("Invalidating museum data.");
+            foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
+            _museumData = null;
+            _globalDonatableItems = null;
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             if (e.Button is SButton.F2)
             {
-                // // log all the global donatables and the names of the museums they go to
-                if (GlobalDonatableItems != null)
-                {
-                    Log.Alert(GlobalDonatableItems.Count);
-                    foreach (var pair in GlobalDonatableItems)
-                    {
-                        Log.Debug($"{pair.Key}: {string.Join(", ", pair.Value.Select(m => m.Museum.Name))}");
-                    }
-                }
+                //
             }
 
             if (e.Button is SButton.F6)
             {
-                // CMF.MuseumManagers[Game1.currentLocation.Name].Mutex.ReleaseLock();
-                Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Game1.currentLocation.Name}").RemoveRange(0, 2);
+                //
             }
         }
     }
