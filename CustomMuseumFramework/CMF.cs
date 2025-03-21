@@ -68,6 +68,7 @@ namespace CustomMuseumFramework
                 MenuDonate = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Donate]",
                 MenuCollect = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Collect]",
                 MenuRearrange = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Rearrange]",
+                MenuRetrieve = "Retrieve",
                 
                 Busy_Owner = @"[LocalizedText Strings\UI:NPC_Busy]",
                 Busy_NoOwner = "Someone else is donating to the museum right now.",

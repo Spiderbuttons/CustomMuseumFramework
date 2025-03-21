@@ -97,8 +97,10 @@ public static class GameLocationPatches
         {
             if (manager.HasDonatedItem())
             {
-                string rearrangeText = manager.MuseumData.Strings.MenuRearrange ??
+                string rearrangeText = manager.MuseumData.Strings.MenuRearrange ?? CMF.DefaultStrings.MenuRearrange ??
                                        Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Rearrange");
+                string retrieveText = manager.MuseumData.Strings.MenuCollect ?? CMF.DefaultStrings.MenuCollect ??
+                                      Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
                 Response[] choice = manager.MuseumData.AllowRetrieval && !manager.Mutex.IsLocked() ? new Response[3]
                 {
                     new Response("Rearrange", rearrangeText),
@@ -190,15 +192,4 @@ public static class GameLocationPatches
                 Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, (v.Key.Y + 2f) * 64f / 10000f);
         }
     }
-    
-    // public override void drawAboveAlwaysFrontLayer(SpriteBatch b)
-    // {
-    //     foreach (TemporaryAnimatedSprite t in temporarySprites)
-    //     {
-    //         if (t.layerDepth >= 1f)
-    //         {
-    //             t.draw(b);
-    //         }
-    //     }
-    // }
 }

@@ -558,19 +558,6 @@ public class MuseumManager
                 Mutex.ReleaseLock();
             }
         };
-
-        // var chest = new Chest
-        // {
-        //     GlobalInventoryId = $"{CMF.Manifest.UniqueID}_{Museum.Name}"
-        // };
-        // if (!chest.GetMutex().IsLocked())
-        // {
-        //     chest.GetMutex().RequestLock(() =>
-        //     {
-        //         chest.ShowMenu();
-        //         Game1.activeClickableMenu.exitFunction += chest.GetMutex().ReleaseLock;
-        //     });
-        // }
     }
 
     public bool IsNpcClockedIn(NPC? npc, Rectangle? area)

@@ -47,6 +47,7 @@ public class MuseumStrings
     public string? MenuDonate { get; set; } = null;
     public string? MenuCollect { get; set; } = null;
     public string? MenuRearrange { get; set; } = null;
+    public string? MenuRetrieve { get; set; } = null;
     
     public string? Busy_Owner { get; set; } = null;
     public string? Busy_NoOwner { get; set; } = null;
