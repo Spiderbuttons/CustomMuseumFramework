@@ -15,7 +15,7 @@ public class MultiplayerUtils
         
         CMF.ModHelper.Multiplayer.SendMessage(
             new Tuple<string, string[]>(text, subs ?? []),
-            "Spiderbuttons.CustomMuseumFramework_ChatMessage",
+            "Spiderbuttons.CMF_ChatMessage",
             modIDs: [CMF.Manifest.UniqueID]
         );
         printChatMessage(text, subs ?? []);
@@ -23,7 +23,7 @@ public class MultiplayerUtils
 
     public static void receiveChatMessage(object? _, ModMessageReceivedEventArgs e)
     {
-        if (e.FromModID != CMF.Manifest.UniqueID || e.Type != "Spiderbuttons.CustomMuseumFramework_ChatMessage") return;
+        if (e.FromModID != CMF.Manifest.UniqueID || e.Type != "Spiderbuttons.CMF_ChatMessage") return;
         
         var msg = e.ReadAs<Tuple<string, string[]>>();
         printChatMessage(msg.Item1, msg.Item2);

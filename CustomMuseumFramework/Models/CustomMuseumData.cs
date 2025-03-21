@@ -7,10 +7,12 @@ namespace CustomMuseumFramework.Models;
 public class CustomMuseumData
 {
     public string Id { get; set; } = "";
-    
-    public OwnerData Owner { get; set; } = new OwnerData();
+
+    public OwnerData? Owner { get; set; } = null;
     
     public DonationCriteria DonationCriteria { get; set; } = new DonationCriteria();
+
+    public bool AllowRetrieval { get; set; } = false;
     
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
     public List<int> Milestones { get; set; } = [];

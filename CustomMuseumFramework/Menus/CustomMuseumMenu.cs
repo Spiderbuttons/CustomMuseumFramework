@@ -28,8 +28,8 @@ public sealed class CustomMuseumMenu : MenuWithInventory
     private SparklingText? sparkleText;
     private Vector2 globalLocationOfSparklingItem;
 
-    private readonly CustomMuseum Museum;
-    private readonly CustomMuseumData? museumData;
+    private readonly MuseumManager MuseumManager;
+    private CustomMuseumData MuseumData => MuseumManager.MuseumData;
 
     private bool holdingMuseumItem;
     private bool reorganizing;
@@ -40,14 +40,11 @@ public sealed class CustomMuseumMenu : MenuWithInventory
         fadeIntoBlack = true;
         movePosition(0, Game1.uiViewport.Height - yPositionOnScreen - height);
         Game1.player.forceCanMove();
-        Museum = Game1.currentLocation as CustomMuseum ??
-                 throw new InvalidOperationException(
-                     "The custom museum donation menu must be used from within a custom museum.");
-        if (!CMF.MuseumData.TryGetValue(Museum.Name, out museumData))
+        if (CMF.MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager))
         {
-            throw new InvalidOperationException($"No custom museum data found for museum with name '{Museum.Name}'");
-        }
-
+            MuseumManager = manager;
+        } else throw new InvalidOperationException("The custom museum donation menu must be used from within a custom museum.");
+        
         if (Game1.options.SnappyMenus)
         {
             if (okButton is not null)
@@ -126,15 +123,15 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 return;
             }
 
-            CustomMuseum museum = Museum;
+            GameLocation museum = MuseumManager.Museum;
             Vector2 newCursorPositionTile =
                 new Vector2(
                     (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseX()) + Game1.viewport.X) / 64f),
                     (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseY()) + Game1.viewport.Y) / 64f));
-            if (!museum.IsTileSuitableForMuseumItem((int)newCursorPositionTile.X, (int)newCursorPositionTile.Y) &&
+            if (!MuseumManager.IsTileSuitableForMuseumItem((int)newCursorPositionTile.X, (int)newCursorPositionTile.Y) &&
                 (!reorganizing || !LibraryMuseum.HasDonatedArtifactAt(newCursorPositionTile)))
             {
-                newCursorPositionTile = museum.GetFreeDonationSpot();
+                newCursorPositionTile = MuseumManager.GetFreeDonationSpot();
                 Game1.setMousePosition(
                     (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.X * 64f - Game1.viewport.X +
                                                             32f),
@@ -146,22 +143,22 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             if (key == Game1.options.getFirstKeyboardKeyFromInputButtonList(Game1.options.moveUpButton))
             {
                 newCursorPositionTile =
-                    museum.FindMuseumPieceLocationInDirection(newCursorPositionTile, 0, 21, !reorganizing);
+                    MuseumManager.FindMuseumPieceLocationInDirection(newCursorPositionTile, 0, 21, !reorganizing);
             }
             else if (key == Game1.options.getFirstKeyboardKeyFromInputButtonList(Game1.options.moveRightButton))
             {
                 newCursorPositionTile =
-                    museum.FindMuseumPieceLocationInDirection(newCursorPositionTile, 1, 21, !reorganizing);
+                    MuseumManager.FindMuseumPieceLocationInDirection(newCursorPositionTile, 1, 21, !reorganizing);
             }
             else if (key == Game1.options.getFirstKeyboardKeyFromInputButtonList(Game1.options.moveDownButton))
             {
                 newCursorPositionTile =
-                    museum.FindMuseumPieceLocationInDirection(newCursorPositionTile, 2, 21, !reorganizing);
+                    MuseumManager.FindMuseumPieceLocationInDirection(newCursorPositionTile, 2, 21, !reorganizing);
             }
             else if (key == Game1.options.getFirstKeyboardKeyFromInputButtonList(Game1.options.moveLeftButton))
             {
                 newCursorPositionTile =
-                    museum.FindMuseumPieceLocationInDirection(newCursorPositionTile, 3, 21, !reorganizing);
+                    MuseumManager.FindMuseumPieceLocationInDirection(newCursorPositionTile, 3, 21, !reorganizing);
             }
 
             if (!Game1.viewport.Contains(new Location((int)(newCursorPositionTile.X * 64f + 32f),
@@ -237,16 +234,15 @@ public sealed class CustomMuseumMenu : MenuWithInventory
              menuMovingDown))
         {
             Item item = heldItem;
-            CustomMuseum museum = Museum;
             int mapXTile2 = (int)(Utility.ModifyCoordinateFromUIScale(x) + Game1.viewport.X) / 64;
             int mapYTile2 = (int)(Utility.ModifyCoordinateFromUIScale(y) + Game1.viewport.Y) / 64;
-            if (museum.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
-                museum.IsItemSuitableForDonation(item))
+            if (MuseumManager.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
+                MuseumManager.IsItemSuitableForDonation(item))
             {
-                int rewardsCount = museum.GetRewardsForPlayer(Game1.player).Count;
-                museum.DonatedItems.Add(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId);
+                int rewardsCount = MuseumManager.GetRewardsForPlayer(Game1.player).Count;
+                MuseumManager.DonateItem(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId);
                 Game1.playSound("stoneStep");
-                if (museum.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
+                if (MuseumManager.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
                 {
                     sparkleText = new SparklingText(Game1.dialogueFont,
                         Game1.content.LoadString("Strings\\StringsFromCSFiles:NewReward"), Color.MediumSpringGreen,
@@ -263,31 +259,28 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 CheckForCustomMuseumQuests();
                 heldItem = item.ConsumeStack(1);
 
-                int pieces = museum.DonatedItems.Length;
+                int pieces = MuseumManager.DonatedItems.Count;
                 if (!holdingMuseumItem)
                 {
-                    if (museumData is not null)
-                    {
-                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnDonation ?? CMF.DefaultStrings.OnDonation!),
-                            Game1.player.Name,
-                            TokenStringBuilder.ItemNameFor(item), museum.DisplayName);
+                    MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnDonation ?? CMF.DefaultStrings.OnDonation!),
+                        Game1.player.Name,
+                        TokenStringBuilder.ItemNameFor(item), MuseumManager.Museum.DisplayName);
                         
-                        if (pieces >= museum.TotalPossibleDonations.Count)
+                    if (pieces >= MuseumManager.TotalPossibleDonations.Count)
+                    {
+                        if (!Game1.MasterPlayer.mailReceived.Contains($"{MuseumManager.Museum.Name}_MuseumCompletion"))
                         {
-                            if (!Game1.MasterPlayer.mailReceived.Contains($"{museum.Name}_MuseumCompletion"))
-                            {
-                                MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnCompletion ?? CMF.DefaultStrings.OnCompletion!),
-                                    Game1.player.farmName.Value, museum.DisplayName);
-                                Game1.addMail($"{museum.Name}_MuseumCompletion", true, true);
-                            }
+                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnCompletion ?? CMF.DefaultStrings.OnCompletion!),
+                                Game1.player.farmName.Value, MuseumManager.Museum.DisplayName);
+                            Game1.addMail($"{MuseumManager.Museum.Name}_MuseumCompletion", true, true);
                         }
-                        // TODO: If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this TODO here to prove that I at least recognized the possibility.
-                        else if (museumData.Milestones.Contains(pieces))
-                        {
-                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(museumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
-                                Game1.player.farmName.Value, pieces.ToString(), Museum.DisplayName);
-                            Game1.addMail($"{museum.Name}_MuseumMilestone{pieces}", true, true);
-                        }
+                    }
+                    // TODO: If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this TODO here to prove that I at least recognized the possibility.
+                    else if (MuseumData.Milestones.Contains(pieces))
+                    {
+                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
+                            Game1.player.farmName.Value, pieces.ToString(), MuseumManager.Museum.DisplayName);
+                        Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone{pieces}", true, true);
                     }
                 }
 
@@ -299,14 +292,13 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             int mapXTile = (int)(Utility.ModifyCoordinateFromUIScale(x) + Game1.viewport.X) / 64;
             int mapYTile = (int)(Utility.ModifyCoordinateFromUIScale(y) + Game1.viewport.Y) / 64;
             Vector2 v = new Vector2(mapXTile, mapYTile);
-            CustomMuseum location = Museum;
-            if (location.DonatedItems.TryGetValue(v, out var itemId))
+            if (MuseumManager.DonatedItems.TryGetValue(v, out var itemId))
             {
                 heldItem = ItemRegistry.Create(itemId, allowNull: true);
-                location.DonatedItems.Remove(v);
+                MuseumManager.RemoveItem(v);
                 if (heldItem != null)
                 {
-                    holdingMuseumItem = !Museum.HasDonatedItem(heldItem.QualifiedItemId);
+                    holdingMuseumItem = !MuseumManager.HasDonatedItem(heldItem.QualifiedItemId);
                 }
             }
         }
@@ -352,8 +344,8 @@ public sealed class CustomMuseumMenu : MenuWithInventory
     {
         if (heldItem is not null && holdingMuseumItem)
         {
-            Vector2 tile = Museum.GetFreeDonationSpot();
-            if (Museum.DonatedItems.TryAdd(tile, heldItem.QualifiedItemId))
+            Vector2 tile = MuseumManager.GetFreeDonationSpot();
+            if (MuseumManager.DonateItem(tile, heldItem.QualifiedItemId))
             {
                 heldItem = null;
                 holdingMuseumItem = false;
@@ -539,7 +531,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 {
                     for (int x = Game1.viewport.X / 64 - 1; x < (Game1.viewport.X + Game1.viewport.Width) / 64 + 1; x++)
                     {
-                        if (Museum.IsTileSuitableForMuseumItem(x, y))
+                        if (MuseumManager.IsTileSuitableForMuseumItem(x, y))
                         {
                             b.Draw(Game1.mouseCursors, Game1.GlobalToLocal(Game1.viewport, new Vector2(x, y) * 64f),
                                 Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 29), Color.LightGreen);

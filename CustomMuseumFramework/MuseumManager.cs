@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Serialization;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Netcode;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Internal;
-using StardewValley.Inventories;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
+using StardewValley.Objects;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 using xTile.Dimensions;
@@ -24,59 +20,67 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
 
-[XmlType("Mods_Spiderbuttons_CustomMuseum")]
-public class CustomMuseum : GameLocation
+public class MuseumManager
 {
-    private HashSet<string> _totalPossibleDonations = [];
+    public GameLocation Museum { get; }
 
-    private readonly NetMutex mutex = new NetMutex();
+    public CustomMuseumData MuseumData
+    {
+        get
+        {
+            if (CMF.MuseumData.TryGetValue(Museum.Name, out var data)) return data;
+            throw new KeyNotFoundException(
+                $"No museum data found for location '{Museum.Name}.' Make sure your Spiderbuttons.CMF/Museums entry key matches your location key. Please fix this error before proceeding any further!");
+        }
+    }
 
-    [XmlIgnore] private readonly Dictionary<Item, string> _itemToRewardsLookup = new Dictionary<Item, string>();
+    public readonly Dictionary<Item, string> _itemToRewardsLookup = new();
 
-    [XmlIgnore]
+    private readonly HashSet<string> _totalPossibleDonations = [];
+
     public HashSet<string> TotalPossibleDonations
     {
         get
         {
-            var inv = new Inventory();
             if (_totalPossibleDonations.Count > 0) return _totalPossibleDonations;
 
-            CalculateDonatables();
+            CalculateDonations();
             return _totalPossibleDonations;
         }
-        set => _totalPossibleDonations = value;
     }
-
-    [XmlElement("DonatedItems")]
-    public NetVector2Dictionary<string, NetString> DonatedItems { get; } = [];
     
-    private CustomMuseumData? LocalData
+    public Dictionary<Vector2, string> DonatedItems
     {
         get
         {
-            if (CMF.MuseumData.TryGetValue(Name, out var data))
+            var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+            var dict = new Dictionary<Vector2, string>();
+            foreach (var item in inv)
             {
-                return data;
+                if (item is null) continue;
+                if (item.modData.TryGetValue("CMF_Position", out var pos) &&
+                    ArgUtility.TryGetVector2(pos.Split(' '), 0, out var v, out _, true))
+                {
+                    dict[v] = item.QualifiedItemId;
+                }
             }
-
-            CMF.ModMonitor.LogOnce($"No museum data found for '{Name}'! Make sure your Spiderbuttons.CustomMuseumFramework/Museums entry key matches the location ID. Please fix this error before proceeding any further!", LogLevel.Error);
-            return null;
+            
+            return dict;
         }
     }
 
-    public CustomMuseum()
+    public NetMutex Mutex =>
+        Game1.player.team.GetOrCreateGlobalInventoryMutex($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+    
+    public MuseumManager(GameLocation location)
     {
+        Museum = location;
+        CalculateDonations();
     }
 
-    public CustomMuseum(string mapPath, string name) : base(mapPath, name)
-    {
-    }
-
-    private void CalculateDonatables()
+    private void CalculateDonations()
     {
         _totalPossibleDonations.Clear();
-
-        Log.Alert("Recalculating...");
         foreach (var type in ItemRegistry.ItemTypes)
         {
             foreach (var item in type.GetAllIds())
@@ -89,20 +93,7 @@ public class CustomMuseum : GameLocation
         }
     }
 
-    protected override void initNetFields()
-    {
-        base.initNetFields();
-        NetFields.AddField(mutex.NetFields);
-    }
-    
-
-    public override void updateEvenIfFarmerIsntHere(GameTime time, bool skipWasUpdatedFlush = false)
-    {
-        mutex.Update(this);
-        base.updateEvenIfFarmerIsntHere(time, skipWasUpdatedFlush);
-    }
-
-    private bool HasDonatedItem()
+    public bool HasDonatedItem()
     {
         return DonatedItems.Values.Any();
     }
@@ -117,12 +108,45 @@ public class CustomMuseum : GameLocation
         if (itemId is null) return false;
 
         itemId = ItemRegistry.QualifyItemId(itemId);
-        foreach (var pair in DonatedItems.Pairs)
+        foreach (var pair in DonatedItems)
         {
             if (pair.Value == itemId) return true;
         }
 
         return false;
+    }
+
+    public bool DonateItem(Vector2 location, string itemId)
+    {
+        Item item = ItemRegistry.Create(itemId);
+        item.modData["CMF_Position"] = $"{location.X} {location.Y}";
+        return DonateItem(item);
+    }
+
+    private bool DonateItem(Item? item)
+    {
+        if (item is null) return false;
+        Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
+        return true;
+    }
+
+    public void RemoveItem(Vector2 v)
+    {
+        var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+        int indexToRemove = -1;
+        for (int i = 0; i < inv.Count; i++)
+        {
+            if (inv[i] is null) continue;
+            if (inv[i].modData.TryGetValue("CMF_Position", out var pos) &&
+                ArgUtility.TryGetVector2(pos.Split(' '), 0, out var posV, out _, true) && posV == v)
+            {
+                Log.Alert("Found");
+                indexToRemove = i;
+                break;
+            }
+        }
+
+        if (indexToRemove != -1) inv.RemoveAt(indexToRemove);
     }
 
     public bool IsItemSuitableForDonation(Item? i)
@@ -149,19 +173,19 @@ public class CustomMuseum : GameLocation
             return false;
         }
 
-        var donationCriteria = LocalData?.DonationCriteria;
+        var donationCriteria = MuseumData.DonationCriteria;
 
-        if (donationCriteria?.ContextTags is not null && donationCriteria.ContextTags.Any(tag => tags.Contains(tag)))
+        if (donationCriteria.ContextTags is not null && donationCriteria.ContextTags.Any(tag => tags.Contains(tag)))
         {
             return true;
         }
 
-        if (donationCriteria?.ItemIds is not null && donationCriteria.ItemIds.Contains(itemId))
+        if (donationCriteria.ItemIds is not null && donationCriteria.ItemIds.Contains(itemId))
         {
             return true;
         }
 
-        if (donationCriteria?.Categories is not null && donationCriteria.Categories.Contains(itemData.Category))
+        if (donationCriteria.Categories is not null && donationCriteria.Categories.Contains(itemData.Category))
         {
             return true;
         }
@@ -182,102 +206,16 @@ public class CustomMuseum : GameLocation
         return false;
     }
 
-    protected override void resetLocalState()
-    {
-        base.resetLocalState();
-        // TODO: Mail flag stuff later
-        // if (!Game1.player.eventsSeen.Contains("0") && this.doesFarmerHaveAnythingToDonate(Game1.player))
-        // {
-        //     Game1.player.mailReceived.Add("somethingToDonate");
-        // }
-        // if (LibraryMuseum.HasDonatedArtifacts())
-        // {
-        //     Game1.player.mailReceived.Add("somethingWasDonated");
-        // }
-    }
-
-    public override void cleanupBeforePlayerExit()
-    {
-        _itemToRewardsLookup.Clear();
-        base.cleanupBeforePlayerExit();
-    }
-
-    public override bool answerDialogueAction(string? questionAndAnswer, string[] questionParams)
-    {
-        if (questionAndAnswer is null) return false;
-
-        switch (questionAndAnswer)
-        {
-            case "Museum_Collect":
-                OpenRewardMenu();
-                break;
-            case "Museum_Donate":
-                OpenDonationMenu();
-                break;
-            case "Museum_Rearrange_Yes":
-                OpenRearrangeMenu();
-                break;
-        }
-
-        return base.answerDialogueAction(questionAndAnswer, questionParams);
-    }
-
     private string GetRewardItemKey(Item item)
     {
-        return $"{Name}_MuseumRewardItem_{item.QualifiedItemId}_{item.Stack}";
-    }
-
-    public override bool performAction(string[] action, Farmer who, Location tileLocation)
-    {
-        if (!who.IsLocalPlayer) return base.performAction(action, who, tileLocation);
-        
-        string text = ArgUtility.Get(action, 0);
-        if (text.Equals("MuseumMenu"))
-        {
-            if (LocalData is not null && LocalData.Owner.RequiredForDonation)
-            {
-                foreach (NPC npc in characters)
-                {
-                    if (!npc.Name.Equals(LocalData.Owner.Name)) continue;
-                    if (LocalData.Owner.Area is null || LocalData.Owner.Area.Value.IsEmpty)
-                    {
-                        OpenMuseumDialogueMenu();
-                        return true;
-                    }
-                    
-                    if (!IsNpcClockedIn(npc, LocalData.Owner.Area.Value)) return false;
-
-                    OpenMuseumDialogueMenu();
-                    return true;
-                }
-
-                return false;
-            }
-
-            OpenMuseumDialogueMenu();
-            return true;
-        }
-
-        if (text.Equals("Rearrange"))
-        {
-            if (HasDonatedItem())
-            {
-                string rearrangeText = LocalData?.Strings.MenuRearrange ?? Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Rearrange");
-                createQuestionDialogue(rearrangeText,createYesNoResponses(), "Museum_Rearrange");
-            }
-
-            return true;
-        }
-
-        return base.performAction(action, who, tileLocation);
+        return $"{Museum.Name}_MuseumRewardItem_{item.QualifiedItemId}_{item.Stack}";
     }
 
     public List<Item> GetRewardsForPlayer(Farmer player)
     {
         _itemToRewardsLookup.Clear();
-        if (LocalData is null) return new List<Item>();
 
-        List<CustomMuseumRewardData> museumRewardData = LocalData.Rewards;
+        List<CustomMuseumRewardData> museumRewardData = MuseumData.Rewards;
         Dictionary<string, bool> metRequirements = RewardRequirementsCheck(museumRewardData);
         List<Item> rewards = new List<Item>();
         foreach (CustomMuseumRewardData reward in museumRewardData)
@@ -288,7 +226,7 @@ public class CustomMuseum : GameLocation
                 continue;
             }
 
-            player.mailReceived.Add($"{Name}_MuseumReward_{id}");
+            player.mailReceived.Add($"{Museum.Name}_MuseumReward_{id}");
             bool rewardAdded = false;
             if (reward.RewardItems is not null)
             {
@@ -324,7 +262,8 @@ public class CustomMuseum : GameLocation
             foreach (var requirement in reward.Requirements)
             {
                 bool shouldBreak = false;
-                if (requirement.ItemIds is null or [] && requirement.Categories is null or [] && requirement.ContextTags is null or [])
+                if (requirement.ItemIds is null or [] && requirement.Categories is null or [] &&
+                    requirement.ContextTags is null or [])
                 {
                     if (requirement.Count == -1)
                     {
@@ -346,10 +285,14 @@ public class CustomMuseum : GameLocation
                     foreach (var donations in DonatedItems.Values)
                     {
                         var item = ItemRegistry.Create(donations);
-                        bool hasMatchingId = requirement.ItemIds is null || requirement.ItemIds.Contains(item.QualifiedItemId);
-                        bool hasMatchingCategory = requirement.Categories is null || requirement.Categories.Contains(item.Category);
-                        bool hasMatchingContextTag = requirement.ContextTags is null || ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags, item.GetContextTags());
-                        
+                        bool hasMatchingId = requirement.ItemIds is null ||
+                                             requirement.ItemIds.Contains(item.QualifiedItemId);
+                        bool hasMatchingCategory = requirement.Categories is null ||
+                                                   requirement.Categories.Contains(item.Category);
+                        bool hasMatchingContextTag = requirement.ContextTags is null ||
+                                                     ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags,
+                                                         item.GetContextTags());
+
                         count += requirement.MatchType switch
                         {
                             MatchType.Any when hasMatchingId || hasMatchingCategory || hasMatchingContextTag => 1,
@@ -380,8 +323,9 @@ public class CustomMuseum : GameLocation
         return results;
     }
 
-    private void AddNonItemRewards(CustomMuseumRewardData data, string rewardId, Farmer player)
+    private void AddNonItemRewards(CustomMuseumRewardData? data, string rewardId, Farmer player)
     {
+        if (data is null) return;
         if (data.FlagOnCompletion)
         {
             player.mailReceived.Add(rewardId);
@@ -397,7 +341,7 @@ public class CustomMuseum : GameLocation
             if (!TriggerActionManager.TryRunAction(action, out var error, out _))
             {
                 Log.Error(
-                    $"Custom museum {Name} reward with ID '{rewardId}' ignored invalid action '{action}': {error}");
+                    $"Custom museum {Museum.Name} reward with ID '{rewardId}' ignored invalid action '{action}': {error}");
             }
         }
     }
@@ -413,26 +357,26 @@ public class CustomMuseum : GameLocation
         return false;
     }
 
-    private bool HighlightCollectableRewards(Item item)
+    private static bool HighlightCollectableRewards(Item item)
     {
         return Game1.player.couldInventoryAcceptThisItem(item);
     }
 
-    private void OpenRearrangeMenu()
+    public void OpenRearrangeMenu()
     {
-        if (!mutex.IsLocked())
+        if (!Mutex.IsLocked())
         {
-            mutex.RequestLock(delegate
+            Mutex.RequestLock(delegate
             {
                 Game1.activeClickableMenu = new CustomMuseumMenu(InventoryMenu.highlightNoItems)
                 {
-                    exitFunction = mutex.ReleaseLock
+                    exitFunction = Mutex.ReleaseLock
                 };
             });
         }
     }
 
-    private void OpenRewardMenu()
+    public void OpenRewardMenu()
     {
         Game1.activeClickableMenu = new ItemGrabMenu(GetRewardsForPlayer(Game1.player), reverseGrab: false,
             showReceivingMenu: true, HighlightCollectableRewards, null, "Rewards", OnRewardCollected,
@@ -440,9 +384,9 @@ public class CustomMuseum : GameLocation
             showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true);
     }
 
-    private void OpenDonationMenu()
+    public void OpenDonationMenu()
     {
-        mutex.RequestLock(delegate
+        Mutex.RequestLock(delegate
         {
             Game1.activeClickableMenu = new CustomMuseumMenu(IsItemSuitableForDonation)
             {
@@ -453,7 +397,7 @@ public class CustomMuseum : GameLocation
 
     private void OnDonationMenuClosed()
     {
-        mutex.ReleaseLock();
+        Mutex.ReleaseLock();
         GetRewardsForPlayer(Game1.player);
     }
 
@@ -466,10 +410,7 @@ public class CustomMuseum : GameLocation
 
         if (_itemToRewardsLookup.TryGetValue(item, out var rewardId))
         {
-            if (LocalData is not null)
-            {
-                AddNonItemRewards(LocalData.Rewards.First(r => r.Id == rewardId), rewardId, who);
-            }
+            AddNonItemRewards(MuseumData.Rewards.First(r => r.Id == rewardId), rewardId, who);
 
             _itemToRewardsLookup.Remove(item);
         }
@@ -480,14 +421,14 @@ public class CustomMuseum : GameLocation
         }
     }
 
-    private void OpenMuseumDialogueMenu()
+    public void OpenMuseumDialogueMenu()
     {
-        string donateText = LocalData?.Strings.MenuDonate ??
+        string donateText = MuseumData.Strings.MenuDonate ??
                             Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Donate");
-        string collectText = LocalData?.Strings.MenuCollect ??
+        string collectText = MuseumData.Strings.MenuCollect ??
                              Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
-        
-        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !mutex.IsLocked())
+
+        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked())
         {
             Response[] choice = ((GetRewardsForPlayer(Game1.player).Count <= 0)
                 ? new Response[2]
@@ -501,20 +442,20 @@ public class CustomMuseum : GameLocation
                     new Response("Collect", collectText),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 });
-            createQuestionDialogue("", choice, "Museum");
+            Museum.createQuestionDialogue("", choice, "Museum");
         }
         else if (GetRewardsForPlayer(Game1.player).Count > 0)
         {
-            createQuestionDialogue("", new Response[2]
+            Museum.createQuestionDialogue("", new Response[2]
             {
                 new Response("Collect", collectText),
                 new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
             }, "Museum");
         }
-        else if (DoesFarmerHaveAnythingToDonate(Game1.player) && mutex.IsLocked())
+        else if (DoesFarmerHaveAnythingToDonate(Game1.player) && Mutex.IsLocked())
         {
             // TODO: These need to be customizable.
-            if (LocalData?.Owner is null)
+            if (MuseumData.Owner?.Name is null)
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
                     "The museum")); // TODO: This needs i18n.
@@ -522,58 +463,117 @@ public class CustomMuseum : GameLocation
             else
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    Game1.RequireCharacter(LocalData.Owner.Name).displayName));
+                    Game1.RequireCharacter(MuseumData.Owner.Name).displayName));
             }
         }
         else
         {
-            NPC? owner = Game1.getCharacterFromName(LocalData?.Owner.Name);
-            bool isOwnerClockedIn = IsNpcClockedIn(owner, LocalData?.Owner.Area);
+            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
+            bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
 
             // TODO: Check to make sure the owner is actually around first, if they exist.
-            if (DonatedItems.Count() >= TotalPossibleDonations.Count)
+            if (DonatedItems.Count >= TotalPossibleDonations.Count)
             {
-                string completeText = isOwnerClockedIn switch 
+                string completeText = isOwnerClockedIn switch
                 {
-                    true => LocalData?.Strings.MuseumComplete_Owner ?? CMF.DefaultStrings.MuseumComplete_Owner,
-                    false => LocalData?.Strings.MuseumComplete_NoOwner ?? CMF.DefaultStrings.MuseumComplete_NoOwner
+                    true => MuseumData.Strings.MuseumComplete_Owner ?? CMF.DefaultStrings.MuseumComplete_Owner,
+                    false => MuseumData.Strings.MuseumComplete_NoOwner ?? CMF.DefaultStrings.MuseumComplete_NoOwner
                 } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_MuseumComplete");
 
                 if (isOwnerClockedIn)
                 {
                     Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(completeText)));
-                } else Game1.drawObjectDialogue(TokenParser.ParseText(completeText));
+                }
+                else Game1.drawObjectDialogue(TokenParser.ParseText(completeText));
             }
             else if (DonatedItems.Any()) // TODO: Fix this.
             {
                 string nothingToDonateText = isOwnerClockedIn switch
                 {
-                    true => LocalData?.Strings.NothingToDonate_Owner ?? CMF.DefaultStrings.NothingToDonate_Owner,
-                    false => LocalData?.Strings.NothingToDonate_NoOwner ?? CMF.DefaultStrings.NothingToDonate_NoOwner
+                    true => MuseumData.Strings.NothingToDonate_Owner ?? CMF.DefaultStrings.NothingToDonate_Owner,
+                    false => MuseumData.Strings.NothingToDonate_NoOwner ?? CMF.DefaultStrings.NothingToDonate_NoOwner
                 } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NothingToDonate");
-                
+
                 if (isOwnerClockedIn)
                 {
                     Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(nothingToDonateText)));
-                } else Game1.drawObjectDialogue(TokenParser.ParseText(nothingToDonateText));
+                }
+                else Game1.drawObjectDialogue(TokenParser.ParseText(nothingToDonateText));
             }
             else
             {
                 string noDonationsText = isOwnerClockedIn switch
                 {
-                    true => LocalData?.Strings.NoDonations_Owner ?? CMF.DefaultStrings.NoDonations_Owner,
-                    false => LocalData?.Strings.NoDonations_NoOwner ?? CMF.DefaultStrings.NoDonations_NoOwner
+                    true => MuseumData.Strings.NoDonations_Owner ?? CMF.DefaultStrings.NoDonations_Owner,
+                    false => MuseumData.Strings.NoDonations_NoOwner ?? CMF.DefaultStrings.NoDonations_NoOwner
                 } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NoArtifactsFound");
-                
+
                 if (isOwnerClockedIn)
                 {
                     Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(noDonationsText)));
-                } else Game1.drawObjectDialogue(TokenParser.ParseText(noDonationsText));
+                }
+                else Game1.drawObjectDialogue(TokenParser.ParseText(noDonationsText));
             }
         }
     }
 
-    private bool IsNpcClockedIn(NPC? npc, Rectangle? area)
+    public bool HighlightPreviouslyDonated(Item i)
+    {
+        return i.modData.ContainsKey("CMF_Position");
+    }
+    
+    public void ReturnToMuseum(Item item, Farmer who)
+    {
+        var menu = Game1.activeClickableMenu as ItemGrabMenu;
+        menu!.heldItem = menu!.heldItem.ConsumeStack(1);
+        Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
+    }
+
+    public void RetrieveItemFromMuseum(Item item, Farmer who)
+    {
+        Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").RemoveEmptySlots();
+    }
+
+    public void ResetModData(Item? i)
+    {
+        i?.modData.Remove("CMF_Position");
+    }
+
+    public void OpenRetrievalMenu()
+    {
+        Game1.activeClickableMenu = new ItemGrabMenu(
+            Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}"),
+            reverseGrab: false,
+            showReceivingMenu: true, HighlightPreviouslyDonated, ReturnToMuseum, "Retrieve", RetrieveItemFromMuseum,
+            snapToBottom: false, canBeExitedWithKey: true, playRightClickSound: false, allowRightClick: false,
+            showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true)
+        {
+            exitFunction = () =>
+            {
+                foreach (var item in Game1.player.Items)
+                {
+                    ResetModData(item);
+                }
+                Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").RemoveEmptySlots();
+                Mutex.ReleaseLock();
+            }
+        };
+
+        // var chest = new Chest
+        // {
+        //     GlobalInventoryId = $"{CMF.Manifest.UniqueID}_{Museum.Name}"
+        // };
+        // if (!chest.GetMutex().IsLocked())
+        // {
+        //     chest.GetMutex().RequestLock(() =>
+        //     {
+        //         chest.ShowMenu();
+        //         Game1.activeClickableMenu.exitFunction += chest.GetMutex().ReleaseLock;
+        //     });
+        // }
+    }
+
+    public bool IsNpcClockedIn(NPC? npc, Rectangle? area)
     {
         if (npc is null || area is null || area.Value.IsEmpty) return false;
         var areaToCheck = area.Value.Size.Equals(Point.Zero) switch
@@ -593,24 +593,11 @@ public class CustomMuseum : GameLocation
         return false;
     }
 
-    public override bool checkAction(Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who)
-    {
-        if (DonatedItems.TryGetValue(new Vector2(tileLocation.X, tileLocation.Y), out var itemId) ||
-            DonatedItems.TryGetValue(new Vector2(tileLocation.X, tileLocation.Y - 1), out itemId))
-        {
-            ParsedItemData data = ItemRegistry.GetDataOrErrorItem(itemId);
-            Game1.drawObjectDialogue(Game1.parseText(" - " + data.DisplayName + " - " + "^" + data.Description));
-            return true;
-        }
-
-        return base.checkAction(tileLocation, viewport, who);
-    }
-
     public bool IsTileSuitableForMuseumItem(int x, int y)
     {
         if (!HasDonatedItemAt(new Vector2(x, y)))
         {
-            int indexOfBuildingsLayer = getTileIndexAt(new Point(x, y), "Buildings");
+            int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
             if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238) // TODO: Check for the right tilesheetId
             {
                 return true;
@@ -627,11 +614,11 @@ public class CustomMuseum : GameLocation
 
     private bool IsTileDonationSpot(int x, int y)
     {
-        Tile tile = map.RequireLayer("Buildings")
+        Tile tile = Museum.map.RequireLayer("Buildings")
             .PickTile(new Location(x * Game1.tileSize, y * Game1.tileSize), Game1.viewport.Size);
-        if (tile == null || !tile.Properties.TryGetValue("Spiderbuttons.CustomMuseumFramework", out string value))
+        if (tile == null || !tile.Properties.TryGetValue("Spiderbuttons.CMF", out string value))
         {
-            value = doesTileHaveProperty(x, y, "Spiderbuttons.CustomMuseumFramework", "Buildings");
+            value = Museum.doesTileHaveProperty(x, y, "Spiderbuttons.CMF", "Buildings");
         }
 
         return (value is not null && value.Equals("DonationSpot", StringComparison.OrdinalIgnoreCase));
@@ -683,15 +670,15 @@ public class CustomMuseum : GameLocation
         {
             var randomSeed = Game1.hash.GetDeterministicHashCode(rewardData.Id + entry.Id);
             var museumRandom = Utility.CreateRandom(randomSeed, Game1.uniqueIDForThisGame);
-            ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom,
-                $"{NameOrUniqueName} > GetAllAvailableRewards");
+            ItemQueryContext itemQueryContext = new ItemQueryContext(Museum, Game1.player, museumRandom,
+                $"{Museum.NameOrUniqueName} > GetAllAvailableRewards");
             if (string.IsNullOrWhiteSpace(entry.Id))
             {
-                Log.Error($"Ignored custom museum {Name} reward item entry with no Id field.");
+                Log.Error($"Ignored custom museum {Museum.Name} reward item entry with no Id field.");
                 continue;
             }
 
-            if (!GameStateQuery.CheckConditions(entry.Condition, this, null, null, null, museumRandom))
+            if (!GameStateQuery.CheckConditions(entry.Condition, Museum, null, null, null, museumRandom))
             {
                 continue;
             }
@@ -715,17 +702,17 @@ public class CustomMuseum : GameLocation
     {
         if (rewardData.RewardItems is null) return null;
         var museumRandom = Utility.CreateDaySaveRandom();
-        ItemQueryContext itemQueryContext = new ItemQueryContext(this, Game1.player, museumRandom,
-            $"{NameOrUniqueName} > GetFirstAvailableReward");
+        ItemQueryContext itemQueryContext = new ItemQueryContext(Museum, Game1.player, museumRandom,
+            $"{Museum.NameOrUniqueName} > GetFirstAvailableReward");
         foreach (var entry in rewardData.RewardItems)
         {
             if (string.IsNullOrWhiteSpace(entry.Id))
             {
-                Log.Error($"Ignored custom museum {Name} reward item entry with no Id field.");
+                Log.Error($"Ignored custom museum {Museum.Name} reward item entry with no Id field.");
                 continue;
             }
 
-            if (!GameStateQuery.CheckConditions(entry.Condition, this, null, null, null, museumRandom))
+            if (!GameStateQuery.CheckConditions(entry.Condition, Museum, null, null, null, museumRandom))
             {
                 continue;
             }
@@ -818,36 +805,5 @@ public class CustomMuseum : GameLocation
         }
 
         return startingPoint;
-    }
-
-    public override void drawAboveAlwaysFrontLayer(SpriteBatch b)
-    {
-        foreach (TemporaryAnimatedSprite t in temporarySprites)
-        {
-            if (t.layerDepth >= 1f)
-            {
-                t.draw(b);
-            }
-        }
-    }
-
-    public override void draw(SpriteBatch b)
-    {
-        base.draw(b);
-        foreach (KeyValuePair<Vector2, string> v in DonatedItems.Pairs)
-        {
-            ParsedItemData data = ItemRegistry.GetDataOrErrorItem(v.Value);
-            b.Draw(Game1.shadowTexture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f + new Vector2(32f, 52f)),
-                Game1.shadowTexture.Bounds, Color.White, 0f,
-                new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f,
-                SpriteEffects.None, (v.Key.Y * 64f - 2f) / 10000f);
-
-            var texture = data.GetTexture();
-            var sourceRect = data.GetSourceRect();
-            int textureOffset = data.GetSourceRect().Height - 16;
-            b.Draw(texture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f) + new Vector2(0, -textureOffset * 4),
-                sourceRect,
-                Color.White, 0f, Vector2.Zero, 4f, SpriteEffects.None, (v.Key.Y + 2f) * 64f / 10000f);
-        }
     }
 }

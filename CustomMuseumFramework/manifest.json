@@ -3,10 +3,7 @@
     "Author": "Spiderbuttons",
     "Version": "1.0.0",
     "Description": "A framework for mod authors to create custom museums that offer feature parity with Gunther's museum.",
-    "UniqueID": "Spiderbuttons.CustomMuseumFramework",
+    "UniqueID": "Spiderbuttons.CMF",
     "EntryDll": "CustomMuseumFramework.dll",
     "UpdateKeys": [],
-    "Dependencies": [
-        { "UniqueID": "spacechase0.SpaceCore", "MinimumVersion": "1.25.2" }
-    ]
 }
