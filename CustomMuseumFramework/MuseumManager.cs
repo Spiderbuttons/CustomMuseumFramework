@@ -434,13 +434,13 @@ public class MuseumManager
             Response[] choice = ((GetRewardsForPlayer(Game1.player).Count <= 0)
                 ? new Response[2]
                 {
-                    new Response("Donate", donateText),
+                    new Response("Donate", TokenParser.ParseText(donateText)),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 }
                 : new Response[3]
                 {
-                    new Response("Donate", donateText),
-                    new Response("Collect", collectText),
+                    new Response("Donate", TokenParser.ParseText(donateText)),
+                    new Response("Collect", TokenParser.ParseText(collectText)),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 });
             Museum.createQuestionDialogue("", choice, "Museum");
@@ -449,7 +449,7 @@ public class MuseumManager
         {
             Museum.createQuestionDialogue("", new Response[2]
             {
-                new Response("Collect", collectText),
+                new Response("Collect", TokenParser.ParseText(collectText)),
                 new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
             }, "Museum");
         }
@@ -459,7 +459,7 @@ public class MuseumManager
             if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    "The museum")); // TODO: This needs i18n.
+                    Museum.DisplayName));
             }
             else
             {
