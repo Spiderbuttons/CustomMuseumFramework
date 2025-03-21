@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewValley.Inventories;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Network;
+using StardewValley.TokenizableStrings;
 using xTile.Dimensions;
 
 namespace CustomMuseumFramework;
@@ -103,12 +104,12 @@ public static class GameLocationPatches
                                       Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
                 Response[] choice = manager.MuseumData.AllowRetrieval && !manager.Mutex.IsLocked() ? new Response[3]
                 {
-                    new Response("Rearrange", rearrangeText),
-                    new Response("Retrieve", rearrangeText),
+                    new Response("Rearrange", TokenParser.ParseText(rearrangeText)),
+                    new Response("Retrieve", TokenParser.ParseText(rearrangeText)),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 } : new Response[2]
                 {
-                    new Response("Rearrange", rearrangeText),
+                    new Response("Rearrange", TokenParser.ParseText(rearrangeText)),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 };
                 __instance.createQuestionDialogue("", choice, "Museum_Rearrange");
