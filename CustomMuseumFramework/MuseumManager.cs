@@ -428,6 +428,7 @@ public class MuseumManager
         string collectText = MuseumData.Strings.MenuCollect ??
                              Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
 
+        NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
         if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked())
         {
             Response[] choice = ((GetRewardsForPlayer(Game1.player).Count <= 0)
@@ -455,7 +456,7 @@ public class MuseumManager
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && Mutex.IsLocked())
         {
             // TODO: These need to be customizable.
-            if (MuseumData.Owner?.Name is null)
+            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
                     "The museum")); // TODO: This needs i18n.
@@ -463,12 +464,11 @@ public class MuseumManager
             else
             {
                 Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    Game1.RequireCharacter(MuseumData.Owner.Name).displayName));
+                    owner.displayName));
             }
         }
         else
         {
-            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
             bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
 
             // TODO: Check to make sure the owner is actually around first, if they exist.
