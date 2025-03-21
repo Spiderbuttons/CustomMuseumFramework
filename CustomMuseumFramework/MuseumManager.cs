@@ -11,7 +11,6 @@ using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
-using StardewValley.Objects;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 using xTile.Dimensions;
@@ -517,24 +516,24 @@ public class MuseumManager
         }
     }
 
-    public bool HighlightPreviouslyDonated(Item i)
+    private bool HighlightPreviouslyDonated(Item i)
     {
         return i.modData.ContainsKey("CMF_Position");
     }
     
-    public void ReturnToMuseum(Item item, Farmer who)
+    private void ReturnToMuseum(Item item, Farmer who)
     {
         var menu = Game1.activeClickableMenu as ItemGrabMenu;
-        menu!.heldItem = menu!.heldItem.ConsumeStack(1);
+        menu!.heldItem = menu.heldItem.ConsumeStack(1);
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
     }
 
-    public void RetrieveItemFromMuseum(Item item, Farmer who)
+    private void RetrieveItemFromMuseum(Item item, Farmer who)
     {
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").RemoveEmptySlots();
     }
 
-    public void ResetModData(Item? i)
+    private void ResetModData(Item? i)
     {
         i?.modData.Remove("CMF_Position");
     }

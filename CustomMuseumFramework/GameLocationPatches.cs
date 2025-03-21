@@ -2,14 +2,8 @@
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using CustomMuseumFramework.Helpers;
-using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley.Inventories;
 using StardewValley.ItemTypeDefinitions;
-using StardewValley.Network;
 using StardewValley.TokenizableStrings;
 using xTile.Dimensions;
 
@@ -105,7 +99,7 @@ public static class GameLocationPatches
                 Response[] choice = manager.MuseumData.AllowRetrieval && !manager.Mutex.IsLocked() ? new Response[3]
                 {
                     new Response("Rearrange", TokenParser.ParseText(rearrangeText)),
-                    new Response("Retrieve", TokenParser.ParseText(rearrangeText)),
+                    new Response("Retrieve", TokenParser.ParseText(retrieveText)),
                     new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
                 } : new Response[2]
                 {
