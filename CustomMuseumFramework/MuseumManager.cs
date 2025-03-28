@@ -454,23 +454,23 @@ public class MuseumManager
         }
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && Mutex.IsLocked())
         {
-            // TODO: These need to be customizable.
             if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
             {
-                Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    Museum.DisplayName));
+                string busyText = MuseumData.Strings.Busy_NoOwner ?? CMF.DefaultStrings.Busy_NoOwner ??
+                              Game1.content.LoadString("Strings\\UI:NPC_Busy", Museum.DisplayName);
+                Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
             }
             else
             {
-                Game1.drawObjectDialogue(Game1.content.LoadString("Strings\\UI:NPC_Busy",
-                    owner.displayName));
+                string busyText = MuseumData.Strings.Busy_Owner ?? CMF.DefaultStrings.Busy_Owner ??
+                              Game1.content.LoadString("Strings\\UI:NPC_Busy", owner.displayName);
+                Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
             }
         }
         else
         {
             bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
-
-            // TODO: Check to make sure the owner is actually around first, if they exist.
+            
             if (DonatedItems.Count >= TotalPossibleDonations.Count)
             {
                 string completeText = isOwnerClockedIn switch
