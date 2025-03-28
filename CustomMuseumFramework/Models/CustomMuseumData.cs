@@ -10,11 +10,14 @@ public class CustomMuseumData
 
     public OwnerData? Owner { get; set; } = null;
     
+    public Rectangle Bounds { get; set; } = new Rectangle(0, 0, 0, 0);
+    
     public DonationCriteria DonationCriteria { get; set; } = new DonationCriteria();
 
     public bool AllowRetrieval { get; set; } = false;
     
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
+    
     public List<int> Milestones { get; set; } = [];
     
     public MuseumStrings Strings { get; set; } = new MuseumStrings();

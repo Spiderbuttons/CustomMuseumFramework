@@ -584,7 +584,7 @@ public class MuseumManager
         if (!HasDonatedItemAt(new Vector2(x, y)))
         {
             int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
-            if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238) // TODO: Check for the right tilesheetId
+            if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238)
             {
                 return true;
             }
@@ -720,7 +720,7 @@ public class MuseumManager
 
     private Rectangle GetMuseumDonationBounds()
     {
-        return new Rectangle(26, 5, 22, 13); // TODO: ?
+        return MuseumData.Bounds;
     }
 
     public Vector2 GetFreeDonationSpot()
