@@ -485,7 +485,7 @@ public class MuseumManager
                 }
                 else Game1.drawObjectDialogue(TokenParser.ParseText(completeText));
             }
-            else if (DonatedItems.Any()) // TODO: Fix this.
+            else if (DonatedItems.Any())
             {
                 string nothingToDonateText = isOwnerClockedIn switch
                 {
