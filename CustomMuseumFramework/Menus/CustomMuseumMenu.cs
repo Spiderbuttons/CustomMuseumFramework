@@ -122,8 +122,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             {
                 return;
             }
-
-            GameLocation museum = MuseumManager.Museum;
+            
             Vector2 newCursorPositionTile =
                 new Vector2(
                     (int)((Utility.ModifyCoordinateFromUIScale(Game1.getMouseX()) + Game1.viewport.X) / 64f),
@@ -275,7 +274,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                             Game1.addMail($"{MuseumManager.Museum.Name}_MuseumCompletion", true, true);
                         }
                     }
-                    // TODO: If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this TODO here to prove that I at least recognized the possibility.
+                    // If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this comment here to prove that I at least recognized the possibility.
                     else if (MuseumData.Milestones.Contains(pieces))
                     {
                         MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
