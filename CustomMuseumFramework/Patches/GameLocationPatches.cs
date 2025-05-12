@@ -7,7 +7,7 @@ using StardewValley.ItemTypeDefinitions;
 using StardewValley.TokenizableStrings;
 using xTile.Dimensions;
 
-namespace CustomMuseumFramework;
+namespace CustomMuseumFramework.Patches;
 
 [HarmonyPatch(typeof(GameLocation))]
 public static class GameLocationPatches
