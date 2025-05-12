@@ -4,6 +4,12 @@ using Newtonsoft.Json;
 
 namespace CustomMuseumFramework.Models;
 
+public enum MatchType
+{
+    Any,
+    All
+}
+
 public class CustomMuseumData
 {
     public string Id { get; set; } = "";
@@ -21,9 +27,6 @@ public class CustomMuseumData
     public List<int> Milestones { get; set; } = [];
     
     public MuseumStrings Strings { get; set; } = new MuseumStrings();
-
-    [JsonIgnore] // TODO: Store possible donatables.
-    public HashSet<string> DonatableItems { get; set; } = new HashSet<string>();
 }
 
 public class OwnerData
@@ -35,9 +38,9 @@ public class OwnerData
 
 public class DonationCriteria
 {
-    public List<string>? ItemIds { get; set; } = null;
-    public List<string>? ContextTags { get; set; } = null;
     public List<int>? Categories { get; set; } = null;
+    public List<string>? ContextTags { get; set; } = null;
+    public List<string>? ItemIds { get; set; } = null;
 }
 
 public class MuseumStrings
