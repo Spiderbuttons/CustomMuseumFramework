@@ -28,8 +28,7 @@ public static class QuestExtensions
             {
                 if (!probe)
                 {
-                    if (--count < 0) count = 0;
-                    quest.modData["CMF_Requirement_" + req.Id] = count.ToString();
+                    quest.modData["CMF_Requirement_" + req.Id] = (--count).ToString();
                 }
                 changed = true;
             }
@@ -43,6 +42,34 @@ public static class QuestExtensions
             return true;
         }
         
+        return changed;
+    }
+
+    public static bool OnMuseumRetrieval(this Quest quest, Item? item)
+    {
+        // When a player removes an item from the museum, we need to increment the count for the requirement now so they can't exploit it by donating the same item over and over again.
+        if (!CMF.QuestData.TryGetValue(quest.id.Value, out var qData)) return false;
+        
+        if (qData.Requirements is null || !qData.Requirements.Any() ||
+            (quest.modData.TryGetValue("CMF_Complete", out var complete) && complete.EqualsIgnoreCase("true")))
+        {
+            // We can ignore it if the quest is already marked as complete though (or has no requirements obviously).
+            return false;
+        }
+
+        bool changed = false;
+        foreach (var req in qData.Requirements)
+        {
+            if (!quest.modData.TryGetValue("CMF_Requirement_" + req.Id, out var value) || !int.TryParse(value, out var count)) continue;
+
+            if (MuseumManager.DoesDonationSatisfyRequirement(item, req))
+            {
+                count++;
+                quest.modData["CMF_Requirement_" + req.Id] = count.ToString();
+                changed = true;
+            }
+        }
+
         return changed;
     }
 }

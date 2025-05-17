@@ -143,7 +143,6 @@ public class MuseumManager
             if (inv[i].modData.TryGetValue("CMF_Position", out var pos) &&
                 ArgUtility.TryGetVector2(pos.Split(' '), 0, out var posV, out _, true) && posV == v)
             {
-                Log.Alert("Found");
                 indexToRemove = i;
                 break;
             }
@@ -238,7 +237,7 @@ public class MuseumManager
         return false;
     }
 
-    private bool DoesFarmerHaveAnythingToDonate(Farmer who)
+    public bool DoesFarmerHaveAnythingToDonate(Farmer who)
     {
         for (int i = 0; i < who.MaxItems; i++)
         {
@@ -577,6 +576,10 @@ public class MuseumManager
     private void RetrieveItemFromMuseum(Item item, Farmer who)
     {
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").RemoveEmptySlots();
+        foreach (var farmer in Game1.getAllFarmers())
+        {
+            farmer.NotifyQuests(q => q.OnMuseumRetrieval(item));
+        }
     }
 
     private void ResetModData(Item? i)
