@@ -26,8 +26,16 @@ namespace CustomMuseumFramework
                 return _museumData ??= Game1.content.Load<Dictionary<string, CustomMuseumData>>("Spiderbuttons.CMF/Museums");
             }
         }
+
+        private static Dictionary<string, CustomMuseumQuestData>? _questData;
         
-        public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
+        public static Dictionary<string, CustomMuseumQuestData> QuestData
+        {
+            get
+            {
+                return _questData ??= Game1.content.Load<Dictionary<string, CustomMuseumQuestData>>("Spiderbuttons.CMF/Quests");
+            }
+        }
 
         private static Dictionary<string, HashSet<MuseumManager>>? _globalDonatableItems;
         
@@ -50,6 +58,8 @@ namespace CustomMuseumFramework
                 return _globalDonatableItems;
             }
         }
+        
+        public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
 
         // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
         
@@ -115,19 +125,32 @@ namespace CustomMuseumFramework
 
         private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
         {
-            if (e.NameWithoutLocale.IsEquivalentTo("Spiderbuttons.CMF/Museums")) {
+            if (e.NameWithoutLocale.IsEquivalentTo("Spiderbuttons.CMF/Museums"))
+            {
                 e.LoadFrom(() => new Dictionary<string, CustomMuseumData>(), AssetLoadPriority.Exclusive);
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo("Spiderbuttons.CMF/Quests"))
+            {
+                e.LoadFrom(() => new Dictionary<string, CustomMuseumQuestData>(), AssetLoadPriority.Exclusive);
             }
         }
         
         private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
         {
-            if (!e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums"))) return;
+            if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums")))
+            {
+                Log.Trace("Invalidating museum data.");
+                foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
+                _museumData = null;
+                _globalDonatableItems = null;
+            }
             
-            Log.Trace("Invalidating museum data.");
-            foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
-            _museumData = null;
-            _globalDonatableItems = null;
+            if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Quests")))
+            {
+                Log.Trace("Invalidating quest data.");
+                _questData = null;
+            }
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)

@@ -126,6 +126,10 @@ public class MuseumManager
     {
         if (item is null) return false;
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
+        foreach (var farmer in Game1.getAllFarmers())
+        {
+            farmer.NotifyQuests(q => q.OnMuseumDonation(item));
+        }
         return true;
     }
 
@@ -146,6 +150,48 @@ public class MuseumManager
         }
 
         if (indexToRemove != -1) inv.RemoveAt(indexToRemove);
+    }
+
+    public static bool DoesDonationSatisfyRequirement(Item? item, CustomMuseumQuestRequirement requirement)
+    {
+        if (item is null) return false;
+        
+        if (requirement.ItemIds is null && requirement.Categories is null && requirement.ContextTags is null)
+            return true;
+        
+        switch (requirement.MatchType)
+        {
+            case MatchType.Any:
+                if (requirement.ItemIds is not null && requirement.ItemIds.Contains(item.QualifiedItemId))
+                    return true;
+                if (requirement.Categories is not null && requirement.Categories.Contains(item.Category))
+                    return true;
+                if (requirement.ContextTags is not null && ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags, item?.GetContextTags()))
+                    return true;
+                break;
+            case MatchType.All:
+                if (requirement.ItemIds is not null && !requirement.ItemIds.Contains(item.QualifiedItemId))
+                    return false;
+                if (requirement.Categories is not null && !requirement.Categories.Contains(item.Category))
+                    return false;
+                if (requirement.ContextTags is null || ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags, item.GetContextTags()))
+                    return true;
+                break;
+        }
+        
+        return false;
+    }
+
+    public int DonationsSatisfyingQuestRequirement(CustomMuseumQuestRequirement requirement)
+    {
+        var donatedItems = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+        int satisfyingItems = 0;
+        foreach (var item in donatedItems)
+        {
+            if (DoesDonationSatisfyRequirement(item, requirement)) satisfyingItems++;
+        }
+        
+        return satisfyingItems;
     }
 
     public bool IsItemSuitableForDonation(Item? i)
