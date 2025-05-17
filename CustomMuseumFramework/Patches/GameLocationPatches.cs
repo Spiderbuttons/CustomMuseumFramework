@@ -26,14 +26,17 @@ public static class GameLocationPatches
     public static void resetLocalState(GameLocation __instance)
     {
         // TODO: Mail flag stuff later
-        // if (!Game1.player.eventsSeen.Contains("0") && this.doesFarmerHaveAnythingToDonate(Game1.player))
-        // {
-        //     Game1.player.mailReceived.Add("somethingToDonate");
-        // }
-        // if (LibraryMuseum.HasDonatedArtifacts())
-        // {
-        //     Game1.player.mailReceived.Add("somethingWasDonated");
-        // }
+        if (!CMF.MuseumManagers.TryGetValue(__instance.Name, out var manager)) return;
+        
+        if (manager.DoesFarmerHaveAnythingToDonate(Game1.player))
+        {
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_somethingToDonate");
+        }
+        
+        if (manager.HasDonatedItem())
+        {
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_somethingWasDonated");
+        }
     }
     
     [HarmonyPrefix]
