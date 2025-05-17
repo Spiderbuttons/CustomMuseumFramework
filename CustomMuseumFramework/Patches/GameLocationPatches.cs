@@ -25,7 +25,6 @@ public static class GameLocationPatches
     [HarmonyPatch("resetLocalState")]
     public static void resetLocalState(GameLocation __instance)
     {
-        // TODO: Mail flag stuff later
         if (!CMF.MuseumManagers.TryGetValue(__instance.Name, out var manager)) return;
         
         if (manager.DoesFarmerHaveAnythingToDonate(Game1.player))

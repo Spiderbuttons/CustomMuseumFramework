@@ -255,7 +255,6 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 {
                     Game1.playSound("newArtifact");
                 }
-                CheckForCustomMuseumQuests();
                 heldItem = item.ConsumeStack(1);
 
                 int pieces = MuseumManager.DonatedItems.Count;
@@ -319,11 +318,6 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             fadeTimer = 800;
             fadeIntoBlack = true;
         }
-    }
-
-    private void CheckForCustomMuseumQuests()
-    {
-        // TODO: Implement custom museum quests
     }
 
     private void ReturnToDonatableItems()
