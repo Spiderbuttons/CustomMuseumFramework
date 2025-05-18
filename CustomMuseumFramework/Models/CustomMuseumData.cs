@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
 
 namespace CustomMuseumFramework.Models;
 
@@ -49,24 +48,24 @@ public class DonationRequirement
 public class MuseumStrings
 {
     // TODO: These need i18n.
-    public string? OnDonation { get; set; } = null;
-    public string? OnMilestone { get; set; } = null;
-    public string? OnCompletion { get; set; } = null;
+    public string? OnDonation { get; set; }
+    public string? OnMilestone { get; set; }
+    public string? OnCompletion { get; set; }
     
-    public string? MenuDonate { get; set; } = null;
-    public string? MenuCollect { get; set; } = null;
-    public string? MenuRearrange { get; set; } = null;
-    public string? MenuRetrieve { get; set; } = null;
+    public string? MenuDonate { get; set; }
+    public string? MenuCollect { get; set; }
+    public string? MenuRearrange { get; set; }
+    public string? MenuRetrieve { get; set; }
     
-    public string? Busy_Owner { get; set; } = null;
-    public string? Busy_NoOwner { get; set; } = null;
+    public string? Busy_Owner { get; set; }
+    public string? Busy_NoOwner { get; set; }
     
-    public string? MuseumComplete_Owner { get; set; } = null;
-    public string? MuseumComplete_NoOwner { get; set; } = null;
+    public string? MuseumComplete_Owner { get; set; }
+    public string? MuseumComplete_NoOwner { get; set; }
     
-    public string? NothingToDonate_Owner { get; set; } = null;
-    public string? NothingToDonate_NoOwner { get; set; } = null;
+    public string? NothingToDonate_Owner { get; set; }
+    public string? NothingToDonate_NoOwner { get; set; }
     
-    public string? NoDonations_Owner { get; set; } = null;
-    public string? NoDonations_NoOwner { get; set; } = null;
+    public string? NoDonations_Owner { get; set; }
+    public string? NoDonations_NoOwner { get; set; }
 }

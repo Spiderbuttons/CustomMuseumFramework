@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
@@ -258,6 +259,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 heldItem = item.ConsumeStack(1);
 
                 int pieces = MuseumManager.DonatedItems.Count;
+                List<int> milestones = MuseumData.Milestones;
                 if (!holdingMuseumItem)
                 {
                     MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnDonation ?? CMF.DefaultStrings.OnDonation!),
@@ -274,7 +276,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                         }
                     }
                     // If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this comment here to prove that I at least recognized the possibility.
-                    else if (MuseumData.Milestones.Contains(pieces))
+                    else if (milestones.Contains(pieces))
                     {
                         MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
                             Game1.player.farmName.Value, pieces.ToString(), MuseumManager.Museum.DisplayName);
