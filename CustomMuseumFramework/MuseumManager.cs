@@ -7,6 +7,7 @@ using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Extensions;
+using StardewValley.GameData.Museum;
 using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
@@ -151,7 +152,7 @@ public class MuseumManager
         if (indexToRemove != -1) inv.RemoveAt(indexToRemove);
     }
 
-    public static bool DoesDonationSatisfyRequirement(Item? item, CustomMuseumQuestRequirement requirement)
+    public static bool DoesItemSatisfyRequirement(Item? item, DonationRequirement requirement)
     {
         if (item is null) return false;
         
@@ -165,7 +166,7 @@ public class MuseumManager
                     return true;
                 if (requirement.Categories is not null && requirement.Categories.Contains(item.Category))
                     return true;
-                if (requirement.ContextTags is not null && ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags, item?.GetContextTags()))
+                if (requirement.ContextTags is not null && ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags, item.GetContextTags()))
                     return true;
                 break;
             case MatchType.All:
@@ -181,13 +182,13 @@ public class MuseumManager
         return false;
     }
 
-    public int DonationsSatisfyingQuestRequirement(CustomMuseumQuestRequirement requirement)
+    public int DonationsSatisfyingQuestRequirement(DonationRequirement requirement)
     {
         var donatedItems = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
         int satisfyingItems = 0;
         foreach (var item in donatedItems)
         {
-            if (DoesDonationSatisfyRequirement(item, requirement)) satisfyingItems++;
+            if (DoesItemSatisfyRequirement(item, requirement)) satisfyingItems++;
         }
         
         return satisfyingItems;
@@ -204,35 +205,36 @@ public class MuseumManager
         if (itemId is null) return false;
 
         itemId = ItemRegistry.QualifyItemId(itemId);
-        ParsedItemData itemData = ItemRegistry.GetDataOrErrorItem(itemId);
-        HashSet<string> tags = ItemContextTagManager.GetBaseContextTags(itemId);
+        Item item = ItemRegistry.Create(itemId);
 
-        if (tags.Contains("not_museum_donatable"))
+        if (item.HasContextTag("not_museum_donatable"))
         {
             return false;
         }
 
-        if (checkDonatedItems && HasDonatedItem(itemData.QualifiedItemId))
+        if (checkDonatedItems && HasDonatedItem(item.QualifiedItemId))
         {
             return false;
         }
 
-        var donationCriteria = MuseumData.DonationCriteria;
+        return MuseumData.DonationRequirements.Any(req => DoesItemSatisfyRequirement(item, req));
 
-        if (donationCriteria.ContextTags is not null && donationCriteria.ContextTags.Any(tag => tags.Contains(tag)))
-        {
-            return true;
-        }
+        var donationCriteria = MuseumData.DonationRequirements;
 
-        if (donationCriteria.ItemIds is not null && donationCriteria.ItemIds.Contains(itemId))
-        {
-            return true;
-        }
-
-        if (donationCriteria.Categories is not null && donationCriteria.Categories.Contains(itemData.Category))
-        {
-            return true;
-        }
+        // if (donationCriteria.ContextTags is not null && donationCriteria.ContextTags.Any(tag => tags.Contains(tag)))
+        // {
+        //     return true;
+        // }
+        //
+        // if (donationCriteria.ItemIds is not null && donationCriteria.ItemIds.Contains(itemId))
+        // {
+        //     return true;
+        // }
+        //
+        // if (donationCriteria.Categories is not null && donationCriteria.Categories.Contains(itemData.Category))
+        // {
+        //     return true;
+        // }
 
         return false;
     }

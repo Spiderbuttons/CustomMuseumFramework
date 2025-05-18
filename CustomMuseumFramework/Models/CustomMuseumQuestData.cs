@@ -18,14 +18,8 @@ public class CustomMuseumQuestData
     public List<string>? ActionsOnCompletion { get; set; } = null;
 }
 
-public class CustomMuseumQuestRequirement
+public class CustomMuseumQuestRequirement : DonationRequirement
 {
-    public string Id { get; set; } = "";
-    public List<int>? Categories { get; set; } = null;
-    public List<string>? ContextTags { get; set; } = null;
-    public List<string>? ItemIds { get; set; } = null;
-    
-    public MatchType MatchType = MatchType.Any;
     public int Count { get; set; } = 1;
 }
 

@@ -24,7 +24,7 @@ public static class QuestExtensions
         {
             if (!quest.modData.TryGetValue("CMF_Requirement_" + req.Id, out var value) || !int.TryParse(value, out var count)) continue;
 
-            if (MuseumManager.DoesDonationSatisfyRequirement(item, req))
+            if (MuseumManager.DoesItemSatisfyRequirement(item, req))
             {
                 if (!probe)
                 {
@@ -62,7 +62,7 @@ public static class QuestExtensions
         {
             if (!quest.modData.TryGetValue("CMF_Requirement_" + req.Id, out var value) || !int.TryParse(value, out var count)) continue;
 
-            if (MuseumManager.DoesDonationSatisfyRequirement(item, req))
+            if (MuseumManager.DoesItemSatisfyRequirement(item, req))
             {
                 count++;
                 quest.modData["CMF_Requirement_" + req.Id] = count.ToString();

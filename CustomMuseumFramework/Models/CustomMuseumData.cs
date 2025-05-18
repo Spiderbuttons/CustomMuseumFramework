@@ -18,7 +18,7 @@ public class CustomMuseumData
     
     public Rectangle Bounds { get; set; } = new Rectangle(0, 0, 0, 0);
     
-    public DonationCriteria DonationCriteria { get; set; } = new DonationCriteria();
+    public List<DonationRequirement> DonationRequirements { get; set; } = [];
 
     public bool AllowRetrieval { get; set; } = false;
     
@@ -36,11 +36,14 @@ public class OwnerData
     public bool RequiredForDonation { get; set; } = false;
 }
 
-public class DonationCriteria
+public class DonationRequirement
 {
+    public string Id { get; set; } = "";
     public List<int>? Categories { get; set; } = null;
     public List<string>? ContextTags { get; set; } = null;
     public List<string>? ItemIds { get; set; } = null;
+    
+    public MatchType MatchType { get; set; } = MatchType.Any;
 }
 
 public class MuseumStrings
