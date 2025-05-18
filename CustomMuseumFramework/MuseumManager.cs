@@ -131,6 +131,15 @@ public class MuseumManager
         {
             farmer.NotifyQuests(q => q.OnMuseumDonation(item));
         }
+
+        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        {
+            if (museumDict.ContainsKey(this)) museumDict[this] = true;
+            else museumDict.Add(this, true);
+        }
+        
+        // TODO: Museum donation trigger.
+        
         return true;
     }
 
@@ -149,7 +158,14 @@ public class MuseumManager
             }
         }
 
-        if (indexToRemove != -1) inv.RemoveAt(indexToRemove);
+        if (indexToRemove == -1) return;
+        
+        if (CMF.GlobalDonatableItems.TryGetValue(inv[indexToRemove].QualifiedItemId, out var museumDict))
+        {
+            if (museumDict.ContainsKey(this)) museumDict[this] = false;
+            else museumDict.Add(this, false);
+        }
+        inv.RemoveAt(indexToRemove);
     }
 
     public static bool DoesItemSatisfyRequirement(Item? item, DonationRequirement requirement)
@@ -218,25 +234,6 @@ public class MuseumManager
         }
 
         return MuseumData.DonationRequirements.Any(req => DoesItemSatisfyRequirement(item, req));
-
-        var donationCriteria = MuseumData.DonationRequirements;
-
-        // if (donationCriteria.ContextTags is not null && donationCriteria.ContextTags.Any(tag => tags.Contains(tag)))
-        // {
-        //     return true;
-        // }
-        //
-        // if (donationCriteria.ItemIds is not null && donationCriteria.ItemIds.Contains(itemId))
-        // {
-        //     return true;
-        // }
-        //
-        // if (donationCriteria.Categories is not null && donationCriteria.Categories.Contains(itemData.Category))
-        // {
-        //     return true;
-        // }
-
-        return false;
     }
 
     public bool DoesFarmerHaveAnythingToDonate(Farmer who)
@@ -573,6 +570,11 @@ public class MuseumManager
         var menu = Game1.activeClickableMenu as ItemGrabMenu;
         menu!.heldItem = menu.heldItem.ConsumeStack(1);
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
+        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        {
+            if (museumDict.ContainsKey(this)) museumDict[this] = true;
+            else museumDict.Add(this, true);
+        }
     }
 
     private void RetrieveItemFromMuseum(Item item, Farmer who)
@@ -581,6 +583,11 @@ public class MuseumManager
         foreach (var farmer in Game1.getAllFarmers())
         {
             farmer.NotifyQuests(q => q.OnMuseumRetrieval(item));
+        }
+        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        {
+            if (museumDict.ContainsKey(this)) museumDict[this] = false;
+            else museumDict.Add(this, false);
         }
     }
 

@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
+using StardewValley.Objects;
 
 namespace CustomMuseumFramework
 {
@@ -37,20 +40,21 @@ namespace CustomMuseumFramework
             }
         }
 
-        private static Dictionary<string, HashSet<MuseumManager>>? _globalDonatableItems;
+        private static Dictionary<string, Dictionary<MuseumManager, bool>>? _globalDonatableItems;
         
-        private static Dictionary<string, HashSet<MuseumManager>> GlobalDonatableItems {
+        // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
+        public static Dictionary<string, Dictionary<MuseumManager, bool>> GlobalDonatableItems {
             get
             {
                 if (_globalDonatableItems == null) {
-                    _globalDonatableItems = new Dictionary<string, HashSet<MuseumManager>>();
+                    _globalDonatableItems = new Dictionary<string, Dictionary<MuseumManager, bool>>();
                     foreach (var museum in MuseumManagers.Values)
                     {
                         foreach (var itemId in museum.TotalPossibleDonations)
                         {
                             if (!_globalDonatableItems.ContainsKey(itemId))
                                 _globalDonatableItems[itemId] = [];
-                            _globalDonatableItems[itemId].Add(museum);
+                            _globalDonatableItems[itemId].TryAdd(museum, museum.HasDonatedItem(itemId));
                         }
                     }
                 }
@@ -60,8 +64,6 @@ namespace CustomMuseumFramework
         }
         
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
-
-        // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
         
         public static readonly MuseumStrings DefaultStrings =
             new()
@@ -157,12 +159,39 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                //
+                // print a list of GlobalDonatableItems. include what museums they go to and whether or not the item has already been donated to it
+                foreach (var item in GlobalDonatableItems)
+                {
+                    string itemId = item.Key;
+                    Log.Alert($"Item: {itemId}");
+                    foreach (var museum in item.Value)
+                    {
+                        Log.Warn($"  {museum.Key.MuseumData.Id}: {museum.Value}");
+                    }
+                }
             }
 
             if (e.Button is SButton.F6)
             {
-                //
+                // log every class that inherits from Item and has an override method getDescription
+                var itemTypes = Assembly.GetAssembly(typeof(Item))?.GetTypes()
+                    .Where(t => t.IsSubclassOf(typeof(Item)))
+                    .Where(t => t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Any(m => m.Name == "getDescription" && !m.GetParameters().Any()))
+                    .Select(t => t.GetMethod("getDescription"));
+                    
+                if (itemTypes != null) 
+                {
+                    Log.Alert("Item Types:");
+                    foreach (var itemType in itemTypes)
+                    {
+                        Log.Alert($"{itemType.DeclaringType}:{itemType.Name}");
+                    }
+                }
+                else
+                {
+                    Log.Error("Failed to get item types.");
+                }
             }
         }
     }
