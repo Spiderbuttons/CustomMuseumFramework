@@ -113,6 +113,7 @@ namespace CustomMuseumFramework
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
             
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_DONATIONS", Queries.MUSEUM_DONATIONS);
+            GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_HAS_ITEM", Queries.MUSEUM_HAS_ITEM);
             
             // TODO: Game State Queries
             // TODO: Trigger Action Actions to donate items by code-force?

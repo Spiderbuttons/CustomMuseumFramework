@@ -9,7 +9,7 @@ public class Queries
 {
     public static bool MUSEUM_DONATIONS(string[] query, GameStateQueryContext context)
     {
-        if (!ArgUtility.TryGet(query, 1, out var museumId, out var error, allowBlank: false,name: "string museumId") ||
+        if (!ArgUtility.TryGet(query, 1, out var museumId, out var error, allowBlank: false, name: "string museumId") ||
             !ArgUtility.TryGetOptionalInt(query, 2, out var min, out error, defaultValue: 1, name: "int minCount") ||
             !ArgUtility.TryGetOptionalInt(query, 3, out var max, out error, defaultValue: -1, name: "int maxCount") ||
             !ArgUtility.TryGetOptionalRemainder(query, 4, out var remainder, defaultValue: "", delimiter: ' '))
@@ -19,7 +19,7 @@ public class Queries
 
         if (!CMF.MuseumManagers.TryGetValue(museumId, out var museum))
         {
-            return GameStateQuery.Helpers.ErrorResult(query, "The museumId provided does not match an existing museum.");
+            return GameStateQuery.Helpers.ErrorResult(query, "The museumId provided does not match an existing custom museum.");
         }
 
         if (!ArgUtility.HasIndex(query, 2)) return museum.HasDonatedItem();
@@ -41,5 +41,22 @@ public class Queries
         });
 
         return count >= min && count <= max;
+    }
+
+    public static bool MUSEUM_HAS_ITEM(string[] query, GameStateQueryContext context)
+    {
+        if (!ArgUtility.TryGet(query, 1, out var museumId, out var error, allowBlank: false, name: "string museumId"))
+        {
+            return GameStateQuery.Helpers.ErrorResult(query, error);
+        }
+        
+        if (!CMF.MuseumManagers.TryGetValue(museumId, out var museum))
+        {
+            return GameStateQuery.Helpers.ErrorResult(query, "The museumId provided does not match an existing custom museum.");
+        }
+        
+        if (!ArgUtility.HasIndex(query, 2)) return museum.HasDonatedItem();
+        
+        return GameStateQuery.Helpers.AnyArgMatches(query, 2, itemId => museum.HasDonatedItem(ItemRegistry.QualifyItemId(itemId)));
     }
 }
