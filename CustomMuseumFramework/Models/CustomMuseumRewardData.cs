@@ -6,7 +6,7 @@ namespace CustomMuseumFramework.Models;
 public class CustomMuseumRewardData
 {
     public string Id;
-    public List<CustomMuseumRewardRequirement>? Requirements = null;
+    public List<DonationRequirementWithCount>? Requirements = null;
     public List<GenericSpawnItemDataWithCondition>? RewardItems = null;
     public List<string>? Actions = null;
     public bool RewardIsSpecial = false;

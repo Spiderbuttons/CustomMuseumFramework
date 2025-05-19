@@ -197,7 +197,7 @@ public class MuseumManager
         return false;
     }
 
-    public int DonationsSatisfyingQuestRequirement(DonationRequirement requirement)
+    public int DonationsSatisfyingRequirement(DonationRequirement requirement)
     {
         var donatedItems = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
         int satisfyingItems = 0;
@@ -324,30 +324,7 @@ public class MuseumManager
                 }
                 else
                 {
-                    int count = 0;
-                    foreach (var donations in DonatedItems.Values)
-                    {
-                        var item = ItemRegistry.Create(donations);
-                        bool hasMatchingId = requirement.ItemIds is null ||
-                                             requirement.ItemIds.Contains(item.QualifiedItemId);
-                        bool hasMatchingCategory = requirement.Categories is null ||
-                                                   requirement.Categories.Contains(item.Category);
-                        bool hasMatchingContextTag = requirement.ContextTags is null ||
-                                                     ItemContextTagManager.DoAnyTagsMatch(requirement.ContextTags,
-                                                         item.GetContextTags());
-
-                        count += requirement.MatchType switch
-                        {
-                            MatchType.Any when hasMatchingId || hasMatchingCategory || hasMatchingContextTag => 1,
-                            MatchType.All when hasMatchingId && hasMatchingCategory && hasMatchingContextTag => 1,
-                            _ => 0
-                        };
-
-                        if (count >= requirement.Count)
-                        {
-                            break;
-                        }
-                    }
+                    int count = DonationsSatisfyingRequirement(requirement);
 
                     if (count < requirement.Count)
                     {

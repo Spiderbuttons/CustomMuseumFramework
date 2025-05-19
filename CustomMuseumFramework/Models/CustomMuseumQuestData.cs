@@ -9,18 +9,13 @@ public class CustomMuseumQuestData
     public string? Title { get; set; } = null;
     public string? Description { get; set; } = null;
     public string? Hint { get; set; } = null;
-    public List<CustomMuseumQuestRequirement>? Requirements { get; set; } = null;
+    public List<DonationRequirementWithCount>? Requirements { get; set; } = null;
     public List<CustomMuseumNextQuest>? NextQuests { get; set; } = null;
     public int Reward { get; set; } = 0;
     public bool CanBeCancelled { get; set; } = true;
     public int TimeToComplete { get; set; } = -1;
     public string? ActionOnCompletion { get; set; } = null;
     public List<string>? ActionsOnCompletion { get; set; } = null;
-}
-
-public class CustomMuseumQuestRequirement : DonationRequirement
-{
-    public int Count { get; set; } = 1;
 }
 
 public class CustomMuseumNextQuest

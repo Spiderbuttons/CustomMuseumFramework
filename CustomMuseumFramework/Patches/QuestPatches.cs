@@ -78,7 +78,7 @@ public static class QuestPatches
             {
                 if (!quest.modData.TryGetValue("CMF_Requirement_" + req.Id, out var value) || !int.TryParse(value, out var count)) continue;
                 
-                count -= museum.DonationsSatisfyingQuestRequirement(req);
+                count -= museum.DonationsSatisfyingRequirement(req);
                 quest.modData["CMF_Requirement_" + req.Id] = count.ToString();
             }
 

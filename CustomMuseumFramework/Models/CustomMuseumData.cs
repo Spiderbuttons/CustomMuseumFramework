@@ -39,16 +39,6 @@ public class OwnerData
     public bool RequiredForDonation { get; set; } = false;
 }
 
-public class DonationRequirement
-{
-    public string Id { get; set; } = "";
-    public List<int>? Categories { get; set; } = null;
-    public List<string>? ContextTags { get; set; } = null;
-    public List<string>? ItemIds { get; set; } = null;
-    
-    public MatchType MatchType { get; set; } = MatchType.Any;
-}
-
 public class MuseumStrings
 {
     public string? OnDonation { get; set; }
