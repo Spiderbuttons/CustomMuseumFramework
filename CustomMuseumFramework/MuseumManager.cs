@@ -13,10 +13,12 @@ using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
+using StardewValley.Objects;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 using xTile.Dimensions;
 using xTile.Tiles;
+using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
@@ -119,6 +121,8 @@ public class MuseumManager
 
     public bool DonateItem(Vector2 location, string itemId)
     {
+        if (location == Vector2.Zero) return false;
+        
         Item item = ItemRegistry.Create(itemId);
         item.modData["CMF_Position"] = $"{location.X} {location.Y}";
         return DonateItem(item);
@@ -619,21 +623,15 @@ public class MuseumManager
 
     public bool IsTileSuitableForMuseumItem(int x, int y)
     {
-        if (!HasDonatedItemAt(new Vector2(x, y)))
+        if (HasDonatedItemAt(new Vector2(x, y))) return false;
+        
+        int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
+        if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238)
         {
-            int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
-            if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238)
-            {
-                return true;
-            }
-
-            if (IsTileDonationSpot(x, y))
-            {
-                return true;
-            }
+            return true;
         }
 
-        return false;
+        return IsTileDonationSpot(x, y);
     }
 
     private bool IsTileDonationSpot(int x, int y)
@@ -645,7 +643,7 @@ public class MuseumManager
             value = Museum.doesTileHaveProperty(x, y, "Spiderbuttons.CMF", "Buildings");
         }
 
-        return (value is not null && value.Equals("DonationSpot", StringComparison.OrdinalIgnoreCase));
+        return value is not null && value.EqualsIgnoreCase("DonationSpot");
     }
 
     private bool CanCollectReward(CustomMuseumRewardData reward, string rewardId, Farmer player,
@@ -761,7 +759,7 @@ public class MuseumManager
         return MuseumData.Bounds;
     }
 
-    public Vector2 GetFreeDonationSpot()
+    public Vector2? GetFreeDonationSpot()
     {
         Rectangle bounds = GetMuseumDonationBounds();
         for (int x = bounds.X; x <= bounds.Right; x++)
@@ -775,7 +773,7 @@ public class MuseumManager
             }
         }
 
-        return new Vector2(26f, 5f);
+        return null;
     }
 
     public Vector2 FindMuseumPieceLocationInDirection(Vector2 startingPoint, int direction, int distanceToCheck = 8,

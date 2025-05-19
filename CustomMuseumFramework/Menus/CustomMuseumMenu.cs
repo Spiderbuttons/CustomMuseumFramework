@@ -131,7 +131,11 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             if (!MuseumManager.IsTileSuitableForMuseumItem((int)newCursorPositionTile.X, (int)newCursorPositionTile.Y) &&
                 (!reorganizing || !LibraryMuseum.HasDonatedArtifactAt(newCursorPositionTile)))
             {
-                newCursorPositionTile = MuseumManager.GetFreeDonationSpot();
+                newCursorPositionTile = MuseumManager.GetFreeDonationSpot().GetValueOrDefault();
+                if (newCursorPositionTile == Vector2.Zero)
+                {
+                    return;
+                }
                 Game1.setMousePosition(
                     (int)Utility.ModifyCoordinateForUIScale(newCursorPositionTile.X * 64f - Game1.viewport.X +
                                                             32f),
@@ -339,7 +343,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
     {
         if (heldItem is not null && holdingMuseumItem)
         {
-            Vector2 tile = MuseumManager.GetFreeDonationSpot();
+            Vector2 tile = MuseumManager.GetFreeDonationSpot().GetValueOrDefault();
             if (MuseumManager.DonateItem(tile, heldItem.QualifiedItemId))
             {
                 heldItem = null;
