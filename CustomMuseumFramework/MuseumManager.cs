@@ -149,21 +149,41 @@ public class MuseumManager
         return true;
     }
 
-    public bool RemoveItem(string itemId)
+    public bool RemoveItem(string itemId, bool pop = false)
     {
         itemId = ItemRegistry.QualifyItemId(itemId);
         var location = DonatedItems.FirstOrDefault(pair => pair.Value.EqualsIgnoreCase(itemId)).Key;
         if (location == Vector2.Zero) return false;
         
-        return RemoveItem(location);
+        return RemoveItem(location, pop);
     }
 
-    public bool RemoveItem(Vector2 location)
+    public bool RemoveItem(Vector2 location, bool pop = false)
     {
         if (!DonatedItems.TryGetValue(location, out var itemId)) return false;
         
         var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
-        inv.RemoveWhere(item => item.QualifiedItemId.EqualsIgnoreCase(itemId));
+        inv.RemoveWhere(item =>
+        {
+            if (item.QualifiedItemId.EqualsIgnoreCase(itemId))
+            {
+                if (pop)
+                {
+                    Vector2 loc = location;
+                    if (item.modData.ContainsKey("CMF_Position"))
+                    {
+                        loc = new Vector2(float.Parse(item.modData["CMF_Position"].Split(' ')[0]),
+                            float.Parse(item.modData["CMF_Position"].Split(' ')[1]));
+                        item.modData.Remove("CMF_Position");
+                    }
+                    Game1.createItemDebris(item, loc * 64, 2, Museum);
+                }
+
+                return true;
+            }
+
+            return false;
+        });
         
         if (CMF.GlobalDonatableItems.TryGetValue(itemId, out var museumDict))
         {
