@@ -111,6 +111,12 @@ namespace CustomMuseumFramework
             
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
+            
+            // TODO: Game State Queries
+            // TODO: Trigger Action Actions to donate items by code-force?
+            // TODO: Allow customization of what happens when you click on an item in the museum.
+            // TODO: Debug commands for resetting museums, including the vanilla museum.
+            // TODO: Lost books... maybe.
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
