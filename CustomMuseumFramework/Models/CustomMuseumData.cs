@@ -21,6 +21,10 @@ public class CustomMuseumData
 
     public bool AllowRetrieval { get; set; } = false;
     
+    public bool ShowDonationHint { get; set; } = true;
+    
+    public bool OverrideDescription { get; set; } = false;
+    
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
     
     public List<int> Milestones { get; set; } = [];
@@ -68,4 +72,6 @@ public class MuseumStrings
     
     public string? NoDonations_Owner { get; set; }
     public string? NoDonations_NoOwner { get; set; }
+    
+    public string? CanBeDonated { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -35,9 +36,10 @@ public static class DescriptionPatches
         if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
         
         var museum = museumDict.FirstOrDefault(kvp => !kvp.Value).Key;
-        if (museum == null) return;
+        if (museum == null || !museum.MuseumData.ShowDonationHint) return;
         
-        var text = $"{museum.Museum.DisplayName} would be interested in this.";
+        var text = string.Format(museum.MuseumData.Strings.CanBeDonated ?? CMF.DefaultStrings.CanBeDonated!,
+            museum.Museum.DisplayName, museum.MuseumData.Owner is not null ? Game1.getCharacterFromName(museum.MuseumData.Owner?.Name)?.displayName ?? "A museum owner" : "A museum owner");
         
         ///// Keeping this around in case I ever wanna display more than one.
         // var text = museumDict
@@ -48,6 +50,8 @@ public static class DescriptionPatches
         int width = __instance.GetType()
             .GetMethod("getDescriptionWidth", BindingFlags.NonPublic | BindingFlags.Instance)!
             .Invoke(__instance, []) as int? ?? 272;
-        __result += "\n\n" + Game1.parseText(text, Game1.smallFont, width);
+        
+        if (museum.MuseumData.OverrideDescription) __result = Game1.parseText(text, Game1.smallFont, width);
+        else __result += "\n\n" + Game1.parseText(text, Game1.smallFont, width);
     }
 }

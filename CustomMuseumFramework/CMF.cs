@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -8,7 +7,6 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
-using StardewValley.Objects;
 
 namespace CustomMuseumFramework
 {
@@ -40,20 +38,21 @@ namespace CustomMuseumFramework
             }
         }
 
-        private static Dictionary<string, Dictionary<MuseumManager, bool>>? _globalDonatableItems;
+        private static Dictionary<string, SortedList<MuseumManager, bool>>? _globalDonatableItems;
         
         // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
-        public static Dictionary<string, Dictionary<MuseumManager, bool>> GlobalDonatableItems {
+        public static Dictionary<string, SortedList<MuseumManager, bool>> GlobalDonatableItems {
             get
             {
                 if (_globalDonatableItems == null) {
-                    _globalDonatableItems = new Dictionary<string, Dictionary<MuseumManager, bool>>();
+                    // use a custom key comparer for SortedDictionary. keys with MuseumData.OverrideDescription set to true should be first
+                    _globalDonatableItems = new Dictionary<string, SortedList<MuseumManager, bool>>();
                     foreach (var museum in MuseumManagers.Values)
                     {
                         foreach (var itemId in museum.TotalPossibleDonations)
                         {
                             if (!_globalDonatableItems.ContainsKey(itemId))
-                                _globalDonatableItems[itemId] = [];
+                                _globalDonatableItems[itemId] = new SortedList<MuseumManager, bool>(new MuseumManagerComparer());
                             _globalDonatableItems[itemId].TryAdd(museum, museum.HasDonatedItem(itemId));
                         }
                     }
@@ -65,6 +64,7 @@ namespace CustomMuseumFramework
         
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
         
+        // TODO: These need i18n.
         public static readonly MuseumStrings DefaultStrings =
             new()
             {
@@ -87,7 +87,9 @@ namespace CustomMuseumFramework
                 NothingToDonate_NoOwner = "You have nothing to donate to the museum.",
                 
                 NoDonations_Owner = "Welcome to the {0} museum! We don't have anything on display right now.",
-                NoDonations_NoOwner = "The museum has nothing on display right now."
+                NoDonations_NoOwner = "The museum has nothing on display right now.",
+                
+                CanBeDonated = "{0} would be interested in this."
             };
 
         public override void Entry(IModHelper helper)

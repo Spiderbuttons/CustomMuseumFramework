@@ -233,7 +233,8 @@ public class MuseumManager
             return false;
         }
 
-        return MuseumData.DonationRequirements.Any(req => DoesItemSatisfyRequirement(item, req));
+        List<DonationRequirement> reqs = MuseumData.DonationRequirements;
+        return reqs.Any(req => DoesItemSatisfyRequirement(item, req));
     }
 
     public bool DoesFarmerHaveAnythingToDonate(Farmer who)
