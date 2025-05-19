@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Linq;
+using HarmonyLib;
 using StardewValley;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
@@ -58,5 +59,18 @@ public class Queries
         if (!ArgUtility.HasIndex(query, 2)) return museum.HasDonatedItem();
         
         return GameStateQuery.Helpers.AnyArgMatches(query, 2, itemId => museum.HasDonatedItem(ItemRegistry.QualifyItemId(itemId)));
+    }
+
+    public static bool IS_ITEM_DONATED(string[] query, GameStateQueryContext context)
+    {
+        if (!ArgUtility.TryGet(query, 1, out var itemId, out var error, allowBlank: false, name: "string itemId"))
+        {
+            return GameStateQuery.Helpers.ErrorResult(query, error);
+        }
+
+        return GameStateQuery.Helpers.AnyArgMatches(query, 1, id =>
+        {
+            return CMF.GlobalDonatableItems.TryGetValue(id, out var museums) && museums.Any(museum => museum.Value);
+        });
     }
 }
