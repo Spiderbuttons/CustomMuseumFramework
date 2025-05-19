@@ -112,6 +112,8 @@ namespace CustomMuseumFramework
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
             
+            GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_DONATIONS", Queries.MUSEUM_DONATIONS);
+            
             // TODO: Game State Queries
             // TODO: Trigger Action Actions to donate items by code-force?
             // TODO: Allow customization of what happens when you click on an item in the museum.

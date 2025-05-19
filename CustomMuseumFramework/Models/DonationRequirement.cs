@@ -4,7 +4,7 @@ namespace CustomMuseumFramework.Models;
 
 public class DonationRequirement
 {
-    public string Id { get; set; } = "";
+    public string? Id { get; set; } = null;
     public List<int>? Categories { get; set; } = null;
     public List<string>? ContextTags { get; set; } = null;
     public List<string>? ItemIds { get; set; } = null;

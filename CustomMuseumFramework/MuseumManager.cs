@@ -5,6 +5,7 @@ using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.GameData.Museum;
@@ -233,6 +234,7 @@ public class MuseumManager
         }
 
         List<DonationRequirement> reqs = MuseumData.DonationRequirements;
+        if (reqs.Any(r => r.Id is null)) CMF.ModMonitor.LogOnce($"A DonationRequirement for {Museum.Name} is missing an Id field! This may cause certain game state queries to behave incorrectly.", LogLevel.Warn);
         return reqs.Any(req => DoesItemSatisfyRequirement(item, req));
     }
 
