@@ -10,7 +10,7 @@ using StardewValley.Menus;
 namespace CustomMuseumFramework.Patches;
 
 [HarmonyPatch]
-public static class LibraryMuseumPatches
+public static class VanillaMuseumPatches
 {
     public static void vanillaDonationTrigger(string itemId)
     {
@@ -42,7 +42,7 @@ public static class LibraryMuseumPatches
             matcher.Insert(
                 new CodeInstruction(OpCodes.Ldloc_S, loc),
                 new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Item), nameof(Item.QualifiedItemId))),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(LibraryMuseumPatches), nameof(vanillaDonationTrigger)))
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(VanillaMuseumPatches), nameof(vanillaDonationTrigger)))
             );
 
             return matcher.InstructionEnumeration();
