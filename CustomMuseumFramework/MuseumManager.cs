@@ -137,9 +137,8 @@ public class MuseumManager
             if (museumDict.ContainsKey(this)) museumDict[this] = true;
             else museumDict.Add(this, true);
         }
-        
-        // TODO: Museum donation trigger.
-        
+
+        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
         return true;
     }
 
@@ -590,6 +589,7 @@ public class MuseumManager
             if (museumDict.ContainsKey(this)) museumDict[this] = false;
             else museumDict.Add(this, false);
         }
+        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumRetrieval", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
     }
 
     private void ResetModData(Item? i)

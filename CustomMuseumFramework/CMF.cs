@@ -7,6 +7,7 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
+using StardewValley.Triggers;
 
 namespace CustomMuseumFramework
 {
@@ -106,6 +107,10 @@ namespace CustomMuseumFramework
             Helper.Events.Content.AssetRequested += this.OnAssetRequested;
             Helper.Events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
             Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveChatMessage;
+            Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveTrigger;
+            
+            TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
+            TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
