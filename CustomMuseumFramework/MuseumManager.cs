@@ -100,12 +100,7 @@ public class MuseumManager
     {
         return DonatedItems.Values.Any();
     }
-
-    private bool HasDonatedItemAt(Vector2 tile)
-    {
-        return DonatedItems.ContainsKey(tile);
-    }
-
+    
     public bool HasDonatedItem(string? itemId)
     {
         if (itemId is null) return false;
@@ -117,6 +112,11 @@ public class MuseumManager
         }
 
         return false;
+    }
+
+    private bool HasDonatedItemAt(Vector2 tile)
+    {
+        return DonatedItems.ContainsKey(tile);
     }
 
     public bool DonateItem(Vector2 location, string itemId, bool force = false)
