@@ -40,7 +40,6 @@ namespace CustomMuseumFramework
 
         private static Dictionary<string, SortedList<MuseumManager, bool>>? _globalDonatableItems;
         
-        // TODO: Donatable items need description text. Keep a dictionary of item ids and the museums they go with.
         public static Dictionary<string, SortedList<MuseumManager, bool>> GlobalDonatableItems {
             get
             {

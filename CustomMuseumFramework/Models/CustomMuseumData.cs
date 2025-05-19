@@ -51,7 +51,6 @@ public class DonationRequirement
 
 public class MuseumStrings
 {
-    // TODO: These need i18n.
     public string? OnDonation { get; set; }
     public string? OnMilestone { get; set; }
     public string? OnCompletion { get; set; }
