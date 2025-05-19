@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CustomMuseumFramework.Commands;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
+using StardewValley.Extensions;
 using StardewValley.Triggers;
 
 namespace CustomMuseumFramework
@@ -119,7 +121,32 @@ namespace CustomMuseumFramework
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_DONATIONS", Queries.MUSEUM_DONATIONS);
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_HAS_ITEM", Queries.MUSEUM_HAS_ITEM);
             GameStateQuery.Register($"{Manifest.UniqueID}_IS_ITEM_DONATED", Queries.IS_ITEM_DONATED);
-            
+
+            Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
+                (_, args) => CommandHandler.Handle(args));
+
+            // Helper.ConsoleCommands.Add("cmf",
+            //     "Reset a custom museum by removing every donation.\n\nUsage: cmf reset <museumId> [pop]\n- museumId: the Id of the museum to reset\n- pop: If true, items will be dropped on the floor. If false, items will be deleted. Default true.",
+            //     (command, args) =>
+            //     {
+            //         if (args.Length == 0)
+            //         {
+            //             Log.Error("Usage: cmf reset <museumId> [pop]");
+            //             return;
+            //         }
+            //
+            //         ResetMuseum(args[0], args.Length > 1 && bool.TryParse(args[1], out var pop) && pop);
+            //         Monitor.Log($"Reset museum '{args[0]}'");
+            //     });
+            //
+            // Helper.ConsoleCommands.Add("cmf resetall",
+            //     "Reset all custom museums by removing every donation.\n\nUsage: cmf resetall [pop]\n- pop: If true, items will be dropped on the floor. If false, items will be deleted. Default true.",
+            //     (command, args) =>
+            //     {
+            //         ResetAllMuseums(args.Length > 0 && bool.TryParse(args[0], out var pop) && pop);
+            //         Monitor.Log($"Reset museum '{args[0]}'");
+            //     });
+
             // TODO: Game State Queries
             // TODO: Trigger Action Actions to donate items by code-force?
             // TODO: Allow customization of what happens when you click on an item in the museum.
@@ -179,34 +206,12 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                // print a list of GlobalDonatableItems. include what museums they go to and whether or not the item has already been donated to it
-                if (CMF.MuseumData.TryGetValue("Test.Mod_CMF", out var data))
-                {
-                    Log.Warn(data.Bounds);
-                }
+                //
             }
 
             if (e.Button is SButton.F6)
             {
-                // log every class that inherits from Item and has an override method getDescription
-                var itemTypes = Assembly.GetAssembly(typeof(Item))?.GetTypes()
-                    .Where(t => t.IsSubclassOf(typeof(Item)))
-                    .Where(t => t.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Any(m => m.Name == "getDescription" && !m.GetParameters().Any()))
-                    .Select(t => t.GetMethod("getDescription"));
-                    
-                if (itemTypes != null) 
-                {
-                    Log.Alert("Item Types:");
-                    foreach (var itemType in itemTypes)
-                    {
-                        Log.Alert($"{itemType.DeclaringType}:{itemType.Name}");
-                    }
-                }
-                else
-                {
-                    Log.Error("Failed to get item types.");
-                }
+                //
             }
         }
     }

@@ -96,6 +96,15 @@ public class MuseumManager
         }
     }
 
+    public void Reset(bool pop = false)
+    {
+        foreach (var item in DonatedItems)
+        {
+            RemoveItem(item.Key, pop);
+        }
+        CalculateDonations();
+    }
+
     public bool HasDonatedItem()
     {
         return DonatedItems.Values.Any();
@@ -313,7 +322,12 @@ public class MuseumManager
         List<Item> rewards = new List<Item>();
         foreach (CustomMuseumRewardData reward in museumRewardData)
         {
-            string id = reward.Id;
+            string? id = reward.Id;
+            if (id is null)
+            {
+                Log.Warn($"A reward for {Museum.Name} is missing an Id field! This reward will be skipped.");
+                continue;
+            }
             if (!CanCollectReward(reward, id, player, metRequirements))
             {
                 continue;
@@ -350,7 +364,18 @@ public class MuseumManager
 
         foreach (var reward in rewardDataList)
         {
-            results[reward.Id] = true;
+            if (reward.Id is null)
+            {
+                Log.Warn($"A reward for {Museum.Name} is missing an Id field! This reward will be skipped.");
+                continue;
+            }
+            
+            if (!results.TryAdd(reward.Id, true))
+            {
+                Log.Warn($"A reward for {Museum.Name} has a duplicate Id '{reward.Id}'! This reward will be skipped.");
+                continue;
+            }
+
             if (reward.Requirements is null) continue;
             foreach (var requirement in reward.Requirements)
             {
