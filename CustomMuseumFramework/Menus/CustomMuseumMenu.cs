@@ -299,8 +299,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             if (MuseumManager.DonatedItems.TryGetValue(v, out var itemId))
             {
                 heldItem = ItemRegistry.Create(itemId, allowNull: true);
-                MuseumManager.RemoveItem(v);
-                if (heldItem != null)
+                if (MuseumManager.RemoveItem(v) && heldItem != null)
                 {
                     holdingMuseumItem = !MuseumManager.HasDonatedItem(heldItem.QualifiedItemId);
                 }

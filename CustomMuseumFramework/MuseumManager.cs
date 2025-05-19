@@ -147,29 +147,51 @@ public class MuseumManager
         return true;
     }
 
-    public void RemoveItem(Vector2 v)
+    public bool RemoveItem(string itemId)
     {
-        var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
-        int indexToRemove = -1;
-        for (int i = 0; i < inv.Count; i++)
-        {
-            if (inv[i] is null) continue;
-            if (inv[i].modData.TryGetValue("CMF_Position", out var pos) &&
-                ArgUtility.TryGetVector2(pos.Split(' '), 0, out var posV, out _, true) && posV == v)
-            {
-                indexToRemove = i;
-                break;
-            }
-        }
-
-        if (indexToRemove == -1) return;
+        itemId = ItemRegistry.QualifyItemId(itemId);
+        var location = DonatedItems.FirstOrDefault(pair => pair.Value.EqualsIgnoreCase(itemId)).Key;
+        if (location == Vector2.Zero) return false;
         
-        if (CMF.GlobalDonatableItems.TryGetValue(inv[indexToRemove].QualifiedItemId, out var museumDict))
+        return RemoveItem(location);
+    }
+
+    public bool RemoveItem(Vector2 location)
+    {
+        if (!DonatedItems.TryGetValue(location, out var itemId)) return false;
+        
+        var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+        inv.RemoveWhere(item => item.QualifiedItemId.EqualsIgnoreCase(itemId));
+        
+        if (CMF.GlobalDonatableItems.TryGetValue(itemId, out var museumDict))
         {
             if (museumDict.ContainsKey(this)) museumDict[this] = false;
             else museumDict.Add(this, false);
         }
-        inv.RemoveAt(indexToRemove);
+
+        return true;
+
+        // int indexToRemove = -1;
+        // for (int i = 0; i < inv.Count; i++)
+        // {
+        //     if (inv[i] is null) continue;
+        //     if (inv[i].modData.TryGetValue("CMF_Position", out var pos) &&
+        //         ArgUtility.TryGetVector2(pos.Split(' '), 0, out var posV, out _, true) && posV == location)
+        //     {
+        //         indexToRemove = i;
+        //         break;
+        //     }
+        // }
+        //
+        // if (indexToRemove == -1) return false;
+        //
+        // if (CMF.GlobalDonatableItems.TryGetValue(inv[indexToRemove].QualifiedItemId, out var museumDict))
+        // {
+        //     if (museumDict.ContainsKey(this)) museumDict[this] = false;
+        //     else museumDict.Add(this, false);
+        // }
+        // inv.RemoveAt(indexToRemove);
+        // return true;
     }
 
     public static bool DoesItemSatisfyRequirement(Item? item, DonationRequirement requirement)
