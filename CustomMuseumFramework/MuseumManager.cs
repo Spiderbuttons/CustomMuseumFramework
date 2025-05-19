@@ -123,7 +123,7 @@ public class MuseumManager
     {
         if (location == Vector2.Zero || (!force && !IsTileSuitableForMuseumItem((int)location.X, (int)location.Y))) return false;
 
-        if (force) DonatedItems.Remove(location);
+        if (force) RemoveItem(location);
         
         Item item = ItemRegistry.Create(itemId);
         item.modData["CMF_Position"] = $"{location.X} {location.Y}";
