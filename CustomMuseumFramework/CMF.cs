@@ -125,32 +125,7 @@ namespace CustomMuseumFramework
             Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
                 (_, args) => CommandHandler.Handle(args));
 
-            // Helper.ConsoleCommands.Add("cmf",
-            //     "Reset a custom museum by removing every donation.\n\nUsage: cmf reset <museumId> [pop]\n- museumId: the Id of the museum to reset\n- pop: If true, items will be dropped on the floor. If false, items will be deleted. Default true.",
-            //     (command, args) =>
-            //     {
-            //         if (args.Length == 0)
-            //         {
-            //             Log.Error("Usage: cmf reset <museumId> [pop]");
-            //             return;
-            //         }
-            //
-            //         ResetMuseum(args[0], args.Length > 1 && bool.TryParse(args[1], out var pop) && pop);
-            //         Monitor.Log($"Reset museum '{args[0]}'");
-            //     });
-            //
-            // Helper.ConsoleCommands.Add("cmf resetall",
-            //     "Reset all custom museums by removing every donation.\n\nUsage: cmf resetall [pop]\n- pop: If true, items will be dropped on the floor. If false, items will be deleted. Default true.",
-            //     (command, args) =>
-            //     {
-            //         ResetAllMuseums(args.Length > 0 && bool.TryParse(args[0], out var pop) && pop);
-            //         Monitor.Log($"Reset museum '{args[0]}'");
-            //     });
-
-            // TODO: Game State Queries
-            // TODO: Trigger Action Actions to donate items by code-force?
             // TODO: Allow customization of what happens when you click on an item in the museum.
-            // TODO: Debug commands for resetting museums, including the vanilla museum.
             // TODO: Lost books... maybe.
         }
 

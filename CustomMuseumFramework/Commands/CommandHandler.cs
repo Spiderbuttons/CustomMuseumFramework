@@ -15,7 +15,8 @@ public static class CommandHandler
     {
         { "help", new HelpCommand() },
         { "reset", new ResetCommand() },
-        { "resetall", new ResetAllCommand() }
+        { "resetall", new ResetAllCommand() },
+        { "resetvanilla", new ResetVanillaCommand() }
     };
     
     public static void Handle(string[] args)
