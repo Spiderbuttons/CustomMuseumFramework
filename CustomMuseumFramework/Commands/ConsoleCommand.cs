@@ -2,7 +2,7 @@
 
 public abstract class ConsoleCommand(string name)
 {
-    public string Name { get; } = name;
+    protected string Name { get; } = name;
     public string Description => GetDescription();
 
     public abstract string GetDescription();

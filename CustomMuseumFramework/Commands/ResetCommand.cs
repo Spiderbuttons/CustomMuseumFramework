@@ -22,10 +22,9 @@ public class ResetCommand() : ConsoleCommand("reset")
             Log.Error($"This command can only be used when a save is loaded.");
             return;
         }
-        
-        bool pop = true;
+
         if (!ArgUtility.TryGet(args, 0, out var museumId, out var error, allowBlank: false, name: "string museumId") ||
-            !ArgUtility.TryGetOptionalBool(args, 1, out pop, out error, defaultValue: true, name: "bool pop"))
+            !ArgUtility.TryGetOptionalBool(args, 1, out var pop, out error, defaultValue: true, name: "bool pop"))
         {
             Log.Error(error);
             return;

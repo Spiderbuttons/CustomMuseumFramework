@@ -21,9 +21,8 @@ public class ResetAllCommand() : ConsoleCommand("resetall")
             Log.Error($"This command can only be used when a save is loaded.");
             return;
         }
-        
-        bool pop = true;
-        if (!ArgUtility.TryGetOptionalBool(args, 1, out pop, out var error, defaultValue: true, name: "bool pop"))
+
+        if (!ArgUtility.TryGetOptionalBool(args, 1, out var pop, out var error, defaultValue: true, name: "bool pop"))
         {
             Log.Error(error);
             return;

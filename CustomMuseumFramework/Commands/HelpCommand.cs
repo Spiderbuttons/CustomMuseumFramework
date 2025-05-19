@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using CustomMuseumFramework.Helpers;
-using StardewValley;
 
 namespace CustomMuseumFramework.Commands;
 
@@ -20,7 +19,7 @@ public class HelpCommand() : ConsoleCommand("help")
     public override void Handle(string[] args)
     {
         var commands = CommandHandler.Commands;
-        string text = "";
+        string text;
 
         if (!args.Any())
         {
