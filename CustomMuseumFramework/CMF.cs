@@ -112,6 +112,10 @@ namespace CustomMuseumFramework
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
             
+            TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_DonateItem", TriggerActions.DonateItem);
+            TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_ForceDonateItem", TriggerActions.ForceDonateItem);
+            TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_RemoveDonation", TriggerActions.RemoveDonation);
+            
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_DONATIONS", Queries.MUSEUM_DONATIONS);
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_HAS_ITEM", Queries.MUSEUM_HAS_ITEM);
             
@@ -175,14 +179,9 @@ namespace CustomMuseumFramework
             if (e.Button is SButton.F2)
             {
                 // print a list of GlobalDonatableItems. include what museums they go to and whether or not the item has already been donated to it
-                foreach (var item in GlobalDonatableItems)
+                if (CMF.MuseumData.TryGetValue("Test.Mod_CMF", out var data))
                 {
-                    string itemId = item.Key;
-                    Log.Alert($"Item: {itemId}");
-                    foreach (var museum in item.Value)
-                    {
-                        Log.Warn($"  {museum.Key.MuseumData.Id}: {museum.Value}");
-                    }
+                    Log.Warn(data.Bounds);
                 }
             }
 
