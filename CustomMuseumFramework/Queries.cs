@@ -27,7 +27,7 @@ public class Queries
         
         if (max == -1) max = int.MaxValue;
         
-        if (string.IsNullOrEmpty(remainder)) 
+        if (string.IsNullOrWhiteSpace(remainder)) 
         {
             return museum.DonatedItems.Count >= min && museum.DonatedItems.Count <= max;
         }

@@ -124,8 +124,7 @@ namespace CustomMuseumFramework
 
             Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
                 (_, args) => CommandHandler.Handle(args));
-
-            // TODO: Allow customization of what happens when you click on an item in the museum.
+            
             // TODO: Lost books... maybe.
         }
 

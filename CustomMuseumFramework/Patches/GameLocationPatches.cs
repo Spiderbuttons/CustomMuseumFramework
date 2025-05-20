@@ -1,10 +1,15 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System.Collections.Generic;
+using System.Reflection;
+using CustomMuseumFramework.Helpers;
+using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework.Graphics;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.TokenizableStrings;
+using StardewValley.Triggers;
 using xTile.Dimensions;
 
 namespace CustomMuseumFramework.Patches;
@@ -159,7 +164,61 @@ public static class GameLocationPatches
             manager.DonatedItems.TryGetValue(new Vector2(tileLocation.X, tileLocation.Y - 1), out itemId))
         {
             ParsedItemData data = ItemRegistry.GetDataOrErrorItem(itemId);
-            Game1.drawObjectDialogue(Game1.parseText(" - " + data.DisplayName + " - " + "^" + data.Description));
+            if (data.RawData?.GetType().GetField("CustomFields") is { } customFieldsField)
+            {
+                var customFields = customFieldsField.GetValue(data.RawData);
+                if (customFields is Dictionary<string, string> fields && fields.TryGetValue("Spiderbuttons.CMF/PedestalAction", out var action))
+                {
+                    if (!TriggerActionManager.TryRunAction(action, out var error, out _))
+                    {
+                        Log.Error(error);
+                        return true;
+                    }
+                    
+                    if (!fields.TryGetValue("Spiderbuttons.CMF/PedestalOverride", out var overrideAction) || !bool.TryParse(overrideAction, out var overrideResult) || overrideResult)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+            }
+
+            InteractionData inter = manager.MuseumData.PedestalAction;
+            if (inter.Type is InteractionType.None || string.IsNullOrWhiteSpace(inter.Text))
+            {
+                __result = true;
+                return false;
+            }
+            
+            var text = TokenParser.ParseText(string.Format(inter.Text, data.DisplayName, data.Description, manager.Museum.DisplayName, data.QualifiedItemId));
+            var customAction = inter.Action is not null
+                ? string.Format(inter.Action, data.DisplayName, data.Description, manager.Museum.DisplayName,
+                    data.QualifiedItemId)
+                : null;
+            
+            switch (inter.Type)
+            {
+                case InteractionType.Default:
+                    Game1.drawObjectDialogue(text);
+                    break;
+                case InteractionType.Message:
+                    Game1.drawDialogueNoTyping(text);
+                    break;
+                case InteractionType.Letter:
+                    Game1.drawLetterMessage(text);
+                    break;
+                case InteractionType.Custom when customAction is not null:
+                    if (!TriggerActionManager.TryRunAction(customAction, out var error, out _))
+                    {
+                        Log.Error(error);
+                        return true;
+                    }
+                    break;
+                default:
+                    Game1.drawObjectDialogue(text);
+                    break;
+            }
+            
             __result = true;
             return false;
         }

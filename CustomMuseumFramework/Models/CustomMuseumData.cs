@@ -9,6 +9,15 @@ public enum MatchType
     All
 }
 
+public enum InteractionType
+{
+    Default,
+    Message,
+    Letter,
+    Custom,
+    None
+}
+
 public class CustomMuseumData
 {
     public string Id { get; set; } = "";
@@ -25,6 +34,8 @@ public class CustomMuseumData
     
     public bool OverrideDescription { get; set; } = false;
     
+    public InteractionData PedestalAction { get; set; } = new InteractionData();
+    
     public List<CustomMuseumRewardData> Rewards { get; set; } = [];
     
     public List<int> Milestones { get; set; } = [];
@@ -37,6 +48,13 @@ public class OwnerData
     public string? Name { get; set; } = null;
     public Rectangle? Area { get; set; } = null;
     public bool RequiredForDonation { get; set; } = false;
+}
+
+public class InteractionData
+{
+    public InteractionType Type { get; set; } = InteractionType.Default;
+    public string? Text { get; set; } = " - {0} - ^{1}";
+    public string? Action = null;
 }
 
 public class MuseumStrings
