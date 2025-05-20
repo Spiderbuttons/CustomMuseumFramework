@@ -169,6 +169,8 @@ public static class GameLocationPatches
                 var customFields = customFieldsField.GetValue(data.RawData);
                 if (customFields is Dictionary<string, string> fields && fields.TryGetValue("Spiderbuttons.CMF/PedestalAction", out var action))
                 {
+                    action = TokenParser.ParseText(string.Format(action, data.DisplayName, data.Description, manager.Museum.DisplayName,
+                        data.QualifiedItemId));
                     if (!TriggerActionManager.TryRunAction(action, out var error, out _))
                     {
                         Log.Error(error);
@@ -192,8 +194,8 @@ public static class GameLocationPatches
             
             var text = TokenParser.ParseText(string.Format(inter.Text, data.DisplayName, data.Description, manager.Museum.DisplayName, data.QualifiedItemId));
             var customAction = inter.Action is not null
-                ? string.Format(inter.Action, data.DisplayName, data.Description, manager.Museum.DisplayName,
-                    data.QualifiedItemId)
+                ? TokenParser.ParseText(string.Format(inter.Action, data.DisplayName, data.Description, manager.Museum.DisplayName,
+                    data.QualifiedItemId))
                 : null;
             
             switch (inter.Type)
