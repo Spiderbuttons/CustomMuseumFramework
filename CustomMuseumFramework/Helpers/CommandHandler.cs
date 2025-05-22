@@ -9,8 +9,8 @@ namespace CustomMuseumFramework.Helpers;
 [Command]
 public abstract class ConsoleCommand(string name, bool allowedOnTitle = false)
 {
-    public string Name { get; } = name;
-    public bool AllowedOnTitle = allowedOnTitle;
+    public readonly string Name = name;
+    public readonly bool AllowedOnTitle = allowedOnTitle;
     public string Description => GetDescription();
 
     public abstract string GetDescription();
