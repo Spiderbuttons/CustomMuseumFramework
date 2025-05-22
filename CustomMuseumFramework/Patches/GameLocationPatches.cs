@@ -13,6 +13,7 @@ using StardewValley.ItemTypeDefinitions;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 using xTile.Dimensions;
+using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework.Patches;
 
@@ -42,6 +43,39 @@ public static class GameLocationPatches
         if (manager.HasDonatedItem())
         {
             Game1.player.mailReceived.Add($"{manager.Museum.Name}_somethingWasDonated");
+        }
+        
+        foreach (var pair in manager.getLostBooksLocations())
+        {
+            Log.Alert($"Checking for Spiderbuttons.CMF_LostBooks_{pair.Key}");
+            if (!manager.Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{pair.Key}", out var bookTally) || !int.TryParse(bookTally, out var booksFound))
+            {
+                booksFound = 0;
+            }
+
+            foreach (var bookLocation in pair.Value)
+            {
+                int index = bookLocation.Key;
+                Vector2 tile = bookLocation.Value;
+                Log.Alert(index + " | " + booksFound);
+                if (index + 1 <= booksFound && !Game1.player.mailReceived.Contains($"{manager.Museum.Name}_ReadLostBook_${pair.Key}_{index}"))
+                {
+                    manager.Museum.temporarySprites.Add(new TemporaryAnimatedSprite("LooseSprites\\Cursors",
+                        new Rectangle(144, 447, 15, 15), new Vector2(tile.X * 64f, tile.Y * 64f - 96f - 16f),
+                        flipped: false, 0f, Color.White)
+                    {
+                        interval = 99999f,
+                        animationLength = 1,
+                        totalNumberOfLoops = 9999,
+                        yPeriodic = true,
+                        yPeriodicLoopTime = 4000f,
+                        yPeriodicRange = 16f,
+                        layerDepth = 1f,
+                        scale = 4f,
+                        id = index
+                    });
+                }
+            }
         }
     }
     
@@ -84,6 +118,17 @@ public static class GameLocationPatches
                 __result = false;
                 return false;
             }
+            
+            if (!manager.Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{bookDataId}", out var bookTally) || !int.TryParse(bookTally, out var booksFound))
+            {
+                booksFound = 0;
+            }
+
+            if (bookDataIndex >= booksFound)
+            {
+                __result = false;
+                return false;
+            }
 
             var entry = bookData.Entries[bookDataIndex];
             
@@ -110,6 +155,24 @@ public static class GameLocationPatches
                 default:
                     Game1.drawLetterMessage(entry.Text);
                     break;
+            }
+            
+            if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookDataIndex}"))
+            {
+                // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
+                // (pls give us string IDs or some other way to identify TASes in future Stardew Versions i beg u)
+                // So we need to check that the sprite is in the right location that we'd expect, too... roughly.)
+                
+                Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookDataIndex}");
+            
+                Vector2 spriteLocation = new Vector2(tileLocation.X * 64f, tileLocation.Y * 64f - 96f - 16f);
+                TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s => s.id == bookDataIndex && Math.Abs(s.position.X - spriteLocation.X) < 1 && s.position.Y <= spriteLocation.Y + 16.1f && s.position.Y >= spriteLocation.Y - 16.1f);
+                if (sprite is not null)
+                {
+                    sprite.destroyable = true;
+                    sprite.alpha = 0f;
+                    sprite.scale = 0f;
+                }
             }
 
             __result = true;

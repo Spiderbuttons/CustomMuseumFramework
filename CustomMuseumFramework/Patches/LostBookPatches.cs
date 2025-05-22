@@ -31,10 +31,19 @@ public static class LostBookPatches
 
         Game1.playSound("newRecipe");
         
+        Log.Alert("found book");
+        Log.Alert($"Spiderbuttons.CMF_LostBooks_{data.Id}");
+
         if (!manager.Museum.modData.ContainsKey($"Spiderbuttons.CMF_LostBooks_{data.Id}"))
+        {
             manager.Museum.modData.Add($"Spiderbuttons.CMF_LostBooks_{data.Id}", "1");
+            Log.Alert("Added key: " + $"Spiderbuttons.CMF_LostBooks_{data.Id}");
+        }
         else
+        {
+            Log.Alert("Found existing key with value " + manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"]);
             manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"] = (int.Parse(manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"]) + 1).ToString();
+        }
         farmer.stats.Increment($"Spiderbuttons.CMF_LostBooks_{data.Id}", 1);
         
         if (data.BroadcastMessage is null) Game1.Multiplayer.globalChatInfoMessage("LostBook", farmer.displayName);
@@ -43,9 +52,9 @@ public static class LostBookPatches
         if (shouldHoldUpArtifact) farmer.holdUpItemThenMessage(ItemRegistry.Create(itemId));
     }
 
-    public static void gotLostBookFromMenu(string itemId, ItemGrabMenu igMenu, int x, int y)
+    public static void gotLostBookFromMenu(string? itemId, ItemGrabMenu igMenu, int x, int y)
     {
-        if (!CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
+        if (itemId is null || !CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
         
         CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == itemId);
         if (data is null) return;

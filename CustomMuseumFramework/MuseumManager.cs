@@ -897,4 +897,37 @@ public class MuseumManager
 
         return startingPoint;
     }
+    
+    public Dictionary<string, Dictionary<int, Vector2>> getLostBooksLocations()
+    {
+        Dictionary<string, Dictionary<int, Vector2>> lostBooksLocations = new();
+        for (int x = 0; x < Museum.map.Layers[0].LayerWidth; x++)
+        {
+            for (int y = 0; y < Museum.map.Layers[0].LayerHeight; y++)
+            {
+                string[] action = Museum.GetTilePropertySplitBySpaces("Action", "Buildings", x, y);
+                if (ArgUtility.Get(action, 0) != "Spiderbuttons.CMF_LostBook") continue;
+                
+                if (!ArgUtility.TryGet(action, 1, out var bookDataId, out var error, false, "string bookDataId") ||
+                    !ArgUtility.TryGetInt(action, 2, out var bookIndex, out error, "int bookIndex"))
+                {
+                    Museum.LogTileActionError(action, x, y, error);
+                    continue;
+                }
+                    
+                if (!lostBooksLocations.TryGetValue(bookDataId, out var bookLocations))
+                {
+                    bookLocations = new Dictionary<int, Vector2>();
+                    lostBooksLocations[bookDataId] = bookLocations;
+                }
+                    
+                if (!bookLocations.ContainsKey(bookIndex))
+                {
+                    bookLocations[bookIndex] = new Vector2(x, y);
+                } else Log.Warn($"Duplicate lost book location found for {bookDataId} at index {bookIndex}.");
+            }
+        }
+        
+        return lostBooksLocations;
+    }
 }

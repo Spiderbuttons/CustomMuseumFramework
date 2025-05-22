@@ -145,12 +145,16 @@ namespace CustomMuseumFramework
             Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
                 (_, args) => CommandHandler.Handle(args));
             
-            // TODO: Lost books... maybe.
+            // TODO: Lost book GSQs.
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
             MuseumManagers.Clear();
+            _museumData = null;
+            _globalDonatableItems = null;
+            _lostBooks = null;
+            _questData = null;
         }
 
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
@@ -201,14 +205,7 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                if (!MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager)) return;
-                Log.Warn($"Farmer has found lost book for {manager.Museum.Name}: {Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_FoundLostBook")}");
-                Log.Warn($"Lost books found for this museum:");
-                // log all the keys and values for keys that start with "Spiderbuttons.CMF_LostBooks_"
-                foreach (var key in manager.Museum.modData.Keys.Where(x => x.StartsWith($"Spiderbuttons.CMF_LostBooks")))
-                {
-                    Log.Warn($"{key}: {manager.Museum.modData[key]}");
-                }
+                //
             }
 
             if (e.Button is SButton.F6)
