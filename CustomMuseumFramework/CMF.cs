@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using CustomMuseumFramework.Commands;
 using HarmonyLib;
 using StardewModdingAPI;
@@ -8,7 +8,6 @@ using StardewModdingAPI.Events;
 using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
-using StardewValley.Extensions;
 using StardewValley.Triggers;
 
 namespace CustomMuseumFramework
@@ -41,13 +40,34 @@ namespace CustomMuseumFramework
             }
         }
 
+        private static Dictionary<string, MuseumManager>? _lostBooks;
+        
+        public static Dictionary<string, MuseumManager> LostBooks
+        {
+            get
+            {
+                if (_lostBooks == null)
+                {
+                    _lostBooks = new Dictionary<string, MuseumManager>();
+                    foreach (var museum in MuseumManagers.Values)
+                    {
+                        foreach (var book in museum.MuseumData.LostBooks)
+                        {
+                            _lostBooks.TryAdd(book.ItemId, museum);
+                        }
+                    }
+                }
+
+                return _lostBooks;
+            }
+        }
+
         private static Dictionary<string, SortedList<MuseumManager, bool>>? _globalDonatableItems;
         
         public static Dictionary<string, SortedList<MuseumManager, bool>> GlobalDonatableItems {
             get
             {
                 if (_globalDonatableItems == null) {
-                    // use a custom key comparer for SortedDictionary. keys with MuseumData.OverrideDescription set to true should be first
                     _globalDonatableItems = new Dictionary<string, SortedList<MuseumManager, bool>>();
                     foreach (var museum in MuseumManagers.Values)
                     {
@@ -167,6 +187,7 @@ namespace CustomMuseumFramework
                 foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
                 _museumData = null;
                 _globalDonatableItems = null;
+                _lostBooks = null;
             }
             
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Quests")))
@@ -180,7 +201,14 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                //
+                if (!MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager)) return;
+                Log.Warn($"Farmer has found lost book for {manager.Museum.Name}: {Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_FoundLostBook")}");
+                Log.Warn($"Lost books found for this museum:");
+                // log all the keys and values for keys that start with "Spiderbuttons.CMF_LostBooks_"
+                foreach (var key in manager.Museum.modData.Keys.Where(x => x.StartsWith($"Spiderbuttons.CMF_LostBooks")))
+                {
+                    Log.Warn($"{key}: {manager.Museum.modData[key]}");
+                }
             }
 
             if (e.Button is SButton.F6)

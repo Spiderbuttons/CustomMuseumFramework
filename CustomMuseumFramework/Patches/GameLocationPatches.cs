@@ -3,10 +3,12 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework.Graphics;
+using StardewValley.Extensions;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
@@ -61,7 +63,60 @@ public static class GameLocationPatches
         if (!who.IsLocalPlayer) return true;
 
         string text = ArgUtility.Get(action, 0);
-        if (text.Equals("MuseumMenu"))
+
+        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_LostBook"))
+        {
+            if (!manager.MuseumData.LostBooks.Any()) return true;
+            string bookDataId = ArgUtility.Get(action, 1);
+            int bookDataIndex = ArgUtility.GetInt(action, 2);
+
+            var bookData = manager.MuseumData.LostBooks.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
+            if (bookData is null)
+            {
+                Log.Warn($"No LostBook data with Id '{bookDataId}' found for museum '{manager.Museum.Name}'.");
+                __result = false;
+                return false;
+            }
+            
+            if (bookData.Entries.Count <= bookDataIndex || bookDataIndex < 0)
+            {
+                Log.Warn($"LostBook data with Id '{bookDataId}' has no entry at index '{bookDataIndex}' for museum '{manager.Museum.Name}'.");
+                __result = false;
+                return false;
+            }
+
+            var entry = bookData.Entries[bookDataIndex];
+            
+            switch (entry.InteractionType)
+            {
+                case InteractionType.Sign:
+                    Game1.drawObjectDialogue(entry.Text);
+                    break;
+                case InteractionType.Message:
+                    Game1.drawDialogueNoTyping(entry.Text);
+                    break;
+                case InteractionType.Letter:
+                    Game1.drawLetterMessage(entry.Text);
+                    break;
+                case InteractionType.None:
+                    break;
+                case InteractionType.Custom when entry.Action is not null:
+                    if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
+                    {
+                        Log.Error(error);
+                        return true;
+                    }
+                    break;
+                default:
+                    Game1.drawLetterMessage(entry.Text);
+                    break;
+            }
+
+            __result = true;
+            return false;
+        }
+        
+        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_MuseumMenu"))
         {
             if (manager.MuseumData.Owner?.RequiredForDonation is true)
             {
@@ -95,7 +150,7 @@ public static class GameLocationPatches
             return false;
         }
 
-        if (text.Equals("Rearrange"))
+        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_Rearrange"))
         {
             if (manager.HasDonatedItem())
             {
@@ -186,7 +241,7 @@ public static class GameLocationPatches
             }
 
             InteractionData inter = manager.MuseumData.PedestalAction;
-            if (inter.Type is InteractionType.None || string.IsNullOrWhiteSpace(inter.Text))
+            if (inter.InteractionType is InteractionType.None || string.IsNullOrWhiteSpace(inter.Text))
             {
                 __result = true;
                 return false;
@@ -198,9 +253,9 @@ public static class GameLocationPatches
                     data.QualifiedItemId))
                 : null;
             
-            switch (inter.Type)
+            switch (inter.InteractionType)
             {
-                case InteractionType.Default:
+                case InteractionType.Sign:
                     Game1.drawObjectDialogue(text);
                     break;
                 case InteractionType.Message:
@@ -208,6 +263,8 @@ public static class GameLocationPatches
                     break;
                 case InteractionType.Letter:
                     Game1.drawLetterMessage(text);
+                    break;
+                case InteractionType.None:
                     break;
                 case InteractionType.Custom when customAction is not null:
                     if (!TriggerActionManager.TryRunAction(customAction, out var error, out _))

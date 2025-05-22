@@ -19,7 +19,7 @@ public static class VanillaMuseumPatches
     
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(MuseumMenu), nameof(MuseumMenu.receiveLeftClick))]
-    public static IEnumerable<CodeInstruction> receiveLeftClick_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+    public static IEnumerable<CodeInstruction> MuseumMenu_receiveLeftClick_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
     {
         var code = instructions.ToList();
         try

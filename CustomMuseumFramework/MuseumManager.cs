@@ -317,10 +317,10 @@ public class MuseumManager
     {
         _itemToRewardsLookup.Clear();
 
-        List<CustomMuseumRewardData> museumRewardData = MuseumData.Rewards;
+        List<CustomMuseumReward> museumRewardData = MuseumData.Rewards;
         Dictionary<string, bool> metRequirements = RewardRequirementsCheck(museumRewardData);
         List<Item> rewards = new List<Item>();
-        foreach (CustomMuseumRewardData reward in museumRewardData)
+        foreach (CustomMuseumReward reward in museumRewardData)
         {
             string? id = reward.Id;
             if (id is null)
@@ -358,7 +358,7 @@ public class MuseumManager
         return rewards;
     }
 
-    private Dictionary<string, bool> RewardRequirementsCheck(List<CustomMuseumRewardData> rewardDataList)
+    private Dictionary<string, bool> RewardRequirementsCheck(List<CustomMuseumReward> rewardDataList)
     {
         var results = new Dictionary<string, bool>();
 
@@ -418,7 +418,7 @@ public class MuseumManager
         return results;
     }
 
-    private void AddNonItemRewards(CustomMuseumRewardData? data, string rewardId, Farmer player)
+    private void AddNonItemRewards(CustomMuseumReward? data, string rewardId, Farmer player)
     {
         if (data is null) return;
         if (data.FlagOnCompletion)
@@ -715,7 +715,7 @@ public class MuseumManager
         return value is not null && value.EqualsIgnoreCase("DonationSpot");
     }
 
-    private bool CanCollectReward(CustomMuseumRewardData reward, string rewardId, Farmer player,
+    private bool CanCollectReward(CustomMuseumReward reward, string rewardId, Farmer player,
         Dictionary<string, bool> metRequirements)
     {
         if (reward.FlagOnCompletion && player.mailReceived.Contains(rewardId))
@@ -753,13 +753,13 @@ public class MuseumManager
         return true;
     }
 
-    private List<Item> GetAllAvailableRewards(CustomMuseumRewardData rewardData)
+    private List<Item> GetAllAvailableRewards(CustomMuseumReward reward)
     {
         var results = new List<Item>();
-        if (rewardData.RewardItems is null) return results;
-        foreach (var entry in rewardData.RewardItems)
+        if (reward.RewardItems is null) return results;
+        foreach (var entry in reward.RewardItems)
         {
-            var randomSeed = Game1.hash.GetDeterministicHashCode(rewardData.Id + entry.Id);
+            var randomSeed = Game1.hash.GetDeterministicHashCode(reward.Id + entry.Id);
             var museumRandom = Utility.CreateRandom(randomSeed, Game1.uniqueIDForThisGame);
             ItemQueryContext itemQueryContext = new ItemQueryContext(Museum, Game1.player, museumRandom,
                 $"{Museum.NameOrUniqueName} > GetAllAvailableRewards");
@@ -789,13 +789,13 @@ public class MuseumManager
         return results;
     }
 
-    private Item? GetFirstAvailableReward(CustomMuseumRewardData rewardData)
+    private Item? GetFirstAvailableReward(CustomMuseumReward reward)
     {
-        if (rewardData.RewardItems is null) return null;
+        if (reward.RewardItems is null) return null;
         var museumRandom = Utility.CreateDaySaveRandom();
         ItemQueryContext itemQueryContext = new ItemQueryContext(Museum, Game1.player, museumRandom,
             $"{Museum.NameOrUniqueName} > GetFirstAvailableReward");
-        foreach (var entry in rewardData.RewardItems)
+        foreach (var entry in reward.RewardItems)
         {
             if (string.IsNullOrWhiteSpace(entry.Id))
             {

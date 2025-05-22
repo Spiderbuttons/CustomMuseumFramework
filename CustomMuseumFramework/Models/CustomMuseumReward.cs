@@ -3,7 +3,7 @@ using StardewValley.GameData;
 
 namespace CustomMuseumFramework.Models;
 
-public class CustomMuseumRewardData
+public class CustomMuseumReward
 {
     public string? Id;
     public List<DonationRequirementWithCount>? Requirements = null;
