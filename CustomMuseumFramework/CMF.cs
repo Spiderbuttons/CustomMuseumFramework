@@ -17,6 +17,7 @@ namespace CustomMuseumFramework
         internal static IMonitor ModMonitor { get; private set; } = null!;
         
         internal static IManifest Manifest { get; private set; } = null!;
+        internal static CommandHandler CommandHandler { get; private set; } = null!;
         private static Harmony Harmony { get; set; } = null!;
 
         private static Dictionary<string, CustomMuseumData>? _museumData;
@@ -118,6 +119,7 @@ namespace CustomMuseumFramework
             ModHelper = helper;
             ModMonitor = Monitor;
             Manifest = ModManifest;
+            CommandHandler = new CommandHandler(helper, ModManifest, "cmf");
             Harmony = new Harmony(ModManifest.UniqueID);
 
             Harmony.PatchAll();
@@ -142,9 +144,8 @@ namespace CustomMuseumFramework
             GameStateQuery.Register($"{Manifest.UniqueID}_IS_ITEM_DONATED", Queries.IS_ITEM_DONATED);
             GameStateQuery.Register($"{Manifest.UniqueID}_LOST_BOOKS_FOUND", Queries.LOST_BOOKS_FOUND);
             GameStateQuery.Register($"{Manifest.UniqueID}_TOTAL_LOST_BOOKS_FOUND", Queries.TOTAL_LOST_BOOKS_FOUND);
-
-            Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
-                (_, args) => CommandHandler.Handle(args));
+            
+            // TODO: Console command for opening the global inventory of a museum from anywhere and regardless of the museums retrieval setting.
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
