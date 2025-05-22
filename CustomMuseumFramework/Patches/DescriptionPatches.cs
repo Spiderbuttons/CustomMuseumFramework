@@ -40,7 +40,7 @@ public static class DescriptionPatches
         var text = string.Format(museum.MuseumData.Strings.CanBeDonated ?? CMF.DefaultStrings.CanBeDonated!,
             museum.Museum.DisplayName, museum.MuseumData.Owner is not null ? Game1.getCharacterFromName(museum.MuseumData.Owner?.Name)?.displayName ?? "A museum owner" : "A museum owner");
         
-        ///// Keeping this around in case I ever wanna display more than one.
+        ///// Keeping this around in case I ever want to display more than one.
         // var text = museumDict
         //     .Where(kvp => !kvp.Value)
         //     .Select(kvp => $"{kvp.Key.Museum.DisplayName} would be interested in this.")
@@ -84,7 +84,7 @@ public static class RingPatches
     [HarmonyPatch(nameof(Ring.drawTooltip))]
     public static void Ring_drawTooltip_Postfix(Ring __instance, string __state)
     {
-        if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
+        if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out _)) return;
 
         __instance.description = __state;
     }

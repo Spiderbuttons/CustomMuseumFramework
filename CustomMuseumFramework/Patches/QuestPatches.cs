@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using CustomMuseumFramework.Helpers;
-using CustomMuseumFramework.Models;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;

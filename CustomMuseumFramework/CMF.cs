@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CustomMuseumFramework.Commands;
 using HarmonyLib;
@@ -146,8 +145,6 @@ namespace CustomMuseumFramework
 
             Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
                 (_, args) => CommandHandler.Handle(args));
-            
-            // TODO: Lost book GSQs.
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)

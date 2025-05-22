@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using CustomMuseumFramework.Helpers;
+﻿using CustomMuseumFramework.Helpers;
 using StardewModdingAPI;
 using StardewValley;
 

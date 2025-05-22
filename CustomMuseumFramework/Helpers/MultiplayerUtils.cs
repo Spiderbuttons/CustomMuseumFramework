@@ -44,11 +44,11 @@ public class MultiplayerUtils
         if (!Game1.IsMultiplayer || Game1.multiplayerMode == 0) return;
         
         CMF.ModHelper.Multiplayer.SendMessage(
-            new Tuple<string, string[]>(text, subs ?? []),
+            new Tuple<string, string[]>(text, subs),
             "Spiderbuttons.CMF_ChatMessage",
             modIDs: [CMF.Manifest.UniqueID]
         );
-        printChatMessage(text, subs ?? []);
+        printChatMessage(text, subs);
     }
 
     public static void receiveChatMessage(object? _, ModMessageReceivedEventArgs e)
@@ -59,13 +59,13 @@ public class MultiplayerUtils
         printChatMessage(msg.Item1, msg.Item2);
     }
 
-    public static void printChatMessage(string text, string[] subs)
+    private static void printChatMessage(string text, string[] subs)
     {
         if (Game1.chatBox is null) return;
 
         try
         {
-            string[] processedSubs = subs.Select((string arg) => arg.StartsWith("aOrAn:") ? Utility.AOrAn(TokenParser.ParseText(arg.Substring("aOrAn:".Length))) : TokenParser.ParseText(arg)).ToArray();
+            string[] processedSubs = subs.Select(arg => arg.StartsWith("aOrAn:") ? Utility.AOrAn(TokenParser.ParseText(arg.Substring("aOrAn:".Length))) : TokenParser.ParseText(arg)).ToArray();
             ChatBox chatBox = Game1.chatBox;
             object[] substitutions = new object[processedSubs.Length];
             for (int i = 0; i < processedSubs.Length; i++)

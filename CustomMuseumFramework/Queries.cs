@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using HarmonyLib;
 using StardewValley;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
@@ -63,7 +62,7 @@ public class Queries
 
     public static bool IS_ITEM_DONATED(string[] query, GameStateQueryContext context)
     {
-        if (!ArgUtility.TryGet(query, 1, out var itemId, out var error, allowBlank: false, name: "string item Id"))
+        if (!ArgUtility.TryGet(query, 1, out _, out var error, allowBlank: false, name: "string item Id"))
         {
             return GameStateQuery.Helpers.ErrorResult(query, error);
         }

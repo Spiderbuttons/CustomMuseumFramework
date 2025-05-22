@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework.Graphics;
@@ -47,7 +46,6 @@ public static class GameLocationPatches
         
         foreach (var pair in manager.getLostBooksLocations())
         {
-            Log.Alert($"Checking for Spiderbuttons.CMF_LostBooks_{pair.Key}");
             if (!manager.Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{pair.Key}", out var bookTally) || !int.TryParse(bookTally, out var booksFound))
             {
                 booksFound = 0;
@@ -57,7 +55,6 @@ public static class GameLocationPatches
             {
                 int index = bookLocation.Key;
                 Vector2 tile = bookLocation.Value;
-                Log.Alert(index + " | " + booksFound);
                 if (index + 1 <= booksFound && !Game1.player.mailReceived.Contains($"{manager.Museum.Name}_ReadLostBook_${pair.Key}_{index}"))
                 {
                     manager.Museum.temporarySprites.Add(new TemporaryAnimatedSprite("LooseSprites\\Cursors",

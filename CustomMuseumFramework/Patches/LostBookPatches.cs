@@ -15,7 +15,7 @@ namespace CustomMuseumFramework.Patches;
 [HarmonyPatch]
 public static class LostBookPatches
 {
-    public static void foundCustomLostBook(Farmer farmer, string itemId)
+    private static void foundCustomLostBook(Farmer farmer, string itemId)
     {
         if (!CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
         
@@ -43,7 +43,7 @@ public static class LostBookPatches
     {
         if (itemId is null || !CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
         
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == itemId);
+        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(book => book.ItemId == itemId);
         if (data is null) return;
 
         igMenu.heldItem = null;

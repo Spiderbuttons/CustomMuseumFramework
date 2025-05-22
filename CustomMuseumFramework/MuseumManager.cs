@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
@@ -8,17 +7,14 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
-using StardewValley.GameData.Museum;
 using StardewValley.Internal;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.Menus;
 using StardewValley.Network;
-using StardewValley.Objects;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 using xTile.Dimensions;
 using xTile.Tiles;
-using Object = StardewValley.Object;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
