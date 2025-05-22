@@ -141,6 +141,8 @@ namespace CustomMuseumFramework
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_DONATIONS", Queries.MUSEUM_DONATIONS);
             GameStateQuery.Register($"{Manifest.UniqueID}_MUSEUM_HAS_ITEM", Queries.MUSEUM_HAS_ITEM);
             GameStateQuery.Register($"{Manifest.UniqueID}_IS_ITEM_DONATED", Queries.IS_ITEM_DONATED);
+            GameStateQuery.Register($"{Manifest.UniqueID}_LOST_BOOKS_FOUND", Queries.LOST_BOOKS_FOUND);
+            GameStateQuery.Register($"{Manifest.UniqueID}_TOTAL_LOST_BOOKS_FOUND", Queries.TOTAL_LOST_BOOKS_FOUND);
 
             Helper.ConsoleCommands.Add("cmf", "Starts a Custom Museum Framework command.",
                 (_, args) => CommandHandler.Handle(args));

@@ -897,6 +897,15 @@ public class MuseumManager
 
         return startingPoint;
     }
+
+    public void IncrementLostBookCount(string booksetId)
+    {
+        if (!Museum.modData.ContainsKey($"Spiderbuttons.CMF_LostBooks_{booksetId}")) Museum.modData.Add($"Spiderbuttons.CMF_LostBooks_{booksetId}", "1");
+        else Museum.modData[$"Spiderbuttons.CMF_LostBooks_{booksetId}"] = (int.Parse(Museum.modData[$"Spiderbuttons.CMF_LostBooks_{booksetId}"]) + 1).ToString();
+        
+        if (!Museum.modData.ContainsKey($"Spiderbuttons.CMF_TotalLostBooks")) Museum.modData.Add("Spiderbuttons.CMF_TotalLostBooks", "1");
+        else Museum.modData["Spiderbuttons.CMF_TotalLostBooks"] = (int.Parse(Museum.modData["Spiderbuttons.CMF_TotalLostBooks"]) + 1).ToString();
+    }
     
     public Dictionary<string, Dictionary<int, Vector2>> getLostBooksLocations()
     {

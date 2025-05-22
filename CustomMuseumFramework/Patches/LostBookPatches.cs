@@ -30,20 +30,7 @@ public static class LostBookPatches
         } else Game1.showGlobalMessage(data.OnReceive ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:FishingRod.cs.14100"));
 
         Game1.playSound("newRecipe");
-        
-        Log.Alert("found book");
-        Log.Alert($"Spiderbuttons.CMF_LostBooks_{data.Id}");
-
-        if (!manager.Museum.modData.ContainsKey($"Spiderbuttons.CMF_LostBooks_{data.Id}"))
-        {
-            manager.Museum.modData.Add($"Spiderbuttons.CMF_LostBooks_{data.Id}", "1");
-            Log.Alert("Added key: " + $"Spiderbuttons.CMF_LostBooks_{data.Id}");
-        }
-        else
-        {
-            Log.Alert("Found existing key with value " + manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"]);
-            manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"] = (int.Parse(manager.Museum.modData[$"Spiderbuttons.CMF_LostBooks_{data.Id}"]) + 1).ToString();
-        }
+        manager.IncrementLostBookCount(data.Id);
         farmer.stats.Increment($"Spiderbuttons.CMF_LostBooks_{data.Id}", 1);
         
         if (data.BroadcastMessage is null) Game1.Multiplayer.globalChatInfoMessage("LostBook", farmer.displayName);
