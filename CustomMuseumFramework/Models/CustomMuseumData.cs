@@ -34,8 +34,6 @@ public class CustomMuseumData
     
     public List<int> Milestones { get; set; } = [];
     
-    public List<CustomLostBookData> LostBooks { get; set; } = [];
-    
     public MuseumStrings Strings { get; set; } = new MuseumStrings();
 }
 

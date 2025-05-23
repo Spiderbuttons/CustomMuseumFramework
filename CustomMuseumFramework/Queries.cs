@@ -19,7 +19,7 @@ public class Queries
 
         if (!CMF.MuseumManagers.TryGetValue(museumId, out var manager))
         {
-            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum.");
+            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
         }
 
         if (!ArgUtility.HasIndex(query, 2)) return manager.HasDonatedItem();
@@ -52,7 +52,7 @@ public class Queries
         
         if (!CMF.MuseumManagers.TryGetValue(museumId, out var manager))
         {
-            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum.");
+            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
         }
         
         if (!ArgUtility.HasIndex(query, 2)) return manager.HasDonatedItem();
@@ -85,10 +85,15 @@ public class Queries
 
         if (!CMF.MuseumManagers.TryGetValue(museumId, out var manager))
         {
-            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum.");
+            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
+        }
+
+        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList))
+        {
+            return GameStateQuery.Helpers.ErrorResult(query, $"The museum with Id '{museumId}' does not have any lost book data");
         }
         
-        if (!manager.MuseumData.LostBooks.Any(bookset => bookset.Id.EqualsIgnoreCase(booksetId)))
+        if (!bookList.Any(bookset => bookset.Id.EqualsIgnoreCase(booksetId)))
         {
             return GameStateQuery.Helpers.ErrorResult(query, $"The museum '{manager.Museum.Name}' does not have any lost book data with Id '{booksetId}'");
         }
@@ -111,7 +116,12 @@ public class Queries
 
         if (!CMF.MuseumManagers.TryGetValue(museumId, out var manager))
         {
-            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum.");
+            return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
+        }
+        
+        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList))
+        {
+            return GameStateQuery.Helpers.ErrorResult(query, $"The museum with Id '{museumId}' does not have any lost book data");
         }
         
         if (max == -1) max = int.MaxValue;

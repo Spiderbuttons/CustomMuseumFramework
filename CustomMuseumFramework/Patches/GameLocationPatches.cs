@@ -97,11 +97,11 @@ public static class GameLocationPatches
 
         if (text.EqualsIgnoreCase("Spiderbuttons.CMF_LostBook"))
         {
-            if (!manager.MuseumData.LostBooks.Any()) return true;
+            if (!CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList) || !bookList.Any()) return true;
             string bookDataId = ArgUtility.Get(action, 1);
             int bookDataIndex = ArgUtility.GetInt(action, 2);
 
-            var bookData = manager.MuseumData.LostBooks.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
+            var bookData = bookList.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
             if (bookData is null)
             {
                 Log.Warn($"No LostBook data with Id '{bookDataId}' found for museum '{manager.Museum.Name}'.");

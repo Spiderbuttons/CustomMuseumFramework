@@ -39,25 +39,37 @@ namespace CustomMuseumFramework
             }
         }
 
-        private static Dictionary<string, MuseumManager>? _lostBooks;
-        
-        public static Dictionary<string, MuseumManager> LostBooks
+        private static Dictionary<string, List<CustomLostBookData>>? _lostBookData;
+
+        public static Dictionary<string, List<CustomLostBookData>> LostBookData
         {
             get
             {
-                if (_lostBooks == null)
+                return _lostBookData ??= Game1.content.Load<Dictionary<string, List<CustomLostBookData>>>("Spiderbuttons.CMF/LostBooks");
+            }
+        }
+
+        private static Dictionary<string, MuseumManager>? _lostBookLookup;
+        
+        public static Dictionary<string, MuseumManager> LostBookLookup
+        {
+            get
+            {
+                if (_lostBookLookup == null)
                 {
-                    _lostBooks = new Dictionary<string, MuseumManager>();
-                    foreach (var museum in MuseumManagers.Values)
+                    _lostBookLookup = new Dictionary<string, MuseumManager>();
+                    foreach (var museum in LostBookData)
                     {
-                        foreach (var book in museum.MuseumData.LostBooks)
+                        if (!MuseumManagers.TryGetValue(museum.Key, out var manager)) continue;
+                        
+                        foreach (var bookset in museum.Value)
                         {
-                            _lostBooks.TryAdd(book.ItemId, museum);
+                            _lostBookLookup.TryAdd(bookset.ItemId, manager);
                         }
                     }
                 }
 
-                return _lostBooks;
+                return _lostBookLookup;
             }
         }
 
@@ -152,8 +164,9 @@ namespace CustomMuseumFramework
             MuseumManagers.Clear();
             _museumData = null;
             _globalDonatableItems = null;
-            _lostBooks = null;
             _questData = null;
+            _lostBookData = null;
+            _lostBookLookup = null;
         }
 
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
@@ -194,6 +207,11 @@ namespace CustomMuseumFramework
             {
                 e.LoadFrom(() => new Dictionary<string, CustomMuseumQuestData>(), AssetLoadPriority.Exclusive);
             }
+            
+            if (e.NameWithoutLocale.IsEquivalentTo("Spiderbuttons.CMF/LostBooks"))
+            {
+                e.LoadFrom(() => new Dictionary<string, List<CustomLostBookData>>(), AssetLoadPriority.Exclusive);
+            }
         }
         
         private void OnAssetsInvalidated(object? sender, AssetsInvalidatedEventArgs e)
@@ -204,7 +222,6 @@ namespace CustomMuseumFramework
                 foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
                 _museumData = null;
                 _globalDonatableItems = null;
-                _lostBooks = null;
             }
             
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Quests")))
@@ -212,30 +229,20 @@ namespace CustomMuseumFramework
                 Log.Trace("Invalidating quest data.");
                 _questData = null;
             }
+            
+            if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/LostBooks")))
+            {
+                Log.Trace("Invalidating lost book data.");
+                _lostBookData = null;
+                _lostBookLookup = null;
+            }
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             if (e.Button is SButton.F2)
             {
-                // log each key and value from the current location mod data
-                var manager = MuseumManagers[Game1.currentLocation.Name];
-                foreach (var kvp in manager.Museum.modData.Pairs)
-                {
-                    Log.Debug($"Key: {kvp.Key}, Value: {kvp.Value}");
-                }
-            }
-
-            if (e.Button is SButton.F6)
-            {
-                bool eq = System.Object.ReferenceEquals(Game1.currentLocation,
-                    MuseumManagers[Game1.currentLocation.Name].Museum);
-                Log.Alert("Are the two references equal: " + eq);
-            }
-
-            if (e.Button is SButton.LeftStick)
-            {
-                Game1.warpFarmer("Test.Mod_CMF", 4, 15, false);
+                //
             }
         }
     }

@@ -18,9 +18,9 @@ public static class LostBookPatches
 {
     private static void foundCustomLostBook(Farmer farmer, string itemId)
     {
-        if (!CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(itemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
         
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == itemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == itemId);
         if (data is null) return;
         
         bool shouldHoldUpArtifact = false;
@@ -49,9 +49,9 @@ public static class LostBookPatches
 
     public static void gotLostBookFromMenu(string? itemId, ItemGrabMenu igMenu, int x, int y)
     {
-        if (itemId is null || !CMF.LostBooks.TryGetValue(itemId, out var manager)) return;
+        if (itemId is null || !CMF.LostBookLookup.TryGetValue(itemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
         
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(book => book.ItemId == itemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(book => book.ItemId == itemId);
         if (data is null) return;
 
         igMenu.heldItem = null;
@@ -64,10 +64,10 @@ public static class LostBookPatches
     [HarmonyPatch(typeof(Farmer), nameof(Farmer.OnItemReceived))]
     public static void Farmer_OnItemReceived_Postfix(Farmer __instance, Item item, int countAdded, Item? mergedIntoStack, bool hideHudNotification)
     {
-        if (!CMF.LostBooks.TryGetValue(item.QualifiedItemId, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(item.QualifiedItemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
 
         Item actualItem = mergedIntoStack ?? item;
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
         if (data is null) return;
         
         Game1.PerformActionWhenPlayerFree(() => foundCustomLostBook(__instance, item.QualifiedItemId));
@@ -80,9 +80,9 @@ public static class LostBookPatches
     [HarmonyPatch(typeof(Farmer), nameof(Farmer.GetItemReceiveBehavior))]
     public static void Farmer_GetItemReceiveBehavior_Postfix(Farmer __instance, Item item, ref bool needsInventorySpace, ref bool showNotification)
     {
-        if (!CMF.LostBooks.TryGetValue(item.QualifiedItemId, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(item.QualifiedItemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
         
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
         if (data is null) return;
 
         showNotification = true;
@@ -93,9 +93,9 @@ public static class LostBookPatches
     [HarmonyPatch(typeof(Farmer), nameof(Farmer.couldInventoryAcceptThisItem), [typeof(Item)])]
     public static void Farmer_couldInventoryAcceptThisItem_Postfix(Farmer __instance, ref bool __result, Item item)
     {
-        if (!CMF.LostBooks.TryGetValue(item.QualifiedItemId, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(item.QualifiedItemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
 
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == item.QualifiedItemId);
         if (data is null) return;
 
         __result = true;
@@ -105,9 +105,9 @@ public static class LostBookPatches
     [HarmonyPatch(typeof(Farmer), nameof(Farmer.couldInventoryAcceptThisItem), [typeof(string), typeof(int), typeof(int)])]
     public static void Farmer_couldInventoryAcceptThisItem_Postfix(Farmer __instance, ref bool __result, string id, int stack, int quality = 0)
     {
-        if (!CMF.LostBooks.TryGetValue(id, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(id, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
 
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == id);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == id);
         if (data is null) return;
 
         __result = true;
@@ -117,9 +117,9 @@ public static class LostBookPatches
     [HarmonyPatch(typeof(Object), nameof(Object.checkForSpecialItemHoldUpMeessage))]
     public static void Object_checkForSpecialItemHoldUpMeessage_Postfix(Object __instance, ref string __result)
     {
-        if (!CMF.LostBooks.TryGetValue(__instance.QualifiedItemId, out var manager)) return;
+        if (!CMF.LostBookLookup.TryGetValue(__instance.QualifiedItemId, out var manager) || !CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList)) return;
 
-        CustomLostBookData? data = manager.MuseumData.LostBooks.FirstOrDefault(x => x.ItemId == __instance.QualifiedItemId);
+        CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == __instance.QualifiedItemId);
         if (data is null) return;
 
         __result = data.OnReceive ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.12994");
