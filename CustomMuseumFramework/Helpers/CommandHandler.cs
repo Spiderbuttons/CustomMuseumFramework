@@ -7,10 +7,10 @@ using StardewModdingAPI;
 namespace CustomMuseumFramework.Helpers;
 
 [Command]
-public abstract class ConsoleCommand(string name, bool allowedOnTitle = false)
+public abstract class ConsoleCommand(string name, bool allowOnTitle = false)
 {
     public readonly string Name = name;
-    public readonly bool AllowedOnTitle = allowedOnTitle;
+    public readonly bool AllowOnTitle = allowOnTitle;
     public string Description => GetDescription();
 
     public abstract string GetDescription();
@@ -60,7 +60,7 @@ public class CommandHandler
         string[] commandArgs = args.Skip(1).ToArray();
         if (Commands.TryGetValue(command, out var handler))
         {
-            if (!handler.AllowedOnTitle && !Context.IsWorldReady)
+            if (!handler.AllowOnTitle && !Context.IsWorldReady)
             {
                 Log.Error($"This command can only be used when a save is loaded.");
                 return;
@@ -73,7 +73,7 @@ public class CommandHandler
     }
 }
 
-public class GenericHelpCommand() : ConsoleCommand("help", allowedOnTitle: true)
+public class GenericHelpCommand() : ConsoleCommand("help", allowOnTitle: true)
 {
     public override string GetDescription()
     {
