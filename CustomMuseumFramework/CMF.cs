@@ -145,8 +145,6 @@ namespace CustomMuseumFramework
             GameStateQuery.Register($"{Manifest.UniqueID}_IS_ITEM_DONATED", Queries.IS_ITEM_DONATED);
             GameStateQuery.Register($"{Manifest.UniqueID}_LOST_BOOKS_FOUND", Queries.LOST_BOOKS_FOUND);
             GameStateQuery.Register($"{Manifest.UniqueID}_TOTAL_LOST_BOOKS_FOUND", Queries.TOTAL_LOST_BOOKS_FOUND);
-            
-            // TODO: Console command for opening the global inventory of a museum from anywhere and regardless of the museums retrieval setting.
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
