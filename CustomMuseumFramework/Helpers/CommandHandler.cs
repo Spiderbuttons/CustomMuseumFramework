@@ -27,8 +27,6 @@ public class CommandHandler
         CommandHelper = helper.ConsoleCommands;
         ModName = manifest.Name;
         RootCommand = rootCommand;
-
-        Register();
     }
 
     public const string BOLD = "\x1b[1m";
@@ -42,7 +40,7 @@ public class CommandHandler
 
     public static Dictionary<string, ConsoleCommand> Commands { get; } = new();
 
-    private void Register()
+    public void Register()
     {
         var comms = typeof(CommandHandler).Assembly.GetTypes().Where(type => type is { IsClass: true, IsAbstract: false } && type.GetCustomAttribute(typeof(CommandAttribute)) != null);
         foreach (var type in comms)

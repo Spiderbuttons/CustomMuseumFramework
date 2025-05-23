@@ -16,7 +16,7 @@ namespace CustomMuseumFramework
         internal static IMonitor ModMonitor { get; private set; } = null!;
         
         internal static IManifest Manifest { get; private set; } = null!;
-        internal static CommandHandler CommandHandler { get; private set; } = null!;
+        private static CommandHandler CommandHandler { get; set; } = null!;
         private static Harmony Harmony { get; set; } = null!;
 
         private static Dictionary<string, CustomMuseumData>? _museumData;
@@ -131,6 +131,7 @@ namespace CustomMuseumFramework
             ModMonitor = Monitor;
             Manifest = ModManifest;
             CommandHandler = new CommandHandler(helper, ModManifest, "cmf");
+            CommandHandler.Register();
             Harmony = new Harmony(ModManifest.UniqueID);
 
             Harmony.PatchAll();
