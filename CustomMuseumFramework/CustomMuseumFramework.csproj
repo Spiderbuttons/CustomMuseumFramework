@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.0"/>
+        <PackageReference Include="Pathoschild.Stardew.ModTranslationClassBuilder" Version="2.0.1" />
     </ItemGroup>
 	
 	<ItemGroup>
