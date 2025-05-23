@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
@@ -10,20 +12,23 @@ namespace CustomMuseumFramework.Helpers;
 
 public class MultiplayerUtils
 {
-    public struct TriggerPackage(string trigger, string? inputId, string? outputId, string? location)
+    [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+    public struct TriggerPackage(string trigger, string? inputId = null, string? outputId = null, string? location = null, object[]? triggerArgs = null)
     {
-        public readonly string Trigger = trigger;
-        public readonly string? InputId = inputId;
-        public readonly string? TargetId = outputId;
-        public readonly string? Location = location;
+        public string Trigger = trigger;
+        public string? InputId = inputId;
+        public string? TargetId = outputId;
+        public string? Location = location;
+        public object[]? TriggerArgs = triggerArgs;
     }
 
     public static void broadcastTrigger(TriggerPackage trigger)
     {
-        TriggerActionManager.Raise(trigger.Trigger, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
+        TriggerActionManager.Raise(trigger.Trigger, triggerArgs: trigger.TriggerArgs, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
         
         if (!Game1.IsMultiplayer || Game1.multiplayerMode == 0) return;
         
+        Log.Alert("Broading trigger: " + trigger.Trigger);
         CMF.ModHelper.Multiplayer.SendMessage(
             trigger,
             "Spiderbuttons.CMF_Trigger",
@@ -36,7 +41,8 @@ public class MultiplayerUtils
         if (e.FromModID != CMF.Manifest.UniqueID || e.Type != "Spiderbuttons.CMF_Trigger") return;
         
         var trigger = e.ReadAs<TriggerPackage>();
-        TriggerActionManager.Raise(trigger.Trigger, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
+        Log.Warn(trigger.Trigger);
+        TriggerActionManager.Raise(trigger.Trigger, triggerArgs: trigger.TriggerArgs, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
     }
     
     public static void broadcastChatMessage(string text, params string[] subs)

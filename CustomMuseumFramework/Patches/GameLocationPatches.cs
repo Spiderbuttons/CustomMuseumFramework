@@ -210,7 +210,7 @@ public static class GameLocationPatches
             return false;
         }
 
-        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_Rearrange"))
+        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_Rearrange") && !manager.Mutex.IsLocked())
         {
             if (manager.HasDonatedItem())
             {

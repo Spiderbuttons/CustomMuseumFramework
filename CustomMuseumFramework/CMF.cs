@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using CustomMuseumFramework.Commands;
 using HarmonyLib;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -129,11 +128,13 @@ namespace CustomMuseumFramework
             Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
             Helper.Events.Content.AssetRequested += this.OnAssetRequested;
             Helper.Events.Content.AssetsInvalidated += this.OnAssetsInvalidated;
+            Helper.Events.Multiplayer.ModMessageReceived += this.OnModMessageReceived;
             Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveChatMessage;
             Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveTrigger;
             
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
+            TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_LostBook");
             
             TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_DonateItem", TriggerActions.DonateItem);
             TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_ForceDonateItem", TriggerActions.ForceDonateItem);
@@ -168,6 +169,20 @@ namespace CustomMuseumFramework
                 
                 return true;
             });
+        }
+
+        private void OnModMessageReceived(object? sender, ModMessageReceivedEventArgs e)
+        {
+            if (e.FromModID != Manifest.UniqueID || e.Type != "Spiderbuttons.CMF_LostBook") return;
+
+            var args = e.ReadAs<string[]>();
+            var museumId = args[0];
+            var booksetId = args[1];
+
+            if (MuseumManagers.TryGetValue(museumId, out var manager))
+            {
+                manager.IncrementLostBookCount(booksetId);
+            }
         }
 
         private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
@@ -205,12 +220,24 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                //
+                // log each key and value from the current location mod data
+                var manager = MuseumManagers[Game1.currentLocation.Name];
+                foreach (var kvp in manager.Museum.modData.Pairs)
+                {
+                    Log.Debug($"Key: {kvp.Key}, Value: {kvp.Value}");
+                }
             }
 
             if (e.Button is SButton.F6)
             {
-                //
+                bool eq = System.Object.ReferenceEquals(Game1.currentLocation,
+                    MuseumManagers[Game1.currentLocation.Name].Museum);
+                Log.Alert("Are the two references equal: " + eq);
+            }
+
+            if (e.Button is SButton.LeftStick)
+            {
+                Game1.warpFarmer("Test.Mod_CMF", 4, 15, false);
             }
         }
     }

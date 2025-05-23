@@ -6,6 +6,7 @@ using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
 using Object = StardewValley.Object;
@@ -30,7 +31,14 @@ public static class LostBookPatches
         } else Game1.showGlobalMessage(data.OnReceive ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:FishingRod.cs.14100"));
 
         Game1.playSound("newRecipe");
-        manager.IncrementLostBookCount(data.Id);
+        
+        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage("Spiderbuttons.CMF_LostBook", location: manager.Museum.Name));
+        if (Context.IsMainPlayer) manager.IncrementLostBookCount(data.Id);
+        else
+        {
+            CMF.ModHelper.Multiplayer.SendMessage(new[]{ manager.Museum.Name, data.Id }, "Spiderbuttons.CMF_LostBook", modIDs: [CMF.Manifest.UniqueID]);
+        }
+        
         farmer.stats.Increment($"Spiderbuttons.CMF_LostBooks_{data.Id}", 1);
         
         if (data.BroadcastMessage is null) Game1.Multiplayer.globalChatInfoMessage("LostBook", farmer.displayName);
