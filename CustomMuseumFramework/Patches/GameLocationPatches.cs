@@ -214,10 +214,8 @@ public static class GameLocationPatches
         {
             if (manager.HasDonatedItem())
             {
-                string rearrangeText = manager.MuseumData.Strings.MenuRearrange ?? CMF.DefaultStrings.MenuRearrange ??
-                                       Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Rearrange");
-                string retrieveText = manager.MuseumData.Strings.MenuRetrieve ?? CMF.DefaultStrings.MenuRetrieve ??
-                                      Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
+                string rearrangeText = manager.MuseumData.Strings.MenuRearrange ?? i18n.MenuRearrange();
+                string retrieveText = manager.MuseumData.Strings.MenuRetrieve ?? i18n.MenuRetrieve();
                 Response[] choice = manager.MuseumData.AllowRetrieval && !manager.Mutex.IsLocked() ? new Response[3]
                 {
                     new Response("Rearrange", TokenParser.ParseText(rearrangeText)),

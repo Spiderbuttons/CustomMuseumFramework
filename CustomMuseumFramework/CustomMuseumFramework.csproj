@@ -19,6 +19,11 @@
         <OutputPath>bin\Debug</OutputPath>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <TranslationClassBuilder_ClassName>i18n</TranslationClassBuilder_ClassName>
+        <TranslationClassBuilder_AddGetByKey>true</TranslationClassBuilder_AddGetByKey>
+        <TranslationClassBuilder_AddKeyMap>true</TranslationClassBuilder_AddKeyMap>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.3.0"/>

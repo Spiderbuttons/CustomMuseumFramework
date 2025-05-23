@@ -266,7 +266,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 List<int> milestones = MuseumData.Milestones;
                 if (!holdingMuseumItem)
                 {
-                    MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnDonation ?? CMF.DefaultStrings.OnDonation!),
+                    MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnDonation ?? i18n.OnDonation()),
                         Game1.player.Name,
                         TokenStringBuilder.ItemNameFor(item), MuseumManager.Museum.DisplayName);
                         
@@ -274,7 +274,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                     {
                         if (!Game1.MasterPlayer.mailReceived.Contains($"{MuseumManager.Museum.Name}_MuseumCompletion"))
                         {
-                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnCompletion ?? CMF.DefaultStrings.OnCompletion!),
+                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion()),
                                 Game1.player.farmName.Value, MuseumManager.Museum.DisplayName);
                             Game1.addMail($"{MuseumManager.Museum.Name}_MuseumCompletion", true, true);
                         }
@@ -282,7 +282,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                     // If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this comment here to prove that I at least recognized the possibility.
                     else if (milestones.Contains(pieces))
                     {
-                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? CMF.DefaultStrings.OnMilestone!),
+                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? i18n.OnMilestone()),
                             Game1.player.farmName.Value, pieces.ToString(), MuseumManager.Museum.DisplayName);
                         Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone{pieces}", true, true);
                     }

@@ -537,14 +537,12 @@ public class MuseumManager
         {
             if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
             {
-                string busyText = MuseumData.Strings.Busy_NoOwner ?? CMF.DefaultStrings.Busy_NoOwner ??
-                    Game1.content.LoadString("Strings\\UI:NPC_Busy", Museum.DisplayName);
+                string busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
                 Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
             }
             else
             {
-                string busyText = MuseumData.Strings.Busy_Owner ?? CMF.DefaultStrings.Busy_Owner ??
-                    Game1.content.LoadString("Strings\\UI:NPC_Busy", owner.displayName);
+                string busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
                 Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
             }
         }
@@ -556,9 +554,9 @@ public class MuseumManager
             {
                 string completeText = isOwnerClockedIn switch
                 {
-                    true => MuseumData.Strings.MuseumComplete_Owner ?? CMF.DefaultStrings.MuseumComplete_Owner,
-                    false => MuseumData.Strings.MuseumComplete_NoOwner ?? CMF.DefaultStrings.MuseumComplete_NoOwner
-                } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_MuseumComplete");
+                    true => MuseumData.Strings.MuseumComplete_Owner ?? i18n.MuseumCompleteOwner(),
+                    false => MuseumData.Strings.MuseumComplete_NoOwner ?? i18n.MuseumCompleteNoOwner()
+                };
 
                 if (isOwnerClockedIn)
                 {
@@ -570,9 +568,9 @@ public class MuseumManager
             {
                 string nothingToDonateText = isOwnerClockedIn switch
                 {
-                    true => MuseumData.Strings.NothingToDonate_Owner ?? CMF.DefaultStrings.NothingToDonate_Owner,
-                    false => MuseumData.Strings.NothingToDonate_NoOwner ?? CMF.DefaultStrings.NothingToDonate_NoOwner
-                } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NothingToDonate");
+                    true => MuseumData.Strings.NothingToDonate_Owner ?? i18n.NothingToDonateOwner(),
+                    false => MuseumData.Strings.NothingToDonate_NoOwner ?? i18n.NothingToDonateNoOwner()
+                };
 
                 if (isOwnerClockedIn)
                 {
@@ -584,9 +582,9 @@ public class MuseumManager
             {
                 string noDonationsText = isOwnerClockedIn switch
                 {
-                    true => MuseumData.Strings.NoDonations_Owner ?? CMF.DefaultStrings.NoDonations_Owner,
-                    false => MuseumData.Strings.NoDonations_NoOwner ?? CMF.DefaultStrings.NoDonations_NoOwner
-                } ?? Game1.content.LoadString("Data\\ExtraDialogue:Gunther_NoArtifactsFound");
+                    true => MuseumData.Strings.NoDonations_Owner ?? i18n.NoDonationsOwner(),
+                    false => MuseumData.Strings.NoDonations_NoOwner ?? i18n.NoDonationsNoOwner()
+                };
 
                 if (isOwnerClockedIn)
                 {

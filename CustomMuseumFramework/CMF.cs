@@ -96,41 +96,14 @@ namespace CustomMuseumFramework
         }
         
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
-        
-        // TODO: These need i18n.
-        public static readonly MuseumStrings DefaultStrings =
-            new()
-            {
-                OnDonation = "{0} donated '{1}' to the {2} museum.",
-                OnMilestone = "{0} Farm has donated {1} pieces to the {2} museum.",
-                OnCompletion = "{0} Farm has completed the {1} museum collection.",
-                
-                MenuDonate = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Donate]",
-                MenuCollect = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Gunther_Collect]",
-                MenuRearrange = @"[LocalizedText Strings\Locations:ArchaeologyHouse_Rearrange]",
-                MenuRetrieve = "Retrieve",
-                
-                Busy_Owner = @"[LocalizedText Strings\UI:NPC_Busy]",
-                Busy_NoOwner = "Someone else is donating to the museum right now.",
-                
-                MuseumComplete_Owner = @"[LocalizedText Data\ExtraDialogue:Gunther_MuseumComplete]",
-                MuseumComplete_NoOwner = "The museum has been completed.",
-                
-                NothingToDonate_Owner = @"[LocalizedText Data\ExtraDialogue:Gunther_NothingToDonate]",
-                NothingToDonate_NoOwner = "You have nothing to donate to the museum.",
-                
-                NoDonations_Owner = "Welcome to the {0} museum! We don't have anything on display right now.",
-                NoDonations_NoOwner = "The museum has nothing on display right now.",
-                
-                CanBeDonated = "{0} would be interested in this."
-            };
 
         public override void Entry(IModHelper helper)
         {
             ModHelper = helper;
             ModMonitor = Monitor;
             Manifest = ModManifest;
-            CommandHandler = new CommandHandler(helper, ModManifest, "cmf");
+            i18n.Init(ModHelper.Translation);
+            CommandHandler = new CommandHandler(ModHelper, ModManifest, "cmf");
             CommandHandler.Register();
             Harmony = new Harmony(ModManifest.UniqueID);
 
