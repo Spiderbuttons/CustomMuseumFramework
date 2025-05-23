@@ -88,7 +88,7 @@ public class Queries
             return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
         }
 
-        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList))
+        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList) || !bookList.Any())
         {
             return GameStateQuery.Helpers.ErrorResult(query, $"The museum with Id '{museumId}' does not have any lost book data");
         }
@@ -119,7 +119,7 @@ public class Queries
             return GameStateQuery.Helpers.ErrorResult(query, "The museum Id provided does not match an existing custom museum");
         }
         
-        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList))
+        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList) || !bookList.Any())
         {
             return GameStateQuery.Helpers.ErrorResult(query, $"The museum with Id '{museumId}' does not have any lost book data");
         }
