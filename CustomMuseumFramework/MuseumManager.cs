@@ -411,17 +411,24 @@ public class MuseumManager
             player.mailReceived.Add(rewardId);
         }
 
-        if (data.Actions is null)
+        if (data.Action is not null)
         {
-            return;
-        }
-
-        foreach (string action in data.Actions)
-        {
-            if (!TriggerActionManager.TryRunAction(action, out var error, out _))
+            if (!TriggerActionManager.TryRunAction(data.Action, out var error, out _))
             {
                 Log.Error(
-                    $"Custom museum {Museum.Name} reward with ID '{rewardId}' ignored invalid action '{action}': {error}");
+                    $"Custom museum {Museum.Name} reward with ID '{rewardId}' ignored invalid action '{data.Action}': {error}");
+            }
+        }
+
+        if (data.Actions is not null)
+        {
+            foreach (string action in data.Actions)
+            {
+                if (!TriggerActionManager.TryRunAction(action, out var error, out _))
+                {
+                    Log.Error(
+                        $"Custom museum {Museum.Name} reward with ID '{rewardId}' ignored invalid action '{action}': {error}");
+                }
             }
         }
     }
