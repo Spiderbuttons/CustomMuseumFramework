@@ -192,14 +192,16 @@ public static class GameLocationPatches
 
                     if (!manager.IsNpcClockedIn(npc, manager.MuseumData.Owner.Area.Value))
                     {
-                        __result = false;
-                        return false;
-                    }
-
-                    manager.OpenMuseumDialogueMenu();
+                        string clockedText = manager.MuseumData.Strings.ClockedOut ?? i18n.ClockedOut();
+                        Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
+                    } else manager.OpenMuseumDialogueMenu();
+                    
                     __result = true;
                     return false;
                 }
+                
+                // TODO: Allow collection of rewards without owner present.
+                // TODO: Display a customizable string when the owner is clocked out.
 
                 __result = false;
                 return false;

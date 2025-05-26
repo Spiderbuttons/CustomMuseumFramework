@@ -13,6 +13,8 @@
   "MenuCollect": "[LocalizedText Strings\\Locations:ArchaeologyHouse_Gunther_Collect]",
   "MenuRearrange": "[LocalizedText Strings\\Locations:ArchaeologyHouse_Rearrange]",
   "MenuRetrieve": "Retrieve",
+  
+  "ClockedOut": "Come back when {0} is present.",
 
   "Busy_Owner": "[LocalizedText Strings\\UI:NPC_Busy {0}]",
   "Busy_NoOwner": "Someone else is donating to the museum right now.",

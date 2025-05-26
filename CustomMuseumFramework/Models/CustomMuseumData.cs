@@ -55,6 +55,8 @@ public class MuseumStrings
     public string? MenuRearrange { get; set; }
     public string? MenuRetrieve { get; set; }
     
+    public string? ClockedOut { get; set; }
+    
     public string? Busy_Owner { get; set; }
     public string? Busy_NoOwner { get; set; }
     
