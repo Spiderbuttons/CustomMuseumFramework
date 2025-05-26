@@ -180,9 +180,11 @@ public static class GameLocationPatches
         {
             if (manager.MuseumData.Owner?.RequiredForDonation is true)
             {
+                NPC owner = Game1.RequireCharacter(manager.MuseumData.Owner.Name);
+                string clockedText = string.Format(manager.MuseumData.Strings.ClockedOut ?? i18n.ClockedOut(), owner.displayName);
                 foreach (NPC npc in __instance.characters)
                 {
-                    if (!npc.Name.Equals(manager.MuseumData.Owner.Name)) continue;
+                    if (!npc.Name.Equals(owner.Name)) continue;
                     if (manager.MuseumData.Owner.Area is null || manager.MuseumData.Owner.Area.Value.IsEmpty)
                     {
                         manager.OpenMuseumDialogueMenu();
@@ -190,11 +192,10 @@ public static class GameLocationPatches
                         return false;
                     }
 
-                    if (!manager.IsNpcClockedIn(npc, manager.MuseumData.Owner.Area.Value))
+                    if (manager.IsNpcClockedIn(npc, manager.MuseumData.Owner.Area.Value))
                     {
-                        string clockedText = manager.MuseumData.Strings.ClockedOut ?? i18n.ClockedOut();
-                        Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
-                    } else manager.OpenMuseumDialogueMenu();
+                        manager.OpenMuseumDialogueMenu();
+                    }
                     
                     __result = true;
                     return false;
@@ -203,7 +204,8 @@ public static class GameLocationPatches
                 // TODO: Allow collection of rewards without owner present.
                 // TODO: Display a customizable string when the owner is clocked out.
 
-                __result = false;
+                Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
+                __result = true;
                 return false;
             }
 

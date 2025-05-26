@@ -461,6 +461,20 @@ public class MuseumManager
                 };
             });
         }
+        else
+        {
+            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
+            string busyText;
+            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+            {
+                busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
+            }
+            else
+            {
+                busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
+            }
+            Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
+        }
     }
 
     public void OpenRewardMenu()
@@ -510,6 +524,8 @@ public class MuseumManager
 
     public void OpenMuseumDialogueMenu()
     {
+        // TODO: Add Rearrange and Retrieve options if the map does not have a MuseumMenu_Rearrange tile.
+        
         string donateText = MuseumData.Strings.MenuDonate ??
                             Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Donate");
         string collectText = MuseumData.Strings.MenuCollect ??
@@ -644,28 +660,45 @@ public class MuseumManager
 
     public void OpenRetrievalMenu()
     {
-        Mutex.RequestLock(delegate
+        if (!Mutex.IsLocked())
         {
-            Game1.activeClickableMenu = new ItemGrabMenu(
-                Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}"),
-                reverseGrab: false,
-                showReceivingMenu: true, HighlightPreviouslyDonated, ReturnToMuseum, "Retrieve", RetrieveItemFromMuseum,
-                snapToBottom: false, canBeExitedWithKey: true, playRightClickSound: false, allowRightClick: false,
-                showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true)
+            Mutex.RequestLock(delegate
             {
-                exitFunction = () =>
+                Game1.activeClickableMenu = new ItemGrabMenu(
+                    Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}"),
+                    reverseGrab: false,
+                    showReceivingMenu: true, HighlightPreviouslyDonated, ReturnToMuseum, "Retrieve",
+                    RetrieveItemFromMuseum,
+                    snapToBottom: false, canBeExitedWithKey: true, playRightClickSound: false, allowRightClick: false,
+                    showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true)
                 {
-                    foreach (var item in Game1.player.Items)
+                    exitFunction = () =>
                     {
-                        ResetModData(item);
-                    }
+                        foreach (var item in Game1.player.Items)
+                        {
+                            ResetModData(item);
+                        }
 
-                    Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}")
-                        .RemoveEmptySlots();
-                    Mutex.ReleaseLock();
-                }
-            };
-        });
+                        Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}")
+                            .RemoveEmptySlots();
+                        Mutex.ReleaseLock();
+                    }
+                };
+            });
+        } else
+        {
+            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
+            string busyText;
+            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+            {
+                busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
+            }
+            else
+            {
+                busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
+            }
+            Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
+        }
     }
 
     public bool IsNpcClockedIn(NPC? npc, Rectangle? area)
