@@ -408,7 +408,7 @@ public class MuseumManager
         if (data is null) return;
         if (data.FlagOnCompletion)
         {
-            player.mailReceived.Add(rewardId);
+            player.mailReceived.Add($"{Museum.Name}_Reward_{rewardId}");
         }
 
         if (data.Action is not null)
@@ -716,7 +716,7 @@ public class MuseumManager
     private bool CanCollectReward(CustomMuseumReward reward, string rewardId, Farmer player,
         Dictionary<string, bool> metRequirements)
     {
-        if (reward.FlagOnCompletion && player.mailReceived.Contains(rewardId))
+        if (reward.FlagOnCompletion && player.mailReceived.Contains($"{Museum.Name}_Reward_{rewardId}"))
         {
             if (reward.RewardItems is not null)
             {
