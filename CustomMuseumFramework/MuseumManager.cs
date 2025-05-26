@@ -710,7 +710,7 @@ public class MuseumManager
             value = Museum.doesTileHaveProperty(x, y, "Spiderbuttons.CMF", "Buildings");
         }
 
-        return value is not null && value.EqualsIgnoreCase("DonationSpot");
+        return value is not null && value.EqualsIgnoreCase("ItemPedestal");
     }
 
     private bool CanCollectReward(CustomMuseumReward reward, string rewardId, Farmer player,
