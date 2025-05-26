@@ -195,7 +195,7 @@ public static class GameLocationPatches
                     if (manager.IsNpcClockedIn(npc, manager.MuseumData.Owner.Area.Value))
                     {
                         manager.OpenMuseumDialogueMenu();
-                    }
+                    } else Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
                     
                     __result = true;
                     return false;
