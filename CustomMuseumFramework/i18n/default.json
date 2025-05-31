@@ -28,5 +28,7 @@
   "NoDonations_Owner": "Welcome to the {0} museum! We don't have anything on display right now.",
   "NoDonations_NoOwner": "The museum has nothing on display right now.",
 
-  "CanBeDonated": "{0} would be interested in this."
+  "CanBeDonated": "{0} would be interested in this.",
+  
+  "MissingLostBook": "A book is missing here..."
 }

@@ -123,7 +123,13 @@ public static class GameLocationPatches
 
             if (bookDataIndex >= booksFound)
             {
-                __result = false;
+                if (bookData.MissingText is not null)
+                {
+                    Game1.drawObjectDialogue(bookData.MissingText == string.Empty
+                        ? TokenParser.ParseText(i18n.MissingLostBook())
+                        : TokenParser.ParseText(bookData.MissingText));
+                }
+                __result = true;
                 return false;
             }
 
