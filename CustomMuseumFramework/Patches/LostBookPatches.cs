@@ -28,7 +28,7 @@ public static class LostBookPatches
         {
             Game1.addMailForTomorrow($"{manager.Museum.Name}_FoundLostBook_{data.Id}", noLetter: true);
             shouldHoldUpArtifact = true;
-        } else Game1.showGlobalMessage(data.OnReceive ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:FishingRod.cs.14100"));
+        } else Game1.showGlobalMessage(data.ReceiveText ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:FishingRod.cs.14100"));
 
         Game1.playSound("newRecipe");
         
@@ -41,8 +41,8 @@ public static class LostBookPatches
         
         farmer.stats.Increment($"Spiderbuttons.CMF_LostBooks_{data.Id}", 1);
         
-        if (data.BroadcastMessage is null) Game1.Multiplayer.globalChatInfoMessage("LostBook", farmer.displayName);
-        else MultiplayerUtils.broadcastChatMessage(data.BroadcastMessage, farmer.displayName);
+        if (data.BroadcastText is null) Game1.Multiplayer.globalChatInfoMessage("LostBook", farmer.displayName);
+        else MultiplayerUtils.broadcastChatMessage(data.BroadcastText, farmer.displayName);
 
         if (shouldHoldUpArtifact) farmer.holdUpItemThenMessage(ItemRegistry.Create(itemId));
     }
@@ -122,7 +122,7 @@ public static class LostBookPatches
         CustomLostBookData? data = bookList.FirstOrDefault(x => x.ItemId == __instance.QualifiedItemId);
         if (data is null) return;
 
-        __result = data.OnReceive ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.12994");
+        __result = data.ReceiveText ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.12994");
     }
     
     [HarmonyTranspiler]
