@@ -318,7 +318,7 @@ public class MuseumManager
                 continue;
             }
 
-            player.mailReceived.Add($"{Museum.Name}_MuseumReward_{id}");
+            Game1.addMail($"{Museum.Name}_MuseumReward_{id}", true, true);
             bool rewardAdded = false;
             if (reward.RewardItems is not null)
             {
