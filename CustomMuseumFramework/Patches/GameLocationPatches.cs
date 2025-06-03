@@ -36,12 +36,12 @@ public static class GameLocationPatches
         
         if (manager.DoesFarmerHaveAnythingToDonate(Game1.player))
         {
-            Game1.player.mailReceived.Add($"{manager.Museum.Name}_somethingToDonate");
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_SomethingToDonate");
         }
         
         if (manager.HasDonatedItem())
         {
-            Game1.player.mailReceived.Add($"{manager.Museum.Name}_somethingWasDonated");
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_SomethingWasDonated");
         }
         
         foreach (var pair in manager.getLostBooksLocations())
@@ -97,6 +97,9 @@ public static class GameLocationPatches
 
         if (text.EqualsIgnoreCase("Spiderbuttons.CMF_LostBook"))
         {
+            // TODO: Display no message for missing books if the missingtext is null.
+            // TODO: Search for lost books by ID, not index.
+            
             if (!CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList) || !bookList.Any()) return true;
             string bookDataId = ArgUtility.Get(action, 1);
             int bookDataIndex = ArgUtility.GetInt(action, 2);
