@@ -120,7 +120,7 @@ namespace CustomMuseumFramework
             
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
-            TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_LostBook");
+            TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_BookFound");
             
             TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_DonateItem", TriggerActions.DonateItem);
             TriggerActionManager.RegisterAction($"{Manifest.UniqueID}_ForceDonateItem", TriggerActions.ForceDonateItem);

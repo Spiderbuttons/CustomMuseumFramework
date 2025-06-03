@@ -26,13 +26,13 @@ public static class LostBookPatches
         bool shouldHoldUpArtifact = false;
         if (!farmer.hasOrWillReceiveMail($"{manager.Museum.Name}_FoundLostBook_{data.Id}"))
         {
-            Game1.addMailForTomorrow($"{manager.Museum.Name}_FoundLostBook_{data.Id}", noLetter: true);
+            Game1.addMail($"{manager.Museum.Name}_FoundLostBook_{data.Id}", noLetter: true);
             shouldHoldUpArtifact = true;
         } else Game1.showGlobalMessage(data.ReceiveText ?? Game1.content.LoadString("Strings\\StringsFromCSFiles:FishingRod.cs.14100"));
 
         Game1.playSound("newRecipe");
         
-        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage("Spiderbuttons.CMF_LostBook", location: manager.Museum.Name));
+        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage("Spiderbuttons.CMF_BookFound", itemId, itemId, location: manager.Museum.Name));
         if (Context.IsMainPlayer) manager.IncrementLostBookCount(data.Id);
         else
         {
