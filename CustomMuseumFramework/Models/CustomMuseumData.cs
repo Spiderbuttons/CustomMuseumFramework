@@ -25,10 +25,7 @@ public class CustomMuseumData
     
     public bool OverrideDescription { get; set; } = false;
 
-    public InteractionData PedestalAction { get; set; } = new InteractionData()
-    {
-        Text = " - {0} - ^{1}"
-    };
+    public InteractionData PedestalAction { get; set; } = new InteractionData();
     
     public List<CustomMuseumReward> Rewards { get; set; } = [];
     
