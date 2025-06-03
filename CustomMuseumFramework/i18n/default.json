@@ -30,5 +30,5 @@
 
   "CanBeDonated": "{0} would be interested in this.",
   
-  "MissingLostBook": "A book is missing here..."
+  "MissingLostBook": "[LocalizedText Strings\\Notes:Missing]"
 }
