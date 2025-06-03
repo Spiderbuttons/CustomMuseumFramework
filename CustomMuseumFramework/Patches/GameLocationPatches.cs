@@ -50,12 +50,13 @@ public static class GameLocationPatches
             {
                 booksFound = 0;
             }
-
-            foreach (var bookLocation in pair.Value)
+            
+            for (int i = 0; i < pair.Value.Count; i++)
             {
-                int index = bookLocation.Key;
+                KeyValuePair<string, Vector2> bookLocation = pair.Value.ElementAt(i);
+                string bookId = bookLocation.Key;
                 Vector2 tile = bookLocation.Value;
-                if (index + 1 <= booksFound && !Game1.player.mailReceived.Contains($"{manager.Museum.Name}_ReadLostBook_${pair.Key}_{index}"))
+                if (i + 1 <= booksFound && !Game1.player.mailReceived.Contains($"{manager.Museum.Name}_ReadLostBook_{pair.Key}_{bookId}"))
                 {
                     manager.Museum.temporarySprites.Add(new TemporaryAnimatedSprite("LooseSprites\\Cursors",
                         new Rectangle(144, 447, 15, 15), new Vector2(tile.X * 64f, tile.Y * 64f - 96f - 16f),
@@ -69,7 +70,7 @@ public static class GameLocationPatches
                         yPeriodicRange = 16f,
                         layerDepth = 1f,
                         scale = 4f,
-                        id = index
+                        id = i
                     });
                 }
             }
@@ -97,12 +98,9 @@ public static class GameLocationPatches
 
         if (text.EqualsIgnoreCase("Spiderbuttons.CMF_LostBook"))
         {
-            // TODO: Display no message for missing books if the missingtext is null.
-            // TODO: Search for lost books by ID, not index.
-            
             if (!CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList) || !bookList.Any()) return true;
             string bookDataId = ArgUtility.Get(action, 1);
-            int bookDataIndex = ArgUtility.GetInt(action, 2);
+            string bookId = ArgUtility.Get(action, 2);
 
             var bookData = bookList.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
             if (bookData is null)
@@ -112,9 +110,11 @@ public static class GameLocationPatches
                 return false;
             }
             
-            if (bookData.Entries.Count <= bookDataIndex || bookDataIndex < 0)
+            var bookIndex = bookData.Entries.FindIndex(entry => entry.Id.EqualsIgnoreCase(bookId));
+            
+            if (bookIndex == -1)
             {
-                Log.Warn($"LostBook data with Id '{bookDataId}' has no entry at index '{bookDataIndex}' for museum '{manager.Museum.Name}'.");
+                Log.Warn($"LostBook data with Id '{bookDataId}' has no entry with Id '{bookId}' for museum '{manager.Museum.Name}'.");
                 __result = false;
                 return false;
             }
@@ -124,7 +124,7 @@ public static class GameLocationPatches
                 booksFound = 0;
             }
 
-            if (bookDataIndex >= booksFound)
+            if (bookIndex >= booksFound)
             {
                 if (bookData.MissingText is not null)
                 {
@@ -136,7 +136,7 @@ public static class GameLocationPatches
                 return false;
             }
 
-            var entry = bookData.Entries[bookDataIndex];
+            var entry = bookData.Entries[bookIndex];
             
             switch (entry.InteractionType)
             {
@@ -163,16 +163,16 @@ public static class GameLocationPatches
                     break;
             }
             
-            if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookDataIndex}"))
+            if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}"))
             {
                 // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
                 // (pls give us string IDs or some other way to identify TASes in future Stardew Versions i beg u)
                 // So we need to check that the sprite is in the right location that we'd expect, too... roughly.)
                 
-                Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookDataIndex}");
+                Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}");
             
                 Vector2 spriteLocation = new Vector2(tileLocation.X * 64f, tileLocation.Y * 64f - 96f - 16f);
-                TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s => s.id == bookDataIndex && Math.Abs(s.position.X - spriteLocation.X) < 1 && s.position.Y <= spriteLocation.Y + 16.1f && s.position.Y >= spriteLocation.Y - 16.1f);
+                TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s => s.id == bookIndex && Math.Abs(s.position.X - spriteLocation.X) < 1 && s.position.Y <= spriteLocation.Y + 16.1f && s.position.Y >= spriteLocation.Y - 16.1f);
                 if (sprite is not null)
                 {
                     sprite.destroyable = true;

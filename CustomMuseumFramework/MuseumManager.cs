@@ -946,9 +946,9 @@ public class MuseumManager
                 (int.Parse(Museum.modData["Spiderbuttons.CMF_TotalLostBooks"]) + 1).ToString();
     }
 
-    public Dictionary<string, Dictionary<int, Vector2>> getLostBooksLocations()
+    public Dictionary<string, Dictionary<string, Vector2>> getLostBooksLocations()
     {
-        Dictionary<string, Dictionary<int, Vector2>> lostBooksLocations = new();
+        Dictionary<string, Dictionary<string, Vector2>> lostBooksLocations = new();
         for (int x = 0; x < Museum.map.Layers[0].LayerWidth; x++)
         {
             for (int y = 0; y < Museum.map.Layers[0].LayerHeight; y++)
@@ -957,7 +957,7 @@ public class MuseumManager
                 if (ArgUtility.Get(action, 0) != "Spiderbuttons.CMF_LostBook") continue;
 
                 if (!ArgUtility.TryGet(action, 1, out var bookDataId, out var error, false, "string bookDataId") ||
-                    !ArgUtility.TryGetInt(action, 2, out var bookIndex, out error, "int bookIndex"))
+                    !ArgUtility.TryGet(action, 2, out var bookId, out error, false, "string bookId"))
                 {
                     Museum.LogTileActionError(action, x, y, error);
                     continue;
@@ -965,15 +965,15 @@ public class MuseumManager
 
                 if (!lostBooksLocations.TryGetValue(bookDataId, out var bookLocations))
                 {
-                    bookLocations = new Dictionary<int, Vector2>();
+                    bookLocations = new Dictionary<string, Vector2>();
                     lostBooksLocations[bookDataId] = bookLocations;
                 }
 
-                if (!bookLocations.ContainsKey(bookIndex))
+                if (!bookLocations.ContainsKey(bookId))
                 {
-                    bookLocations[bookIndex] = new Vector2(x, y);
+                    bookLocations[bookId] = new Vector2(x, y);
                 }
-                else Log.Warn($"Duplicate lost book location found for {bookDataId} at index {bookIndex}.");
+                else Log.Warn($"Duplicate lost book location found for bookset '{bookDataId}' and book Id '{bookId}'");
             }
         }
 
