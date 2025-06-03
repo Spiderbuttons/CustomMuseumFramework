@@ -4,6 +4,7 @@ using HarmonyLib;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Quests;
+using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
 
 namespace CustomMuseumFramework.Patches;
@@ -16,13 +17,12 @@ public static class QuestPatches
     public static bool getQuestFromId_Prefix(string id, ref Quest __result)
     {
         if (!CMF.QuestData.TryGetValue(id, out var data)) return true;
-
         Quest quest = new Quest();
         quest.questType.Value = 1;
         quest.id.Value = id;
-        quest.questTitle = data.Title ?? "";
-        quest.questDescription = data.Description ?? "";
-        quest.currentObjective = data.Hint ?? "";
+        quest.questTitle = TokenParser.ParseText(data.Title ?? "");
+        quest.questDescription = TokenParser.ParseText(data.Description ?? "");
+        quest.currentObjective = TokenParser.ParseText(data.Hint ?? "");
         quest.daysLeft.Value = data.TimeToComplete;
 
         if (data.NextQuests is not null)
