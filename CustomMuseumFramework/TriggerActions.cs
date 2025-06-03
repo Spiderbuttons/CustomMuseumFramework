@@ -29,7 +29,6 @@ public class TriggerActions
         {
             return false;
         }
-        // TODO: Notify quests.
         
         return museum.DonateItem(location, itemId);
     }
