@@ -284,7 +284,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                     {
                         MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? i18n.OnMilestone()),
                             Game1.player.farmName.Value, pieces.ToString(), MuseumManager.Museum.DisplayName);
-                        Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone{pieces}", true, true);
+                        Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone_{pieces}", true, true);
                     }
                 }
 
