@@ -28,7 +28,6 @@ public class MultiplayerUtils
         
         if (!Game1.IsMultiplayer || Game1.multiplayerMode == 0) return;
         
-        Log.Alert("Broading trigger: " + trigger.Trigger);
         CMF.ModHelper.Multiplayer.SendMessage(
             trigger,
             "Spiderbuttons.CMF_Trigger",
@@ -41,7 +40,6 @@ public class MultiplayerUtils
         if (e.FromModID != CMF.Manifest.UniqueID || e.Type != "Spiderbuttons.CMF_Trigger") return;
         
         var trigger = e.ReadAs<TriggerPackage>();
-        Log.Warn(trigger.Trigger);
         TriggerActionManager.Raise(trigger.Trigger, triggerArgs: trigger.TriggerArgs, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
     }
     
