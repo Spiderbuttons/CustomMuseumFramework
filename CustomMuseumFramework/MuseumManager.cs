@@ -34,6 +34,130 @@ public class MuseumManager
         }
     }
 
+    public string ON_DONATION(string item) =>
+        TokenParser.ParseText(string.Format(MuseumData.Strings.OnDonation ?? i18n.OnDonation(),
+            Game1.player.displayName, item, Museum.DisplayName));
+
+    public string ON_MILESTONE(int number) =>
+        TokenParser.ParseText(string.Format(MuseumData.Strings.OnMilestone ?? i18n.OnMilestone(),
+            Game1.getFarm().GetDisplayName(), number,
+            Museum.DisplayName));
+
+    public string ON_COMPLETION(string farm) =>
+        TokenParser.ParseText(string.Format(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion(),
+            Game1.getFarm().GetDisplayName(), Museum.DisplayName));
+
+    public string MENU_DONATE() => TokenParser.ParseText(MuseumData.Strings.MenuDonate ?? i18n.MenuDonate());
+    public string MENU_COLLECT() => TokenParser.ParseText(MuseumData.Strings.MenuCollect ?? i18n.MenuCollect());
+    public string MENU_REARRANGE() => TokenParser.ParseText(MuseumData.Strings.MenuRearrange ?? i18n.MenuRearrange());
+    public string MENU_RETRIEVE() => TokenParser.ParseText(MuseumData.Strings.MenuRetrieve ?? i18n.MenuRetrieve());
+
+    public string CLOCKED_OUT()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name))
+        {
+            return TokenParser.ParseText(MuseumData.Strings.ClockedOut ?? i18n.ClockedOut());
+        }
+
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.ClockedOut ?? i18n.ClockedOut(),
+            MuseumData.Owner.Name));
+    }
+
+    public string BUSY()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
+            Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
+        {
+            return TokenParser.ParseText(MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner());
+        }
+
+        NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
+        if (!IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+        {
+            return TokenParser.ParseText(string.Format(MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner(),
+                MuseumData.Owner?.Name));
+        }
+
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.Busy_Owner ?? i18n.BusyOwner(),
+            MuseumData.Owner?.Name));
+    }
+
+    public string MUSEUM_COMPLETE()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
+            Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
+        {
+            return TokenParser.ParseText(MuseumData.Strings.MuseumComplete_NoOwner ?? i18n.MuseumCompleteNoOwner());
+        }
+
+        NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
+        if (!IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+        {
+            return TokenParser.ParseText(string.Format(
+                MuseumData.Strings.MuseumComplete_NoOwner ?? i18n.MuseumCompleteNoOwner(),
+                MuseumData.Owner?.Name));
+        }
+
+        return TokenParser.ParseText(string.Format(
+            MuseumData.Strings.MuseumComplete_Owner ?? i18n.MuseumCompleteOwner(),
+            MuseumData.Owner?.Name));
+    }
+
+    public string NOTHING_TO_DONATE()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
+            Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
+        {
+            return TokenParser.ParseText(MuseumData.Strings.NothingToDonate_NoOwner ?? i18n.NothingToDonateNoOwner());
+        }
+
+        NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
+        if (!IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+        {
+            return TokenParser.ParseText(string.Format(
+                MuseumData.Strings.NothingToDonate_NoOwner ?? i18n.NothingToDonateNoOwner(),
+                MuseumData.Owner?.Name));
+        }
+
+        return TokenParser.ParseText(string.Format(
+            MuseumData.Strings.NothingToDonate_Owner ?? i18n.NothingToDonateOwner(),
+            MuseumData.Owner?.Name));
+    }
+
+    public string NO_DONATIONS()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
+            Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
+        {
+            return TokenParser.ParseText(MuseumData.Strings.NoDonations_NoOwner ?? i18n.NoDonationsNoOwner());
+        }
+
+        NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
+        if (!IsNpcClockedIn(owner, MuseumData.Owner?.Area))
+        {
+            return TokenParser.ParseText(string.Format(
+                MuseumData.Strings.NoDonations_NoOwner ?? i18n.NoDonationsNoOwner(),
+                MuseumData.Owner?.Name));
+        }
+
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.NoDonations_Owner ?? i18n.NoDonationsOwner(),
+            MuseumData.Owner?.Name));
+    }
+
+    public string CAN_BE_DONATED()
+    {
+        if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
+            Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
+        {
+            return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
+                Museum.DisplayName));
+        }
+
+        NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
+            owner.displayName));
+    }
+
     public readonly Dictionary<Item, string> _itemToRewardsLookup = new();
 
     private readonly HashSet<string> _totalPossibleDonations = [];
@@ -68,6 +192,11 @@ public class MuseumManager
             return dict;
         }
     }
+    
+    private bool IsMuseumComplete()
+    {
+        return DonatedItems.Count >= TotalPossibleDonations.Count;
+    }
 
     public NetMutex Mutex =>
         Game1.player.team.GetOrCreateGlobalInventoryMutex($"{CMF.Manifest.UniqueID}_{Museum.Name}");
@@ -101,6 +230,21 @@ public class MuseumManager
         }
 
         CalculateDonations();
+    }
+
+    private bool HasRearrangeTile()
+    {
+        for (int x = 0; x < Museum.map.Layers[0].LayerWidth; x++)
+        {
+            for (int y = 0; y < Museum.map.Layers[0].LayerHeight; y++)
+            {
+                string[] action = Museum.GetTilePropertySplitBySpaces("Action", "Buildings", x, y);
+                if (ArgUtility.Get(action, 0) != "Spiderbuttons.CMF_Rearrange") continue;
+
+                return true;
+            }
+        }
+        return false;
     }
 
     public bool HasDonatedItem()
@@ -461,20 +605,7 @@ public class MuseumManager
                 };
             });
         }
-        else
-        {
-            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
-            string busyText;
-            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
-            {
-                busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
-            }
-            else
-            {
-                busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
-            }
-            Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
-        }
+        else Game1.drawObjectDialogue(BUSY());
     }
 
     public void OpenRewardMenu()
@@ -524,97 +655,56 @@ public class MuseumManager
 
     public void OpenMuseumDialogueMenu()
     {
-        // TODO: Add Rearrange and Retrieve options if the map does not have a MuseumMenu_Rearrange tile.
-        
-        string donateText = MuseumData.Strings.MenuDonate ??
-                            Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Donate");
-        string collectText = MuseumData.Strings.MenuCollect ??
-                             Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Collect");
+        Stack<Response> choices = new Stack<Response>();
+        choices.Push(new Response("Leave",
+            Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave")));
+
+        if (!HasRearrangeTile() && !Mutex.IsLocked() && HasDonatedItem())
+        {
+            if (MuseumData.AllowRetrieval) choices.Push(new Response("Retrieve", MENU_RETRIEVE()));
+            choices.Push(new Response("Rearrange", MENU_REARRANGE()));
+        }
+
+        if (GetRewardsForPlayer(Game1.player).Count > 0)
+        {
+            choices.Push(new Response("Collect", MENU_COLLECT()));
+        }
+
+        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked() &&
+            (MuseumData.Owner is null || !MuseumData.Owner.RequiredForDonation || 
+             IsNpcClockedIn(Game1.getCharacterFromName(MuseumData.Owner?.Name), MuseumData.Owner?.Area)))
+        {
+            choices.Push(new Response("Donate", MENU_DONATE()));
+        }
+
+        if (choices.Count > 1)
+        {
+            Museum.createQuestionDialogue("", choices.ToArray(), "Museum");
+            return;
+        }
 
         NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
-        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked())
+        bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
+
+        if (IsMuseumComplete())
         {
-            Response[] choice = ((GetRewardsForPlayer(Game1.player).Count <= 0)
-                ? new Response[2]
-                {
-                    new Response("Donate", TokenParser.ParseText(donateText)),
-                    new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
-                }
-                : new Response[3]
-                {
-                    new Response("Donate", TokenParser.ParseText(donateText)),
-                    new Response("Collect", TokenParser.ParseText(collectText)),
-                    new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
-                });
-            Museum.createQuestionDialogue("", choice, "Museum");
+            if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, MUSEUM_COMPLETE()));
+            else Game1.drawObjectDialogue(TokenParser.ParseText(MUSEUM_COMPLETE()));
         }
-        else if (GetRewardsForPlayer(Game1.player).Count > 0)
+        else if (Mutex.IsLocked())
         {
-            Museum.createQuestionDialogue("", new Response[2]
-            {
-                new Response("Collect", TokenParser.ParseText(collectText)),
-                new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
-            }, "Museum");
+            if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, BUSY()));
+            else Game1.drawObjectDialogue(BUSY());
         }
-        else if (DoesFarmerHaveAnythingToDonate(Game1.player) && Mutex.IsLocked())
+        else if (DonatedItems.Any())
         {
-            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
-            {
-                string busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
-                Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
-            }
-            else
-            {
-                string busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
-                Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
-            }
+            if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, NOTHING_TO_DONATE()));
+            else Game1.drawObjectDialogue(NOTHING_TO_DONATE());
         }
         else
         {
-            bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
-
-            if (DonatedItems.Count >= TotalPossibleDonations.Count)
-            {
-                string completeText = isOwnerClockedIn switch
-                {
-                    true => MuseumData.Strings.MuseumComplete_Owner ?? i18n.MuseumCompleteOwner(),
-                    false => MuseumData.Strings.MuseumComplete_NoOwner ?? i18n.MuseumCompleteNoOwner()
-                };
-
-                if (isOwnerClockedIn)
-                {
-                    Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(completeText)));
-                }
-                else Game1.drawObjectDialogue(TokenParser.ParseText(completeText));
-            }
-            else if (DonatedItems.Any())
-            {
-                string nothingToDonateText = isOwnerClockedIn switch
-                {
-                    true => MuseumData.Strings.NothingToDonate_Owner ?? i18n.NothingToDonateOwner(),
-                    false => MuseumData.Strings.NothingToDonate_NoOwner ?? i18n.NothingToDonateNoOwner()
-                };
-
-                if (isOwnerClockedIn)
-                {
-                    Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(nothingToDonateText)));
-                }
-                else Game1.drawObjectDialogue(TokenParser.ParseText(nothingToDonateText));
-            }
-            else
-            {
-                string noDonationsText = isOwnerClockedIn switch
-                {
-                    true => MuseumData.Strings.NoDonations_Owner ?? i18n.NoDonationsOwner(),
-                    false => MuseumData.Strings.NoDonations_NoOwner ?? i18n.NoDonationsNoOwner()
-                };
-
-                if (isOwnerClockedIn)
-                {
-                    Game1.DrawDialogue(new Dialogue(owner, null, Game1.parseText(noDonationsText)));
-                }
-                else Game1.drawObjectDialogue(TokenParser.ParseText(noDonationsText));
-            }
+            if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, NO_DONATIONS()));
+            else Game1.drawObjectDialogue(NO_DONATIONS());
         }
     }
 
@@ -685,20 +775,8 @@ public class MuseumManager
                     }
                 };
             });
-        } else
-        {
-            NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
-            string busyText;
-            if (owner is null || !IsNpcClockedIn(owner, MuseumData.Owner?.Area))
-            {
-                busyText = MuseumData.Strings.Busy_NoOwner ?? i18n.BusyNoOwner();
-            }
-            else
-            {
-                busyText = MuseumData.Strings.Busy_Owner ?? string.Format(i18n.BusyOwner(), owner.displayName);
-            }
-            Game1.drawObjectDialogue(TokenParser.ParseText(busyText));
         }
+        else Game1.drawObjectDialogue(BUSY());
     }
 
     public bool IsNpcClockedIn(NPC? npc, Rectangle? area)
@@ -932,7 +1010,7 @@ public class MuseumManager
     public void IncrementLostBookCount(string booksetId)
     {
         if (!Context.IsMainPlayer) return;
-        
+
         if (!Museum.modData.ContainsKey($"Spiderbuttons.CMF_LostBooks_{booksetId}"))
             Museum.modData.Add($"Spiderbuttons.CMF_LostBooks_{booksetId}", "1");
         else

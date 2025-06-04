@@ -187,37 +187,6 @@ public static class GameLocationPatches
         
         if (text.EqualsIgnoreCase("Spiderbuttons.CMF_MuseumMenu"))
         {
-            if (manager.MuseumData.Owner?.RequiredForDonation is true)
-            {
-                NPC owner = Game1.RequireCharacter(manager.MuseumData.Owner.Name);
-                string clockedText = string.Format(manager.MuseumData.Strings.ClockedOut ?? i18n.ClockedOut(), owner.displayName);
-                foreach (NPC npc in __instance.characters)
-                {
-                    if (!npc.Name.Equals(owner.Name)) continue;
-                    if (manager.MuseumData.Owner.Area is null || manager.MuseumData.Owner.Area.Value.IsEmpty)
-                    {
-                        manager.OpenMuseumDialogueMenu();
-                        __result = true;
-                        return false;
-                    }
-
-                    if (manager.IsNpcClockedIn(npc, manager.MuseumData.Owner.Area.Value))
-                    {
-                        manager.OpenMuseumDialogueMenu();
-                    } else Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
-                    
-                    __result = true;
-                    return false;
-                }
-                
-                // TODO: Allow collection of rewards without owner present.
-                // TODO: Display a customizable string when the owner is clocked out.
-
-                Game1.drawObjectDialogue(TokenParser.ParseText(clockedText));
-                __result = true;
-                return false;
-            }
-
             manager.OpenMuseumDialogueMenu();
             __result = true;
             return false;
