@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Menus;
@@ -150,11 +151,11 @@ public class MuseumManager
             Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
         {
             return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
-                Museum.DisplayName));
+                Museum.DisplayName, "A museum owner"));
         }
 
         NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
-        return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(), Museum.DisplayName,
             owner.displayName));
     }
 
@@ -192,7 +193,7 @@ public class MuseumManager
             return dict;
         }
     }
-    
+
     private bool IsMuseumComplete()
     {
         return DonatedItems.Count >= TotalPossibleDonations.Count;
@@ -244,6 +245,7 @@ public class MuseumManager
                 return true;
             }
         }
+
         return false;
     }
 
@@ -671,7 +673,7 @@ public class MuseumManager
         }
 
         if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked() &&
-            (MuseumData.Owner is null || !MuseumData.Owner.RequiredForDonation || 
+            (MuseumData.Owner is null || !MuseumData.Owner.RequiredForDonation ||
              IsNpcClockedIn(Game1.getCharacterFromName(MuseumData.Owner?.Name), MuseumData.Owner?.Area)))
         {
             choices.Push(new Response("Donate", MENU_DONATE()));
@@ -695,6 +697,11 @@ public class MuseumManager
         {
             if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, BUSY()));
             else Game1.drawObjectDialogue(BUSY());
+        }
+        else if (DoesFarmerHaveAnythingToDonate(Game1.player) && MuseumData.Owner is not null &&
+                 MuseumData.Owner.RequiredForDonation && !isOwnerClockedIn)
+        {
+            Game1.drawObjectDialogue(CLOCKED_OUT());
         }
         else if (DonatedItems.Any())
         {
@@ -1056,5 +1063,123 @@ public class MuseumManager
         }
 
         return lostBooksLocations;
+    }
+
+    public static bool ActionHandler_MuseumMenu(GameLocation location, string[] args, Farmer farmer, Point point)
+    {
+        if (!CMF.MuseumManagers.TryGetValue(location.Name, out var manager)) return false;
+
+        manager.OpenMuseumDialogueMenu();
+        return true;
+    }
+
+    public static bool ActionHandler_Rearrange(GameLocation location, string[] args, Farmer farmer, Point point)
+    {
+        if (!CMF.MuseumManagers.TryGetValue(location.Name, out var manager) || !manager.HasDonatedItem() ||
+            manager.Mutex.IsLocked()) return false;
+
+        Stack<Response> choices = new Stack<Response>();
+        choices.Push(new Response("Leave",
+            Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave")));
+
+        if (manager.MuseumData.AllowRetrieval)
+            choices.Push(new Response("Retrieve", manager.MENU_RETRIEVE()));
+        choices.Push(new Response("Rearrange", manager.MENU_REARRANGE()));
+
+        manager.Museum.createQuestionDialogue("", choices.ToArray(), "Museum");
+        return true;
+    }
+
+    public static bool ActionHandler_LostBook(GameLocation location, string[] args, Farmer farmer, Point point)
+    {
+        if (!CMF.LostBookData.TryGetValue(location.Name, out var bookList) || !bookList.Any() ||
+            !CMF.MuseumManagers.TryGetValue(location.Name, out var manager)) return false;
+
+        string bookDataId = ArgUtility.Get(args, 1);
+        string bookId = ArgUtility.Get(args, 2);
+
+        var bookData = bookList.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
+        if (bookData is null)
+        {
+            Log.Warn($"No LostBook data with Id '{bookDataId}' found for museum '{manager.Museum.Name}'.");
+            return false;
+        }
+
+        var bookIndex = bookData.Entries.FindIndex(entry => entry.Id.EqualsIgnoreCase(bookId));
+
+        if (bookIndex == -1)
+        {
+            Log.Warn(
+                $"LostBook data with Id '{bookDataId}' has no entry with Id '{bookId}' for museum '{manager.Museum.Name}'.");
+            return false;
+        }
+
+        if (!manager.Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{bookDataId}", out var bookTally) ||
+            !int.TryParse(bookTally, out var booksFound))
+        {
+            booksFound = 0;
+        }
+
+        if (bookIndex >= booksFound)
+        {
+            if (bookData.MissingText is not null)
+            {
+                Game1.drawObjectDialogue(bookData.MissingText == string.Empty
+                    ? TokenParser.ParseText(i18n.MissingLostBook())
+                    : TokenParser.ParseText(bookData.MissingText));
+            }
+
+            return false;
+        }
+
+        var entry = bookData.Entries[bookIndex];
+
+        switch (entry.InteractionType)
+        {
+            case InteractionType.Sign:
+                Game1.drawObjectDialogue(entry.Text);
+                break;
+            case InteractionType.Message:
+                Game1.drawDialogueNoTyping(entry.Text);
+                break;
+            case InteractionType.Letter:
+                Game1.drawLetterMessage(entry.Text);
+                break;
+            case InteractionType.None:
+                break;
+            case InteractionType.Custom when entry.Action is not null:
+                if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
+                {
+                    Log.Error(error);
+                    return true;
+                }
+
+                break;
+            default:
+                Game1.drawLetterMessage(entry.Text);
+                break;
+        }
+
+        if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}"))
+        {
+            // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
+            // (pls give us string IDs or some other way to identify TASes in future Stardew Versions i beg u)
+            // So we need to check that the sprite is in (roughly) the right location that we'd expect, too
+
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}");
+
+            Vector2 spriteLocation = new Vector2(point.X * 64f, point.Y * 64f - 96f - 16f);
+            TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s =>
+                s.id == bookIndex && Math.Abs(s.position.X - spriteLocation.X) < 1 &&
+                s.position.Y <= spriteLocation.Y + 16.1f && s.position.Y >= spriteLocation.Y - 16.1f);
+            if (sprite is not null)
+            {
+                sprite.destroyable = true;
+                sprite.alpha = 0f;
+                sprite.scale = 0f;
+            }
+        }
+
+        return true;
     }
 }

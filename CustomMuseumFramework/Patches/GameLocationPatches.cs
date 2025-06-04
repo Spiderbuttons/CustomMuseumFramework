@@ -87,138 +87,6 @@ public static class GameLocationPatches
     }
     
     [HarmonyPrefix]
-    [HarmonyPatch(nameof(GameLocation.performAction), [typeof(string[]), typeof(Farmer), typeof(Location)])]
-    public static bool performAction(GameLocation __instance, string[] action, Farmer who, Location tileLocation, ref bool __result)
-    {
-        if (!CMF.MuseumManagers.TryGetValue(__instance.Name, out var manager)) return true;
-        
-        if (!who.IsLocalPlayer) return true;
-
-        string text = ArgUtility.Get(action, 0);
-
-        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_LostBook"))
-        {
-            if (!CMF.LostBookData.TryGetValue(manager.MuseumData.Id, out var bookList) || !bookList.Any()) return true;
-            string bookDataId = ArgUtility.Get(action, 1);
-            string bookId = ArgUtility.Get(action, 2);
-
-            var bookData = bookList.FirstOrDefault(book => book.Id.EqualsIgnoreCase(bookDataId));
-            if (bookData is null)
-            {
-                Log.Warn($"No LostBook data with Id '{bookDataId}' found for museum '{manager.Museum.Name}'.");
-                __result = false;
-                return false;
-            }
-            
-            var bookIndex = bookData.Entries.FindIndex(entry => entry.Id.EqualsIgnoreCase(bookId));
-            
-            if (bookIndex == -1)
-            {
-                Log.Warn($"LostBook data with Id '{bookDataId}' has no entry with Id '{bookId}' for museum '{manager.Museum.Name}'.");
-                __result = false;
-                return false;
-            }
-            
-            if (!manager.Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{bookDataId}", out var bookTally) || !int.TryParse(bookTally, out var booksFound))
-            {
-                booksFound = 0;
-            }
-
-            if (bookIndex >= booksFound)
-            {
-                if (bookData.MissingText is not null)
-                {
-                    Game1.drawObjectDialogue(bookData.MissingText == string.Empty
-                        ? TokenParser.ParseText(i18n.MissingLostBook())
-                        : TokenParser.ParseText(bookData.MissingText));
-                }
-                __result = true;
-                return false;
-            }
-
-            var entry = bookData.Entries[bookIndex];
-            
-            switch (entry.InteractionType)
-            {
-                case InteractionType.Sign:
-                    Game1.drawObjectDialogue(entry.Text);
-                    break;
-                case InteractionType.Message:
-                    Game1.drawDialogueNoTyping(entry.Text);
-                    break;
-                case InteractionType.Letter:
-                    Game1.drawLetterMessage(entry.Text);
-                    break;
-                case InteractionType.None:
-                    break;
-                case InteractionType.Custom when entry.Action is not null:
-                    if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
-                    {
-                        Log.Error(error);
-                        return true;
-                    }
-                    break;
-                default:
-                    Game1.drawLetterMessage(entry.Text);
-                    break;
-            }
-            
-            if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}"))
-            {
-                // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
-                // (pls give us string IDs or some other way to identify TASes in future Stardew Versions i beg u)
-                // So we need to check that the sprite is in the right location that we'd expect, too... roughly.)
-                
-                Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}");
-            
-                Vector2 spriteLocation = new Vector2(tileLocation.X * 64f, tileLocation.Y * 64f - 96f - 16f);
-                TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s => s.id == bookIndex && Math.Abs(s.position.X - spriteLocation.X) < 1 && s.position.Y <= spriteLocation.Y + 16.1f && s.position.Y >= spriteLocation.Y - 16.1f);
-                if (sprite is not null)
-                {
-                    sprite.destroyable = true;
-                    sprite.alpha = 0f;
-                    sprite.scale = 0f;
-                }
-            }
-
-            __result = true;
-            return false;
-        }
-        
-        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_MuseumMenu"))
-        {
-            manager.OpenMuseumDialogueMenu();
-            __result = true;
-            return false;
-        }
-
-        if (text.EqualsIgnoreCase("Spiderbuttons.CMF_Rearrange") && !manager.Mutex.IsLocked())
-        {
-            if (manager.HasDonatedItem())
-            {
-                string rearrangeText = manager.MuseumData.Strings.MenuRearrange ?? i18n.MenuRearrange();
-                string retrieveText = manager.MuseumData.Strings.MenuRetrieve ?? i18n.MenuRetrieve();
-                Response[] choice = manager.MuseumData.AllowRetrieval && !manager.Mutex.IsLocked() ? new Response[3]
-                {
-                    new Response("Rearrange", TokenParser.ParseText(rearrangeText)),
-                    new Response("Retrieve", TokenParser.ParseText(retrieveText)),
-                    new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
-                } : new Response[2]
-                {
-                    new Response("Rearrange", TokenParser.ParseText(rearrangeText)),
-                    new Response("Leave", Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave"))
-                };
-                __instance.createQuestionDialogue("", choice, "Museum_Rearrange");
-            }
-
-            __result = true;
-            return false;
-        }
-
-        return true;
-    }
-    
-    [HarmonyPrefix]
     [HarmonyPatch(nameof(GameLocation.answerDialogueAction))]
     public static bool answerDialogueAction(GameLocation __instance, string? questionAndAnswer, string[] questionParams, ref bool __result)
     {
@@ -238,10 +106,10 @@ public static class GameLocationPatches
             case "Museum_Donate":
                 manager.OpenDonationMenu();
                 break;
-            case "Museum_Rearrange_Rearrange":
+            case "Museum_Rearrange":
                 manager.OpenRearrangeMenu();
                 break;
-            case "Museum_Rearrange_Retrieve":
+            case "Museum_Retrieve":
                 manager.OpenRetrievalMenu();
                 break;
         }

@@ -118,6 +118,10 @@ namespace CustomMuseumFramework
             Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveChatMessage;
             Helper.Events.Multiplayer.ModMessageReceived += MultiplayerUtils.receiveTrigger;
             
+            GameLocation.RegisterTileAction($"{Manifest.UniqueID}_MuseumMenu", MuseumManager.ActionHandler_MuseumMenu);
+            GameLocation.RegisterTileAction($"{Manifest.UniqueID}_Rearrange", MuseumManager.ActionHandler_Rearrange);
+            GameLocation.RegisterTileAction($"{Manifest.UniqueID}_LostBook", MuseumManager.ActionHandler_LostBook);
+            
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumRetrieval");
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_BookFound");
