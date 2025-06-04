@@ -266,24 +266,20 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 List<int> milestones = MuseumData.Milestones;
                 if (!holdingMuseumItem)
                 {
-                    MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnDonation ?? i18n.OnDonation()),
-                        Game1.player.Name,
-                        TokenStringBuilder.ItemNameFor(item), MuseumManager.Museum.DisplayName);
+                    MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_DONATION(TokenStringBuilder.ItemNameFor(item)));
                         
                     if (pieces >= MuseumManager.TotalPossibleDonations.Count)
                     {
                         if (!Game1.MasterPlayer.mailReceived.Contains($"{MuseumManager.Museum.Name}_MuseumCompletion"))
                         {
-                            MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion()),
-                                Game1.player.farmName.Value, MuseumManager.Museum.DisplayName);
+                            MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_COMPLETION());
                             Game1.addMail($"{MuseumManager.Museum.Name}_MuseumCompletion", true, true);
                         }
                     }
                     // If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this comment here to prove that I at least recognized the possibility.
                     else if (milestones.Contains(pieces))
                     {
-                        MultiplayerUtils.broadcastChatMessage(TokenParser.ParseText(MuseumData.Strings.OnMilestone ?? i18n.OnMilestone()),
-                            Game1.player.farmName.Value, pieces.ToString(), MuseumManager.Museum.DisplayName);
+                        MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_MILESTONE(pieces));
                         Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone_{pieces}", true, true);
                     }
                 }

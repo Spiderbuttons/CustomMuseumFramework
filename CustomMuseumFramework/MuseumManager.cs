@@ -44,7 +44,7 @@ public class MuseumManager
             Game1.getFarm().GetDisplayName(), number,
             Museum.DisplayName));
 
-    public string ON_COMPLETION(string farm) =>
+    public string ON_COMPLETION() =>
         TokenParser.ParseText(string.Format(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion(),
             Game1.getFarm().GetDisplayName(), Museum.DisplayName));
 
