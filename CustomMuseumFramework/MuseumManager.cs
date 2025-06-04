@@ -48,12 +48,12 @@ public class MuseumManager
         TokenParser.ParseText(string.Format(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion(),
             Game1.getFarm().GetDisplayName(), Museum.DisplayName));
 
-    public string MENU_DONATE() => TokenParser.ParseText(MuseumData.Strings.MenuDonate ?? i18n.MenuDonate());
-    public string MENU_COLLECT() => TokenParser.ParseText(MuseumData.Strings.MenuCollect ?? i18n.MenuCollect());
-    public string MENU_REARRANGE() => TokenParser.ParseText(MuseumData.Strings.MenuRearrange ?? i18n.MenuRearrange());
-    public string MENU_RETRIEVE() => TokenParser.ParseText(MuseumData.Strings.MenuRetrieve ?? i18n.MenuRetrieve());
+    private string MENU_DONATE() => TokenParser.ParseText(MuseumData.Strings.MenuDonate ?? i18n.MenuDonate());
+    private string MENU_COLLECT() => TokenParser.ParseText(MuseumData.Strings.MenuCollect ?? i18n.MenuCollect());
+    private string MENU_REARRANGE() => TokenParser.ParseText(MuseumData.Strings.MenuRearrange ?? i18n.MenuRearrange());
+    private string MENU_RETRIEVE() => TokenParser.ParseText(MuseumData.Strings.MenuRetrieve ?? i18n.MenuRetrieve());
 
-    public string CLOCKED_OUT()
+    private string CLOCKED_OUT()
     {
         if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name))
         {
@@ -64,7 +64,7 @@ public class MuseumManager
             MuseumData.Owner.Name));
     }
 
-    public string BUSY()
+    private string BUSY()
     {
         if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
             Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
@@ -83,7 +83,7 @@ public class MuseumManager
             MuseumData.Owner?.Name));
     }
 
-    public string MUSEUM_COMPLETE()
+    private string MUSEUM_COMPLETE()
     {
         if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
             Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
@@ -104,7 +104,7 @@ public class MuseumManager
             MuseumData.Owner?.Name));
     }
 
-    public string NOTHING_TO_DONATE()
+    private string NOTHING_TO_DONATE()
     {
         if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
             Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
@@ -125,7 +125,7 @@ public class MuseumManager
             MuseumData.Owner?.Name));
     }
 
-    public string NO_DONATIONS()
+    private string NO_DONATIONS()
     {
         if (MuseumData.Owner is null || string.IsNullOrWhiteSpace(MuseumData.Owner.Name) ||
             Game1.getCharacterFromName(MuseumData.Owner.Name) is null)
@@ -155,7 +155,8 @@ public class MuseumManager
         }
 
         NPC owner = Game1.getCharacterFromName(MuseumData.Owner.Name);
-        return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(), Museum.DisplayName,
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
+            Museum.DisplayName,
             owner.displayName));
     }
 
@@ -595,7 +596,7 @@ public class MuseumManager
         return Game1.player.couldInventoryAcceptThisItem(item);
     }
 
-    public void OpenRearrangeMenu()
+    private void OpenRearrangeMenu()
     {
         if (!Mutex.IsLocked())
         {
@@ -610,7 +611,7 @@ public class MuseumManager
         else Game1.drawObjectDialogue(BUSY());
     }
 
-    public void OpenRewardMenu()
+    private void OpenRewardMenu()
     {
         Game1.activeClickableMenu = new ItemGrabMenu(GetRewardsForPlayer(Game1.player), reverseGrab: false,
             showReceivingMenu: true, HighlightCollectableRewards, null, "Rewards", OnRewardCollected,
@@ -618,7 +619,7 @@ public class MuseumManager
             showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true);
     }
 
-    public void OpenDonationMenu()
+    private void OpenDonationMenu()
     {
         Mutex.RequestLock(delegate
         {
@@ -655,7 +656,7 @@ public class MuseumManager
         }
     }
 
-    public void OpenMuseumDialogueMenu()
+    private void OpenMuseumDialogueMenu()
     {
         Stack<Response> choices = new Stack<Response>();
         choices.Push(new Response("Leave",
@@ -681,7 +682,8 @@ public class MuseumManager
 
         if (choices.Count > 1)
         {
-            Museum.createQuestionDialogue("", choices.ToArray(), "Museum");
+            Museum.createQuestionDialogue("", choices.ToArray(), AnswerDialogue,
+                Game1.getCharacterFromName(MuseumData.Owner?.Name));
             return;
         }
 
@@ -786,7 +788,7 @@ public class MuseumManager
         else Game1.drawObjectDialogue(BUSY());
     }
 
-    public bool IsNpcClockedIn(NPC? npc, Rectangle? area)
+    private bool IsNpcClockedIn(NPC? npc, Rectangle? area)
     {
         if (npc is null || area is null || area.Value.IsEmpty) return false;
         var areaToCheck = area.Value.Size.Equals(Point.Zero) switch
@@ -1065,6 +1067,30 @@ public class MuseumManager
         return lostBooksLocations;
     }
 
+    private static void AnswerDialogue(Farmer who, string whichAnswer)
+    {
+        if (!CMF.MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager)) return;
+
+        switch (whichAnswer)
+        {
+            // case "Leave":
+            //     Game1.activeClickableMenu?.exitThisMenu();
+            //     break;
+            case "Donate":
+                manager.OpenDonationMenu();
+                break;
+            case "Collect":
+                manager.OpenRewardMenu();
+                break;
+            case "Retrieve":
+                manager.OpenRetrievalMenu();
+                break;
+            case "Rearrange":
+                manager.OpenRearrangeMenu();
+                break;
+        }
+    }
+
     public static bool ActionHandler_MuseumMenu(GameLocation location, string[] args, Farmer farmer, Point point)
     {
         if (!CMF.MuseumManagers.TryGetValue(location.Name, out var manager)) return false;
@@ -1086,7 +1112,7 @@ public class MuseumManager
             choices.Push(new Response("Retrieve", manager.MENU_RETRIEVE()));
         choices.Push(new Response("Rearrange", manager.MENU_REARRANGE()));
 
-        manager.Museum.createQuestionDialogue("", choices.ToArray(), "Museum");
+        manager.Museum.createQuestionDialogue("", choices.ToArray(), AnswerDialogue, Game1.getCharacterFromName(manager.MuseumData.Owner?.Name));
         return true;
     }
 

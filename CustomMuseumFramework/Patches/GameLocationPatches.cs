@@ -87,37 +87,6 @@ public static class GameLocationPatches
     }
     
     [HarmonyPrefix]
-    [HarmonyPatch(nameof(GameLocation.answerDialogueAction))]
-    public static bool answerDialogueAction(GameLocation __instance, string? questionAndAnswer, string[] questionParams, ref bool __result)
-    {
-        if (!CMF.MuseumManagers.TryGetValue(__instance.Name, out var manager)) return true;
-        
-        if (questionAndAnswer is null)
-        {
-            __result = false;
-            return false;
-        }
-
-        switch (questionAndAnswer)
-        {
-            case "Museum_Collect":
-                manager.OpenRewardMenu();
-                break;
-            case "Museum_Donate":
-                manager.OpenDonationMenu();
-                break;
-            case "Museum_Rearrange":
-                manager.OpenRearrangeMenu();
-                break;
-            case "Museum_Retrieve":
-                manager.OpenRetrievalMenu();
-                break;
-        }
-
-        return true;
-    }
-    
-    [HarmonyPrefix]
     [HarmonyPatch(nameof(GameLocation.checkAction))]
     public static bool checkAction(GameLocation __instance, Location tileLocation, xTile.Dimensions.Rectangle viewport, Farmer who, ref bool __result)
     {
