@@ -37,8 +37,7 @@ public static class DescriptionPatches
         var museum = museumDict.FirstOrDefault(kvp => !kvp.Value).Key;
         if (museum == null || !museum.MuseumData.ShowDonationHint) return;
         
-        var text = string.Format(museum.MuseumData.Strings.CanBeDonated ?? i18n.CanBeDonated(),
-            museum.Museum.DisplayName, museum.MuseumData.Owner is not null ? Game1.getCharacterFromName(museum.MuseumData.Owner?.Name)?.displayName ?? "A museum owner" : "A museum owner");
+        var text = museum.CAN_BE_DONATED();
         
         ///// Keeping this around in case I ever want to display more than one.
         // var text = museumDict
