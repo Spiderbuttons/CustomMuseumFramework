@@ -8,7 +8,7 @@ public class ResetAllCommand() : ConsoleCommand("resetall")
 {
     public override string GetDescription()
     {
-        return $"{CommandHandler.BOLD + CommandHandler.UNDERLINE}cmf {Name}{CommandHandler.BOLD_OFF + CommandHandler.UNDERLINE_OFF}\r\n" +
+        return $"cmf {Name}\r\n" +
                $"   Resets all museums by removing every donated item in their inventories.\r\n" +
                $"   Usage: cmf {Name} [pop]\r\n" +
                $"      [pop] - Whether to pop the items onto the ground (true) or delete them (false). Default: true";

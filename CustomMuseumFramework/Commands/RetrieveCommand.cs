@@ -8,7 +8,7 @@ public class RetrieveCommand() : ConsoleCommand("retrieve")
     public override string GetDescription()
     {
         return
-            $"{CommandHandler.BOLD + CommandHandler.UNDERLINE}{CommandHandler.RootCommand} {Name}{CommandHandler.BOLD_OFF + CommandHandler.UNDERLINE_OFF}\r\n" +
+            $"{CommandHandler.RootCommand} {Name}\r\n" +
             $"   Open a chest menu containing the items in a given museum.\r\n" +
             $"   Usage: {CommandHandler.RootCommand} {Name} <museum>\r\n" +
             $"      <museum> - The id of the museum.\r\n";

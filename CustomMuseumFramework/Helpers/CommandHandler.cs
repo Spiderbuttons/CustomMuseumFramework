@@ -29,11 +29,6 @@ public class CommandHandler
         RootCommand = rootCommand;
     }
 
-    public const string BOLD = "\x1b[1m";
-    public const string BOLD_OFF = "\x1b[22m";
-    public const string UNDERLINE = "\x1b[4m";
-    public const string UNDERLINE_OFF = "\x1b[24m";
-
     private ICommandHelper CommandHelper { get; }
     public static string ModName { get; set; } = string.Empty;
     public static string RootCommand { get; set; } = string.Empty;
@@ -75,7 +70,7 @@ public class GenericHelpCommand() : ConsoleCommand("help", allowOnTitle: true)
 {
     public override string GetDescription()
     {
-        return $"{CommandHandler.BOLD + CommandHandler.UNDERLINE}{CommandHandler.RootCommand} {Name}{CommandHandler.BOLD_OFF + CommandHandler.UNDERLINE_OFF}\r\n" +
+        return $"{CommandHandler.RootCommand} {Name}\r\n" +
                $"   Provides information about {CommandHandler.ModName} commands.\r\n" +
                $"   Usage: cmf {Name}\r\n" +
                $"      Lists all available {CommandHandler.ModName} commands.\r\n" +

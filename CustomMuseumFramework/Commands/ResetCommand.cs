@@ -8,7 +8,7 @@ public class ResetCommand() : ConsoleCommand("reset")
 {
     public override string GetDescription()
     {
-        return $"{CommandHandler.BOLD + CommandHandler.UNDERLINE}cmf {Name}{CommandHandler.BOLD_OFF + CommandHandler.UNDERLINE_OFF}\r\n" +
+        return $"cmf {Name}\r\n" +
                $"   Resets a museum by removing every donated item in its inventory.\r\n" +
                $"   Usage: cmf {Name} <museum> [pop]\r\n" +
                $"      <museum> - The id of the museum to reset.\r\n" +
