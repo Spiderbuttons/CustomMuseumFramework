@@ -142,7 +142,8 @@ public static class GameLocationPatches
                     Game1.drawLetterMessage(text);
                     break;
                 case InteractionType.None:
-                    break;
+                    __result = true;
+                    return false;
                 case InteractionType.Custom when customAction is not null:
                     if (!TriggerActionManager.TryRunAction(customAction, out var error, out _))
                     {
@@ -155,7 +156,7 @@ public static class GameLocationPatches
                     break;
             }
             
-            if (inter.InteractionType is not InteractionType.Custom && customAction is not null)
+            if (inter.InteractionType is not InteractionType.Custom and not InteractionType.None && customAction is not null)
             {
                 if (!TriggerActionManager.TryRunAction(customAction, out var error, out _))
                 {

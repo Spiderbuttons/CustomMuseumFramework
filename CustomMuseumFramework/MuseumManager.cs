@@ -1172,7 +1172,7 @@ public class MuseumManager
                 Game1.drawLetterMessage(entry.Text);
                 break;
             case InteractionType.None:
-                break;
+                goto flag;
             case InteractionType.Custom when entry.Action is not null:
                 if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
                 {
@@ -1186,7 +1186,7 @@ public class MuseumManager
                 break;
         }
 
-        if (entry.InteractionType is not InteractionType.Custom && entry.Action is not null)
+        if (entry.InteractionType is not InteractionType.Custom and not InteractionType.None && entry.Action is not null)
         {
             if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
             {
@@ -1195,6 +1195,7 @@ public class MuseumManager
             }
         }
 
+        flag:
         if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_{bookDataId}_{bookId}"))
         {
             // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
