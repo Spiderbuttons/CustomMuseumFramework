@@ -1186,13 +1186,13 @@ public class MuseumManager
                 break;
         }
 
-        if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}"))
+        if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_{bookDataId}_{bookId}"))
         {
             // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs
             // (pls give us string IDs or some other way to identify TASes in future Stardew Versions i beg u)
             // So we need to check that the sprite is in (roughly) the right location that we'd expect, too
 
-            Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_${bookDataId}_{bookId}");
+            Game1.player.mailReceived.Add($"{manager.Museum.Name}_ReadLostBook_{bookDataId}_{bookId}");
 
             Vector2 spriteLocation = new Vector2(point.X * 64f, point.Y * 64f - 96f - 16f);
             TemporaryAnimatedSprite? sprite = manager.Museum.temporarySprites.FirstOrDefault(s =>
