@@ -1186,6 +1186,15 @@ public class MuseumManager
                 break;
         }
 
+        if (entry.InteractionType is not InteractionType.Custom && entry.Action is not null)
+        {
+            if (!TriggerActionManager.TryRunAction(TokenParser.ParseText(entry.Action), out var error, out _))
+            {
+                Log.Error(error);
+                return true;
+            }
+        }
+
         if (!Game1.player.hasOrWillReceiveMail($"{manager.Museum.Name}_ReadLostBook_{bookDataId}_{bookId}"))
         {
             // We can't just remove sprites by checking their id alone because books from different sets will share numeric IDs

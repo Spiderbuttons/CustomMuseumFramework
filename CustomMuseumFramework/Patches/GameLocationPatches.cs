@@ -155,6 +155,15 @@ public static class GameLocationPatches
                     break;
             }
             
+            if (inter.InteractionType is not InteractionType.Custom && customAction is not null)
+            {
+                if (!TriggerActionManager.TryRunAction(customAction, out var error, out _))
+                {
+                    Log.Error(error);
+                    return true;
+                }
+            }
+            
             __result = true;
             return false;
         }
