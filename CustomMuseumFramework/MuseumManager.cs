@@ -299,9 +299,10 @@ public class MuseumManager
             if (museumDict.ContainsKey(this)) museumDict[this] = true;
             else museumDict.Add(this, true);
         }
-
-        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation",
-            item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
+        
+        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
+        
+        CheckForMilestones();
         return true;
     }
 
@@ -443,6 +444,26 @@ public class MuseumManager
         }
 
         return false;
+    }
+
+    public void CheckForMilestones()
+    {
+        int pieces = DonatedItems.Count;
+        List<int> milestones = MuseumData.Milestones;
+
+        if (pieces >= TotalPossibleDonations.Count)
+        {
+            if (!Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumCompletion"))
+            {
+                MultiplayerUtils.broadcastChatMessage(ON_COMPLETION());
+                Game1.addMail($"{Museum.Name}_MuseumCompletion", true, true);
+            }
+        } else
+            foreach (var milestone in milestones.Where(milestone => !Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumMilestone_{milestone}") && pieces >= milestone))
+            {
+                MultiplayerUtils.broadcastChatMessage(ON_MILESTONE(milestone));
+                Game1.addMail($"{Museum.Name}_MuseumMilestone_{milestone}", true, true);
+            }
     }
 
     private string GetRewardItemKey(Item item)

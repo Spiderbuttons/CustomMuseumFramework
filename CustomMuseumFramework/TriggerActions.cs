@@ -5,6 +5,7 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
+using StardewValley.TokenizableStrings;
 
 namespace CustomMuseumFramework;
 
@@ -30,7 +31,13 @@ public class TriggerActions
             return false;
         }
         
-        return museum.DonateItem(location, itemId);
+        if (museum.DonateItem(location, itemId))
+        {
+            MultiplayerUtils.broadcastChatMessage(museum.ON_DONATION(TokenStringBuilder.ItemNameFor(ItemRegistry.Create(itemId))));
+            return true;
+        }
+
+        return false;
     }
 
     public static bool ForceDonateItem(string[] args, TriggerActionContext context, out string error)
@@ -53,7 +60,13 @@ public class TriggerActions
             return false;
         }
         
-        return museum.DonateItem(location, itemId, force: true);
+        if (museum.DonateItem(location, itemId, force: true))
+        {
+            MultiplayerUtils.broadcastChatMessage(museum.ON_DONATION(TokenStringBuilder.ItemNameFor(ItemRegistry.Create(itemId))));
+            return true;
+        }
+
+        return false;
     }
 
     public static bool RemoveDonation(string[] args, TriggerActionContext context, out string error)

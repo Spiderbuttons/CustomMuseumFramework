@@ -244,47 +244,32 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                 MuseumManager.IsItemSuitableForDonation(item))
             {
                 int rewardsCount = MuseumManager.GetRewardsForPlayer(Game1.player).Count;
-                MuseumManager.DonateItem(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId);
-                Game1.playSound("stoneStep");
-                if (MuseumManager.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
+                if (MuseumManager.DonateItem(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId))
                 {
-                    sparkleText = new SparklingText(Game1.dialogueFont,
-                        Game1.content.LoadString("Strings\\StringsFromCSFiles:NewReward"), Color.MediumSpringGreen,
-                        Color.White);
-                    Game1.playSound("reward");
-                    globalLocationOfSparklingItem =
-                        new Vector2(mapXTile2 * 64 + 32 - sparkleText.textWidth / 2f,
-                            mapYTile2 * 64 - 48);
-                }
-                else
-                {
-                    Game1.playSound("newArtifact");
-                }
-                heldItem = item.ConsumeStack(1);
-
-                int pieces = MuseumManager.DonatedItems.Count;
-                List<int> milestones = MuseumData.Milestones;
-                if (!holdingMuseumItem)
-                {
-                    MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_DONATION(TokenStringBuilder.ItemNameFor(item)));
-                        
-                    if (pieces >= MuseumManager.TotalPossibleDonations.Count)
+                    Game1.playSound("stoneStep");
+                    if (MuseumManager.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)
                     {
-                        if (!Game1.MasterPlayer.mailReceived.Contains($"{MuseumManager.Museum.Name}_MuseumCompletion"))
-                        {
-                            MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_COMPLETION());
-                            Game1.addMail($"{MuseumManager.Museum.Name}_MuseumCompletion", true, true);
-                        }
+                        sparkleText = new SparklingText(Game1.dialogueFont,
+                            Game1.content.LoadString("Strings\\StringsFromCSFiles:NewReward"), Color.MediumSpringGreen,
+                            Color.White);
+                        Game1.playSound("reward");
+                        globalLocationOfSparklingItem =
+                            new Vector2(mapXTile2 * 64 + 32 - sparkleText.textWidth / 2f,
+                                mapYTile2 * 64 - 48);
                     }
-                    // If you somehow donate more than 1 thing at once you can miss a milestone. But that should never happen under normal circumstances. So I'll ignore it for now but leave this comment here to prove that I at least recognized the possibility.
-                    else if (milestones.Contains(pieces))
+                    else
                     {
-                        MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_MILESTONE(pieces));
-                        Game1.addMail($"{MuseumManager.Museum.Name}_MuseumMilestone_{pieces}", true, true);
+                        Game1.playSound("newArtifact");
                     }
-                }
+                    heldItem = item.ConsumeStack(1);
 
-                ReturnToDonatableItems();
+                    if (!holdingMuseumItem)
+                    {
+                        MultiplayerUtils.broadcastChatMessage(MuseumManager.ON_DONATION(TokenStringBuilder.ItemNameFor(item)));
+                    }
+                    
+                    ReturnToDonatableItems();
+                }
             }
         }
         else if (heldItem == null && !inventory.isWithinBounds(x, y))
