@@ -295,9 +295,11 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             if (MuseumManager.DonatedItems.TryGetValue(v, out var itemId))
             {
                 heldItem = ItemRegistry.Create(itemId, allowNull: true);
+                heldItem.modData["CMF_Position"] = $"{mapXTile} {mapYTile}";
                 if (MuseumManager.RemoveItem(v) && heldItem != null)
                 {
-                    holdingMuseumItem = !MuseumManager.HasDonatedItem(heldItem.QualifiedItemId);
+                    // holdingMuseumItem = !MuseumManager.HasDonatedItem(heldItem.QualifiedItemId);
+                    holdingMuseumItem = true;
                 }
             }
         }

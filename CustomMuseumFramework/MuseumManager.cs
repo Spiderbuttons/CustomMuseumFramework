@@ -319,23 +319,24 @@ public class MuseumManager
         if (!DonatedItems.TryGetValue(location, out var itemId)) return false;
 
         var inv = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
+        bool removed = false;
         inv.RemoveWhere(item =>
         {
-            if (item.QualifiedItemId.EqualsIgnoreCase(itemId))
+            if (item is null || removed) return false;
+            Vector2 loc = item.modData.ContainsKey("CMF_Position")
+                ? new Vector2(float.Parse(item.modData["CMF_Position"].Split(' ')[0]),
+                    float.Parse(item.modData["CMF_Position"].Split(' ')[1]))
+                : location;
+            
+            if (item.QualifiedItemId.EqualsIgnoreCase(itemId) && loc == location)
             {
                 if (pop)
                 {
-                    Vector2 loc = location;
-                    if (item.modData.ContainsKey("CMF_Position"))
-                    {
-                        loc = new Vector2(float.Parse(item.modData["CMF_Position"].Split(' ')[0]),
-                            float.Parse(item.modData["CMF_Position"].Split(' ')[1]));
-                        item.modData.Remove("CMF_Position");
-                    }
-
+                    item.modData.Remove("CMF_Position");
                     Game1.createItemDebris(item, loc * 64, 2, Museum);
                 }
-
+                
+                removed = true;
                 return true;
             }
 
@@ -398,7 +399,12 @@ public class MuseumManager
     public bool IsItemSuitableForDonation(Item? i)
     {
         if (i is null) return false;
-        return IsItemSuitableForDonation(i.QualifiedItemId);
+        // log every moddata key
+        foreach (var key in i.modData.Keys)
+        {
+            Log.Debug($"Item {i.QualifiedItemId} has moddata key: {key} with value: {i.modData[key]}");
+        }
+        return i.modData.ContainsKey("CMF_Position") || IsItemSuitableForDonation(i.QualifiedItemId);
     }
 
     private bool IsItemSuitableForDonation(string? itemId, bool checkDonatedItems = true)
