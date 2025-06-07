@@ -790,7 +790,7 @@ public class MuseumManager
         {
             Mutex.RequestLock(delegate
             {
-                Game1.activeClickableMenu = new ItemGrabMenu(
+                Game1.activeClickableMenu = new BigItemGrabMenu(
                     Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}"),
                     reverseGrab: false,
                     showReceivingMenu: true, HighlightPreviouslyDonated, ReturnToMuseum, "Retrieve",
