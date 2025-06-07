@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CustomMuseumFramework.Helpers;
 using HarmonyLib;
 using StardewValley;
 
@@ -34,8 +35,13 @@ public static class DescriptionPatches
     {
         if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
         
-        var museum = museumDict.FirstOrDefault(kvp => !kvp.Value).Key;
-        if (museum == null || !museum.MuseumData.ShowDonationHint) return;
+        var museums = museumDict.Where(kvp => !kvp.Value)
+            .Select(kvp => kvp.Key)
+            .Where(m => m.MuseumData.ShowDonationHint)
+            .ToList();
+        
+        if (!museums.Any()) return;
+        var museum = museums.First();
         
         var text = museum.CAN_BE_DONATED();
         
