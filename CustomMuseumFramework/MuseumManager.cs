@@ -213,12 +213,12 @@ public class MuseumManager
             return validItems;
         }
     }
+    
+    public int TotalRequiredDonations => MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
 
     public bool IsMuseumComplete()
     {
-        int completionNumber = MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
-
-        return ValidDonatedItems.Count >= completionNumber;
+        return ValidDonatedItems.Count >= TotalRequiredDonations;
     }
 
     public NetMutex Mutex =>
@@ -560,8 +560,7 @@ public class MuseumManager
                 {
                     if (requirement.Count == -1)
                     {
-                        int req = MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
-                        if (ValidDonatedItems.Count < req)
+                        if (ValidDonatedItems.Count < TotalRequiredDonations)
                         {
                             results[reward.Id] = false;
                             shouldBreak = true;
