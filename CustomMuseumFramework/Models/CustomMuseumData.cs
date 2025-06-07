@@ -18,6 +18,10 @@ public class CustomMuseumData
     public Rectangle Bounds { get; set; } = new Rectangle(0, 0, 0, 0);
     
     public List<DonationRequirement> DonationRequirements { get; set; } = [];
+    
+    public int? CompletionNumber { get; set; } = null;
+    
+    public bool CountInvalidDonations { get; set; } = false;
 
     public bool AllowRetrieval { get; set; } = false;
     

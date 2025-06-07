@@ -194,10 +194,31 @@ public class MuseumManager
             return dict;
         }
     }
+    
+    public Dictionary<Vector2, string> ValidDonatedItems
+    {
+        get
+        {
+            if (MuseumData.CountInvalidDonations) return DonatedItems;
+            
+            var validItems = new Dictionary<Vector2, string>();
+            foreach (var item in DonatedItems)
+            {
+                if (IsItemSuitableForDonation(item.Value))
+                {
+                    validItems[item.Key] = item.Value;
+                }
+            }
+
+            return validItems;
+        }
+    }
 
     private bool IsMuseumComplete()
     {
-        return DonatedItems.Count >= TotalPossibleDonations.Count;
+        int completionNumber = MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
+
+        return ValidDonatedItems.Count >= completionNumber;
     }
 
     public NetMutex Mutex =>
@@ -250,9 +271,9 @@ public class MuseumManager
         return false;
     }
 
-    public bool HasDonatedItem()
+    public bool HasDonatedItem(bool validOnly = false)
     {
-        return DonatedItems.Values.Any();
+        return validOnly ? ValidDonatedItems.Values.Any() : DonatedItems.Values.Any();
     }
 
     public bool HasDonatedItem(string? itemId)
@@ -445,22 +466,20 @@ public class MuseumManager
 
     public void CheckForMilestones()
     {
-        int pieces = DonatedItems.Count;
+        int pieces = ValidDonatedItems.Count;
         List<int> milestones = MuseumData.Milestones;
-
-        if (pieces >= TotalPossibleDonations.Count)
+        
+        foreach (var milestone in milestones.Where(milestone => pieces >= milestone && !Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumMilestone_{milestone}")))
         {
-            if (!Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumCompletion"))
-            {
-                MultiplayerUtils.broadcastChatMessage(ON_COMPLETION());
-                Game1.addMail($"{Museum.Name}_MuseumCompletion", true, true);
-            }
-        } else
-            foreach (var milestone in milestones.Where(milestone => !Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumMilestone_{milestone}") && pieces >= milestone))
-            {
-                MultiplayerUtils.broadcastChatMessage(ON_MILESTONE(milestone));
-                Game1.addMail($"{Museum.Name}_MuseumMilestone_{milestone}", true, true);
-            }
+            MultiplayerUtils.broadcastChatMessage(ON_MILESTONE(milestone));
+            Game1.addMail($"{Museum.Name}_MuseumMilestone_{milestone}", true, true);
+        }
+
+        if (!Game1.MasterPlayer.mailReceived.Contains($"{Museum.Name}_MuseumCompletion") && IsMuseumComplete())
+        {
+            MultiplayerUtils.broadcastChatMessage(ON_COMPLETION());
+            Game1.addMail($"{Museum.Name}_MuseumCompletion", true, true);
+        }
     }
 
     private string GetRewardItemKey(Item item)
@@ -541,13 +560,14 @@ public class MuseumManager
                 {
                     if (requirement.Count == -1)
                     {
-                        if (DonatedItems.Count() < TotalPossibleDonations.Count)
+                        int req = MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
+                        if (ValidDonatedItems.Count < req)
                         {
                             results[reward.Id] = false;
                             shouldBreak = true;
                         }
                     }
-                    else if (requirement.Count > DonatedItems.Count())
+                    else if (requirement.Count > ValidDonatedItems.Count)
                     {
                         results[reward.Id] = false;
                         shouldBreak = true;

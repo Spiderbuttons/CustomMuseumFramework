@@ -28,7 +28,7 @@ public class Queries
         
         if (string.IsNullOrWhiteSpace(remainder)) 
         {
-            return manager.DonatedItems.Count >= min && manager.DonatedItems.Count <= max;
+            return manager.ValidDonatedItems.Count >= min && manager.ValidDonatedItems.Count <= max;
         }
 
         int count = 0;
