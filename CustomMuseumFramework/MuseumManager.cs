@@ -214,7 +214,7 @@ public class MuseumManager
         }
     }
 
-    private bool IsMuseumComplete()
+    public bool IsMuseumComplete()
     {
         int completionNumber = MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
 
@@ -717,7 +717,7 @@ public class MuseumManager
             choices.Push(new Response("Collect", MENU_COLLECT()));
         }
 
-        if (DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked() &&
+        if (!IsMuseumComplete() && DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked() &&
             (MuseumData.Owner is null || !MuseumData.Owner.RequiredForDonation ||
              IsNpcClockedIn(Game1.getCharacterFromName(MuseumData.Owner?.Name), MuseumData.Owner?.Area)))
         {
@@ -730,10 +730,9 @@ public class MuseumManager
                 Game1.getCharacterFromName(MuseumData.Owner?.Name));
             return;
         }
-
+        
         NPC? owner = Game1.getCharacterFromName(MuseumData.Owner?.Name);
         bool isOwnerClockedIn = IsNpcClockedIn(owner, MuseumData.Owner?.Area);
-
         if (IsMuseumComplete())
         {
             if (isOwnerClockedIn) Game1.DrawDialogue(new Dialogue(owner, null, MUSEUM_COMPLETE()));

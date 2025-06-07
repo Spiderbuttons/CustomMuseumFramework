@@ -37,7 +37,7 @@ public static class DescriptionPatches
         
         var museums = museumDict.Where(kvp => !kvp.Value)
             .Select(kvp => kvp.Key)
-            .Where(m => m.MuseumData.ShowDonationHint)
+            .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
             .ToList();
         
         if (!museums.Any()) return;
@@ -72,9 +72,14 @@ public static class RingPatches
             __instance.description is null) return;
 
         __state = __instance.description;
-        var museum = museumDict.FirstOrDefault(kvp => !kvp.Value).Key;
-        if (museum == null || !museum.MuseumData.ShowDonationHint) return;
-
+        var museums = museumDict.Where(kvp => !kvp.Value)
+            .Select(kvp => kvp.Key)
+            .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
+            .ToList();
+        
+        if (!museums.Any()) return;
+        var museum = museums.First();
+        
         var text = museum.CAN_BE_DONATED();
 
         if (museum.MuseumData.OverrideDescription) __instance.description = text;
