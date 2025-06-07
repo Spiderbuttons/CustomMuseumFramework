@@ -276,7 +276,8 @@ public class MuseumManager
     public bool DonateItem(Vector2 location, string itemId, bool force = false)
     {
         if (location == Vector2.Zero ||
-            (!force && !IsTileSuitableForMuseumItem((int)location.X, (int)location.Y))) return false;
+            (!force && (!IsItemSuitableForDonation(itemId) || 
+                        !IsTileSuitableForMuseumItem((int)location.X, (int)location.Y)))) return false;
 
         if (force) RemoveItem(location);
 
