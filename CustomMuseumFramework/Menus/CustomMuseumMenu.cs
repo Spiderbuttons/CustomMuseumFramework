@@ -241,10 +241,10 @@ public sealed class CustomMuseumMenu : MenuWithInventory
             int mapXTile2 = (int)(Utility.ModifyCoordinateFromUIScale(x) + Game1.viewport.X) / 64;
             int mapYTile2 = (int)(Utility.ModifyCoordinateFromUIScale(y) + Game1.viewport.Y) / 64;
             if (MuseumManager.IsTileSuitableForMuseumItem(mapXTile2, mapYTile2) &&
-                MuseumManager.IsItemSuitableForDonation(item))
+                (MuseumManager.IsItemSuitableForDonation(item) || item.modData.ContainsKey("CMF_Position")))
             {
                 int rewardsCount = MuseumManager.GetRewardsForPlayer(Game1.player).Count;
-                if (MuseumManager.DonateItem(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId))
+                if (MuseumManager.DonateItem(new Vector2(mapXTile2, mapYTile2), item.QualifiedItemId, force: true))
                 {
                     Game1.playSound("stoneStep");
                     if (MuseumManager.GetRewardsForPlayer(Game1.player).Count > rewardsCount && !holdingMuseumItem)

@@ -94,7 +94,7 @@ public static class QuestPatches
         {
             if (!TriggerActionManager.TryRunAction(data.ActionOnCompletion, out string error, out _))
             {
-                Log.Warn(error);
+                Log.Error(error);
             }
         }
 
@@ -104,7 +104,7 @@ public static class QuestPatches
             {
                 if (!TriggerActionManager.TryRunAction(action, out string error, out _))
                 {
-                    Log.Warn(error);
+                    Log.Error(error);
                 }
             }
         }

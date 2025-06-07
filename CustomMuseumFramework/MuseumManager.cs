@@ -297,11 +297,12 @@ public class MuseumManager
 
         if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
-            if (museumDict.ContainsKey(this)) museumDict[this] = true;
-            else museumDict.Add(this, true);
+            if (!museumDict.TryGetValue(this, out bool donated) || donated == false)
+            {
+                MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
+            }
+            museumDict[this] = true;
         }
-        
-        MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
         
         CheckForMilestones();
         return true;
@@ -401,11 +402,6 @@ public class MuseumManager
     public bool IsItemSuitableForDonation(Item? i)
     {
         if (i is null) return false;
-        // log every moddata key
-        foreach (var key in i.modData.Keys)
-        {
-            Log.Debug($"Item {i.QualifiedItemId} has moddata key: {key} with value: {i.modData[key]}");
-        }
         return i.modData.ContainsKey("CMF_Position") || IsItemSuitableForDonation(i.QualifiedItemId);
     }
 
