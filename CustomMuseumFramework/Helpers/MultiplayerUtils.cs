@@ -43,9 +43,9 @@ public class MultiplayerUtils
         TriggerActionManager.Raise(trigger.Trigger, triggerArgs: trigger.TriggerArgs, inputItem: ItemRegistry.Create(trigger.InputId, allowNull: true), targetItem: ItemRegistry.Create(trigger.TargetId, allowNull: true), location: Game1.getLocationFromName(trigger.Location));
     }
     
-    public static void broadcastChatMessage(string text, params string[] subs)
+    public static void broadcastChatMessage(string? text, params string[] subs)
     {
-        if (!Game1.IsMultiplayer || Game1.multiplayerMode == 0) return;
+        if (text is null || !Game1.IsMultiplayer || Game1.multiplayerMode == 0) return;
         
         CMF.ModHelper.Multiplayer.SendMessage(
             new Tuple<string, string[]>(text, subs),
@@ -63,9 +63,9 @@ public class MultiplayerUtils
         printChatMessage(msg.Item1, msg.Item2);
     }
 
-    private static void printChatMessage(string text, string[] subs)
+    private static void printChatMessage(string? text, string[] subs)
     {
-        if (Game1.chatBox is null) return;
+        if (text is null || Game1.chatBox is null) return;
 
         try
         {

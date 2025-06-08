@@ -47,9 +47,9 @@ public class OwnerData
 
 public class MuseumStrings
 {
-    public string? OnDonation { get; set; }
-    public string? OnMilestone { get; set; }
-    public string? OnCompletion { get; set; }
+    public string? OnDonation { get; set; } = "";
+    public string? OnMilestone { get; set; } = "";
+    public string? OnCompletion { get; set; } = "";
     
     public string? MenuDonate { get; set; }
     public string? MenuCollect { get; set; }

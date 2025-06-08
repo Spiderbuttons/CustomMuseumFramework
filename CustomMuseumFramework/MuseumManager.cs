@@ -35,18 +35,26 @@ public class MuseumManager
         }
     }
 
-    public string ON_DONATION(string item) =>
-        TokenParser.ParseText(string.Format(MuseumData.Strings.OnDonation ?? i18n.OnDonation(),
+    public string? ON_DONATION(string item)
+    {
+        if (MuseumData.Strings.OnDonation is null) return null;
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.OnDonation != string.Empty ? MuseumData.Strings.OnDonation : i18n.OnDonation(),
             Game1.player.displayName, item, Museum.DisplayName));
+    }
 
-    public string ON_MILESTONE(int number) =>
-        TokenParser.ParseText(string.Format(MuseumData.Strings.OnMilestone ?? i18n.OnMilestone(),
-            Game1.getFarm().GetDisplayName(), number,
-            Museum.DisplayName));
+    public string? ON_MILESTONE(int number)
+    {
+        if (MuseumData.Strings.OnMilestone is null) return null;
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.OnMilestone != string.Empty ? MuseumData.Strings.OnMilestone : i18n.OnMilestone(),
+            Game1.getFarm().GetDisplayName(), number, Museum.DisplayName));
+    }
 
-    public string ON_COMPLETION() =>
-        TokenParser.ParseText(string.Format(MuseumData.Strings.OnCompletion ?? i18n.OnCompletion(),
+    public string? ON_COMPLETION()
+    {
+        if (MuseumData.Strings.OnCompletion is null) return null;
+        return TokenParser.ParseText(string.Format(MuseumData.Strings.OnCompletion != string.Empty ? MuseumData.Strings.OnCompletion : i18n.OnCompletion(),
             Game1.getFarm().GetDisplayName(), Museum.DisplayName));
+    }
 
     private string MENU_DONATE() => TokenParser.ParseText(MuseumData.Strings.MenuDonate ?? i18n.MenuDonate());
     private string MENU_COLLECT() => TokenParser.ParseText(MuseumData.Strings.MenuCollect ?? i18n.MenuCollect());
