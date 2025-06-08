@@ -5,5 +5,5 @@
     "Description": "Create your own museum to collect donations for display!",
     "UniqueID": "Spiderbuttons.CMF",
     "EntryDll": "CustomMuseumFramework.dll",
-    "UpdateKeys": [],
+    "UpdateKeys": [ "Nexus:34530" ],
 }
