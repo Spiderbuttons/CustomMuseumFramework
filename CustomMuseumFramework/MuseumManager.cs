@@ -224,17 +224,12 @@ public class MuseumManager
     
     public int TotalRequiredDonations => MuseumData.CompletionNumber ?? TotalPossibleDonations.Count;
 
-    public bool IsMuseumComplete()
-    {
-        return ValidDonatedItems.Count >= TotalRequiredDonations;
-    }
-
     public NetMutex Mutex =>
         Game1.player.team.GetOrCreateGlobalInventoryMutex($"{CMF.Manifest.UniqueID}_{Museum.Name}");
 
-    public MuseumManager(GameLocation location)
+    public MuseumManager(string location)
     {
-        LocationName = location.Name;
+        LocationName = location;
         CalculateDonations();
     }
 
@@ -261,6 +256,11 @@ public class MuseumManager
         }
 
         CalculateDonations();
+    }
+    
+    public bool IsMuseumComplete()
+    {
+        return ValidDonatedItems.Count >= TotalRequiredDonations;
     }
 
     private bool HasRearrangeTile()
