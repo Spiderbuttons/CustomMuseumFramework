@@ -146,7 +146,6 @@ namespace CustomMuseumFramework
 
         private static void CreateManagers()
         {
-            Log.Alert("Building museum manager list...");
             Utility.ForEachLocation(loc =>
             {
                 if (MuseumData.ContainsKey(loc.Name))
@@ -156,7 +155,6 @@ namespace CustomMuseumFramework
 
                 return true;
             });
-            Log.Alert($"Found {MuseumManagers.Count} custom museums.");
         }
 
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
@@ -212,7 +210,7 @@ namespace CustomMuseumFramework
         {
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums")))
             {
-                Log.Debug("Invalidating museum data.");
+                Log.Trace("Invalidating museum data.");
                 foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
                 _museumData = null;
                 _globalDonatableItems = null;
