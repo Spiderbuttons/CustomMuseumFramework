@@ -14,9 +14,10 @@ public static class QuestPatches
 {
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Quest.getQuestFromId))]
-    public static bool getQuestFromId_Prefix(string id, ref Quest __result)
+    public static bool getQuestFromId_Prefix(string? id, ref Quest __result)
     {
-        if (!CMF.QuestData.TryGetValue(id, out var data)) return true;
+        if (id is null || !CMF.QuestData.TryGetValue(id, out var data)) return true;
+        
         Quest quest = new Quest();
         quest.questType.Value = 1;
         quest.id.Value = id;
@@ -56,9 +57,9 @@ public static class QuestPatches
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(Farmer), nameof(Farmer.addQuest))]
-    public static void addQuest_Postfix(Farmer __instance, string questId)
+    public static void addQuest_Postfix(Farmer __instance, string? questId)
     {
-        if (!CMF.QuestData.TryGetValue(questId, out var data)) return;
+        if (questId is null || !CMF.QuestData.TryGetValue(questId, out var data)) return;
 
         foreach (var quest in __instance.questLog)
         {
@@ -88,7 +89,7 @@ public static class QuestPatches
     [HarmonyPatch(nameof(Quest.questComplete))]
     public static void questComplete_Prefix(Quest __instance)
     {
-        if (!CMF.QuestData.TryGetValue(__instance.id.Value, out var data)) return;
+        if (__instance.id?.Value is null || !CMF.QuestData.TryGetValue(__instance.id.Value, out var data)) return;
 
         if (data.ActionOnCompletion is not null)
         {
