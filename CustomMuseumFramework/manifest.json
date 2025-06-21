@@ -1,7 +1,7 @@
 {
     "Name": "Custom Museum Framework",
     "Author": "Spiderbuttons",
-    "Version": "1.0.1",
+    "Version": "1.0.2",
     "Description": "Create your own museum to collect donations for display!",
     "UniqueID": "Spiderbuttons.CMF",
     "EntryDll": "CustomMuseumFramework.dll",
