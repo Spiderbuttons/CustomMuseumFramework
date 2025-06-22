@@ -9,6 +9,8 @@ public static class QuestExtensions
 {
     public static bool OnMuseumDonation(this Quest quest, Item? item, bool probe = false)
     {
+        if (quest.id.Value is null) return false;
+        
         if (!CMF.QuestData.TryGetValue(quest.id.Value, out var qData)) return false;
         
         if (qData.Requirements is null || !qData.Requirements.Any() ||
