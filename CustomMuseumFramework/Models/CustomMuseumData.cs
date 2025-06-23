@@ -19,6 +19,10 @@ public class CustomMuseumData
     
     public List<DonationRequirement> DonationRequirements { get; set; } = [];
     
+    public List<DonationRequirement> BlacklistedDonations { get; set; } = [];
+    
+    public List<DonationRequirement> WhitelistedDonations { get; set; } = [];
+    
     public int? CompletionNumber { get; set; } = null;
     
     public bool CountInvalidDonations { get; set; } = false;

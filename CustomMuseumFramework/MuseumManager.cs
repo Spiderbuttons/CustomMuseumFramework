@@ -427,6 +427,18 @@ public class MuseumManager
 
         return satisfyingItems;
     }
+    
+    public bool IsItemWhitelistedForDonation(Item? i)
+    {
+        if (i is null) return false;
+        return MuseumData.WhitelistedDonations.Any(req => DoesItemSatisfyRequirement(i, req));
+    }
+
+    public bool IsItemBlacklistedForDonation(Item? i)
+    {
+        if (i is null) return false;
+        return MuseumData.BlacklistedDonations.Any(req => DoesItemSatisfyRequirement(i, req));
+    }
 
     public bool IsItemSuitableForDonation(Item? i)
     {
@@ -441,8 +453,9 @@ public class MuseumManager
         itemId = ItemRegistry.QualifyItemId(itemId);
         Item item = ItemRegistry.Create(itemId);
 
-        if (item.HasContextTag("not_museum_donatable"))
+        if (item.HasContextTag("not_museum_donatable") || IsItemBlacklistedForDonation(item))
         {
+            if (IsItemWhitelistedForDonation(item)) return !checkDonatedItems || !HasDonatedItem(item.QualifiedItemId);
             return false;
         }
 
@@ -456,7 +469,7 @@ public class MuseumManager
             CMF.ModMonitor.LogOnce(
                 $"A DonationRequirement for {Museum.Name} is missing an Id field! This may cause certain game state queries to behave incorrectly.",
                 LogLevel.Warn);
-        return reqs.Any(req => DoesItemSatisfyRequirement(item, req));
+        return IsItemWhitelistedForDonation(item) || reqs.Any(req => DoesItemSatisfyRequirement(item, req));
     }
 
     public bool DoesFarmerHaveAnythingToDonate(Farmer who)
