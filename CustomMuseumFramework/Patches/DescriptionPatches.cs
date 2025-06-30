@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using CustomMuseumFramework.Helpers;
 using HarmonyLib;
+using StardewModdingAPI;
 using StardewValley;
 
 using StardewValley.Objects;
@@ -35,7 +36,7 @@ public static class DescriptionPatches
     {
         if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
         
-        var museums = museumDict.Where(kvp => !kvp.Value)
+        var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
             .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
             .ToList();
@@ -72,7 +73,7 @@ public static class RingPatches
             __instance.description is null) return;
 
         __state = __instance.description;
-        var museums = museumDict.Where(kvp => !kvp.Value)
+        var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
             .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
             .ToList();

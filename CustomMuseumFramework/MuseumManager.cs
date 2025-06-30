@@ -20,9 +20,9 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CustomMuseumFramework;
 
-public class MuseumManager
+public class MuseumManager(string location)
 {
-    private readonly string? LocationName;
+    private readonly string? LocationName = location;
     public GameLocation Museum => Game1.RequireLocation(LocationName);
 
     public CustomMuseumData MuseumData
@@ -178,7 +178,7 @@ public class MuseumManager
         {
             if (_totalPossibleDonations.Count > 0) return _totalPossibleDonations;
 
-            CalculateDonations();
+            GrabPossibleDonations();
             return _totalPossibleDonations;
         }
     }
@@ -227,25 +227,23 @@ public class MuseumManager
     public NetMutex Mutex =>
         Game1.player.team.GetOrCreateGlobalInventoryMutex($"{CMF.Manifest.UniqueID}_{Museum.Name}");
 
-    public MuseumManager(string location)
-    {
-        LocationName = location;
-        CalculateDonations();
-    }
-
-    private void CalculateDonations()
+    private void GrabPossibleDonations()
     {
         _totalPossibleDonations.Clear();
-        foreach (var type in ItemRegistry.ItemTypes)
+        foreach (var (itemId, museums) in CMF.GlobalDonatableItems)
         {
-            foreach (var item in type.GetAllIds())
-            {
-                if (IsItemSuitableForDonation($"{type.Identifier}{item}", checkDonatedItems: false))
-                {
-                    _totalPossibleDonations.Add($"{type.Identifier}{item}");
-                }
-            }
+            if (museums.Count == 0 || !museums.ContainsKey(this))
+                continue;
+                
+            _totalPossibleDonations.Add(itemId);
         }
+    }
+
+    public void AddPossibleDonation(Item? item)
+    {
+        if (item is null) return;
+        
+        _totalPossibleDonations.Add(item.QualifiedItemId);
     }
 
     public void Reset(bool pop = false)
@@ -255,7 +253,7 @@ public class MuseumManager
             RemoveItem(item.Key, pop);
         }
 
-        CalculateDonations();
+        GrabPossibleDonations();
     }
     
     public bool IsMuseumComplete()
@@ -326,11 +324,11 @@ public class MuseumManager
 
         if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
-            if (!museumDict.TryGetValue(this, out bool donated) || donated == false)
+            if (!museumDict.TryGetValue(this, out var donationInfo) || donationInfo.IsDonated == false)
             {
                 MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage($"{CMF.Manifest.UniqueID}_MuseumDonation", item.QualifiedItemId, item.QualifiedItemId, Museum.Name));
             }
-            museumDict[this] = true;
+            museumDict[this].IsDonated = true;
         }
         
         CheckForMilestones();
@@ -377,8 +375,8 @@ public class MuseumManager
 
         if (CMF.GlobalDonatableItems.TryGetValue(itemId, out var museumDict))
         {
-            if (museumDict.ContainsKey(this)) museumDict[this] = false;
-            else museumDict.Add(this, false);
+            if (museumDict.ContainsKey(this)) { museumDict[this].IsDonated = false;}
+            else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(itemId, checkDonatedItems: false), false));
         }
 
         return true;
@@ -440,27 +438,27 @@ public class MuseumManager
         return MuseumData.BlacklistedDonations.Any(req => DoesItemSatisfyRequirement(i, req));
     }
 
-    public bool IsItemSuitableForDonation(Item? i)
+    public bool IsItemSuitableForDonation(Item? item, bool checkDonatedItems, bool firstPass = false)
     {
-        if (i is null) return false;
-        return i.modData.ContainsKey("CMF_Position") || IsItemSuitableForDonation(i.QualifiedItemId);
-    }
+        if (item is null) return false;
 
-    private bool IsItemSuitableForDonation(string? itemId, bool checkDonatedItems = true)
-    {
-        if (itemId is null) return false;
-
-        itemId = ItemRegistry.QualifyItemId(itemId);
-        Item item = ItemRegistry.Create(itemId);
-
-        if (item.HasContextTag("not_museum_donatable") || IsItemBlacklistedForDonation(item))
+        if (item.modData.ContainsKey("CMF_Position")) return true;
+        
+        if (checkDonatedItems && HasDonatedItem(item.QualifiedItemId))
         {
-            if (IsItemWhitelistedForDonation(item)) return !checkDonatedItems || !HasDonatedItem(item.QualifiedItemId);
             return false;
         }
 
-        if (checkDonatedItems && HasDonatedItem(item.QualifiedItemId))
+        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museums) && museums.TryGetValue(this, out var donationInfo))
         {
+            return donationInfo.IsValidDonation;
+        } 
+        
+        if (!firstPass) return false;
+        
+        if (item.HasContextTag("not_museum_donatable") || IsItemBlacklistedForDonation(item))
+        {
+            if (IsItemWhitelistedForDonation(item)) return !checkDonatedItems || !HasDonatedItem(item.QualifiedItemId);
             return false;
         }
 
@@ -470,6 +468,21 @@ public class MuseumManager
                 $"A DonationRequirement for {Museum.Name} is missing an Id field! This may cause certain game state queries to behave incorrectly.",
                 LogLevel.Warn);
         return IsItemWhitelistedForDonation(item) || reqs.Any(req => DoesItemSatisfyRequirement(item, req));
+    }
+
+    public bool IsItemSuitableForDonation(Item? item)
+    {
+        return IsItemSuitableForDonation(item, checkDonatedItems: true);
+    }
+
+    private bool IsItemSuitableForDonation(string? itemId, bool checkDonatedItems = true)
+    {
+        if (itemId is null) return false;
+
+        itemId = ItemRegistry.QualifyItemId(itemId);
+        Item item = ItemRegistry.Create(itemId);
+
+        return IsItemSuitableForDonation(item, checkDonatedItems: checkDonatedItems);
     }
 
     public bool DoesFarmerHaveAnythingToDonate(Farmer who)
@@ -792,8 +805,8 @@ public class MuseumManager
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
         if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
-            if (museumDict.ContainsKey(this)) museumDict[this] = true;
-            else museumDict.Add(this, true);
+            if (museumDict.ContainsKey(this)) museumDict[this].IsDonated = true;
+            else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(item, checkDonatedItems: false), true));
         }
     }
 
@@ -807,8 +820,8 @@ public class MuseumManager
 
         if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
-            if (museumDict.ContainsKey(this)) museumDict[this] = false;
-            else museumDict.Add(this, false);
+            if (museumDict.ContainsKey(this)) museumDict[this].IsDonated = false;
+            else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(item, checkDonatedItems: false), false));
         }
 
         MultiplayerUtils.broadcastTrigger(new MultiplayerUtils.TriggerPackage(

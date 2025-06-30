@@ -69,7 +69,7 @@ public class Queries
 
         return GameStateQuery.Helpers.AnyArgMatches(query, 1, id =>
         {
-            return CMF.GlobalDonatableItems.TryGetValue(id, out var museums) && museums.Any(museum => museum.Value);
+            return CMF.GlobalDonatableItems.TryGetValue(id, out var museums) && museums.Any(museum => museum.Value.IsDonated);
         });
     }
     
