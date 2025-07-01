@@ -76,31 +76,8 @@ namespace CustomMuseumFramework
                 return _lostBookLookup;
             }
         }
-
-        private static Dictionary<string, SortedList<MuseumManager, bool>>? _globalDonatableItems;
-
-        public static Dictionary<string, SortedList<MuseumManager, bool>> GlobalDonatableItems
-        {
-            get
-            {
-                if (_globalDonatableItems == null)
-                {
-                    _globalDonatableItems = new Dictionary<string, SortedList<MuseumManager, bool>>();
-                    foreach (var museum in MuseumManagers.Values)
-                    {
-                        foreach (var itemId in museum.TotalPossibleDonations)
-                        {
-                            if (!_globalDonatableItems.ContainsKey(itemId))
-                                _globalDonatableItems[itemId] =
-                                    new SortedList<MuseumManager, bool>(new MuseumManagerComparer());
-                            _globalDonatableItems[itemId].TryAdd(museum, museum.HasDonatedItem(itemId));
-                        }
-                    }
-                }
-
-                return _globalDonatableItems;
-            }
-        }
+        
+        public static GlobalDonatableCache GlobalDonatableCache { get; } = new();
 
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
 
@@ -160,8 +137,8 @@ namespace CustomMuseumFramework
         private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
         {
             MuseumManagers.Clear();
+            GlobalDonatableCache.InvalidateAll();
             _museumData = null;
-            _globalDonatableItems = null;
             _questData = null;
             _lostBookData = null;
             _lostBookLookup = null;
@@ -213,7 +190,14 @@ namespace CustomMuseumFramework
                 Log.Trace("Invalidating museum data.");
                 foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
                 _museumData = null;
-                _globalDonatableItems = null;
+                GlobalDonatableCache.InvalidateAll();
+            }
+            else
+            {
+                foreach (var asset in e.NamesWithoutLocale)
+                {
+                    GlobalDonatableCache.Invalidate(asset.BaseName);
+                }
             }
 
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Quests")))
@@ -227,27 +211,6 @@ namespace CustomMuseumFramework
                 Log.Trace("Invalidating lost book data.");
                 _lostBookData = null;
                 _lostBookLookup = null;
-            }
-
-            // Any kind of item can be donated to a museum, so... we need to invalidate our caches whenever an item-related asset is changed (':
-            // It's not TOO bad though, since the caches are only rebuilt on demand aka when someone visits a museum.
-            if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Data/Objects") ||
-                                                 name.IsEquivalentTo("Data/Furniture") ||
-                                                 name.IsEquivalentTo("Data/Boots") ||
-                                                 name.IsEquivalentTo("Data/Hats") ||
-                                                 name.IsEquivalentTo("Data/Pants") ||
-                                                 name.IsEquivalentTo("Data/Shirts") ||
-                                                 name.IsEquivalentTo("Data/Tools") ||
-                                                 name.IsEquivalentTo("Data/Trinkets") ||
-                                                 name.IsEquivalentTo("Data/Weapons") ||
-                                                 name.IsEquivalentTo("Data/Mannequins") ||
-                                                 name.IsEquivalentTo("Data/AdditionalWallpaperFlooring") ||
-                                                 name.IsEquivalentTo("Data/FloorsAndPaths") ||
-                                                 name.IsEquivalentTo("Data/BigCraftables")))
-            {
-                Log.Trace("Invalidating donatable item lists.");
-                foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
-                _globalDonatableItems = null;
             }
         }
 

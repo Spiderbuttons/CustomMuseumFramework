@@ -519,27 +519,27 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                         }
                     }
                 }
-
+        
                 Game1.EndWorldDrawInUI(b);
             }
-
+        
             if (!holdingMuseumItem)
             {
                 base.draw(b, drawUpperPortion: false, drawDescriptionArea: false);
             }
-
+        
             if (!hoverText.Equals(""))
             {
                 drawHoverText(b, hoverText, Game1.smallFont);
             }
-
+        
             heldItem?.drawInMenu(b, new Vector2(Game1.getOldMouseX() + 8, Game1.getOldMouseY() + 8), 1f);
             drawMouse(b);
             sparkleText?.draw(b,
                 Utility.ModifyCoordinatesForUIScale(Game1.GlobalToLocal(Game1.viewport,
                     globalLocationOfSparklingItem)));
         }
-
+        
         b.Draw(Game1.fadeToBlackRect,
             new Microsoft.Xna.Framework.Rectangle(0, 0, Game1.uiViewport.Width, Game1.uiViewport.Height),
             Color.Black * blackFadeAlpha);

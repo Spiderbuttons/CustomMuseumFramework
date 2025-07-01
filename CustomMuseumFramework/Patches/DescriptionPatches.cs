@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using CustomMuseumFramework.Helpers;
 using HarmonyLib;
+using StardewModdingAPI;
 using StardewValley;
 
 using StardewValley.Objects;
@@ -33,9 +34,9 @@ public static class DescriptionPatches
 
     public static void Postfix(Item __instance, ref string __result)
     {
-        if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
+        if (!CMF.GlobalDonatableCache.TryGetValue(__instance.TypeDefinitionId, out var cache) || !cache.TryGetValue(__instance.QualifiedItemId, out var museumDict)) return;
         
-        var museums = museumDict.Where(kvp => !kvp.Value)
+        var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
             .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
             .ToList();
@@ -68,11 +69,11 @@ public static class RingPatches
     [HarmonyPatch(nameof(Ring.drawTooltip))]
     public static void Ring_drawTooltip_Prefix(Ring __instance, ref string __state, ref int y)
     {
-        if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out var museumDict) ||
+        if (!CMF.GlobalDonatableCache.TryGetValue(__instance.TypeDefinitionId, out var cache) || !cache.TryGetValue(__instance.QualifiedItemId, out var museumDict) ||
             __instance.description is null) return;
 
         __state = __instance.description;
-        var museums = museumDict.Where(kvp => !kvp.Value)
+        var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
             .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
             .ToList();
@@ -90,7 +91,7 @@ public static class RingPatches
     [HarmonyPatch(nameof(Ring.drawTooltip))]
     public static void Ring_drawTooltip_Postfix(Ring __instance, string __state)
     {
-        if (!CMF.GlobalDonatableItems.TryGetValue(__instance.QualifiedItemId, out _)) return;
+        if (!CMF.GlobalDonatableCache.TryGetValue(__instance.TypeDefinitionId, out var cache) || !cache.TryGetValue(__instance.QualifiedItemId, out _)) return;
 
         __instance.description = __state;
     }
