@@ -230,12 +230,15 @@ public class MuseumManager(string location)
     private void GrabPossibleDonations()
     {
         _totalPossibleDonations.Clear();
-        foreach (var (itemId, museums) in CMF.GlobalDonatableItems)
+        foreach (var cache in CMF.GlobalDonatableCache.Values)
         {
-            if (museums.Count == 0 || !museums.ContainsKey(this))
-                continue;
-                
-            _totalPossibleDonations.Add(itemId);
+            foreach (var (itemId, museums) in cache)
+            {
+                if (museums.Count == 0 || !museums.TryGetValue(this, out var donationInfo))
+                    continue;
+
+                if (donationInfo.IsValidDonation) _totalPossibleDonations.Add(itemId);
+            }
         }
     }
 
@@ -322,7 +325,7 @@ public class MuseumManager(string location)
             farmer.NotifyQuests(q => q.OnMuseumDonation(item));
         }
 
-        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        if (CMF.GlobalDonatableCache.TryGetValue(item.TypeDefinitionId, out var cache) && cache.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
             if (!museumDict.TryGetValue(this, out var donationInfo) || donationInfo.IsDonated == false)
             {
@@ -373,7 +376,7 @@ public class MuseumManager(string location)
             return false;
         });
 
-        if (CMF.GlobalDonatableItems.TryGetValue(itemId, out var museumDict))
+        if (CMF.GlobalDonatableCache.TryGetValue(ItemRegistry.Create(itemId).TypeDefinitionId, out var cache) && cache.TryGetValue(itemId, out var museumDict))
         {
             if (museumDict.ContainsKey(this)) { museumDict[this].IsDonated = false;}
             else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(itemId, checkDonatedItems: false), false));
@@ -449,13 +452,18 @@ public class MuseumManager(string location)
             return false;
         }
 
-        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museums) && museums.TryGetValue(this, out var donationInfo))
+        if (!firstPass)
         {
-            return donationInfo.IsValidDonation;
-        } 
-        
-        if (!firstPass) return false;
-        
+            if (CMF.GlobalDonatableCache.TryGetValue(item.TypeDefinitionId, out var cache) &&
+                cache.TryGetValue(item.QualifiedItemId, out var museums) &&
+                museums.TryGetValue(this, out var donationInfo))
+            {
+                return donationInfo.IsValidDonation;
+            }
+
+            return false;
+        }
+
         if (item.HasContextTag("not_museum_donatable") || IsItemBlacklistedForDonation(item))
         {
             if (IsItemWhitelistedForDonation(item)) return !checkDonatedItems || !HasDonatedItem(item.QualifiedItemId);
@@ -803,7 +811,7 @@ public class MuseumManager(string location)
         var menu = Game1.activeClickableMenu as ItemGrabMenu;
         menu!.heldItem = menu.heldItem.ConsumeStack(1);
         Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}").Add(item);
-        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        if (CMF.GlobalDonatableCache.TryGetValue(item.TypeDefinitionId, out var cache) && cache.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
             if (museumDict.ContainsKey(this)) museumDict[this].IsDonated = true;
             else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(item, checkDonatedItems: false), true));
@@ -818,7 +826,7 @@ public class MuseumManager(string location)
             farmer.NotifyQuests(q => q.OnMuseumRetrieval(item));
         }
 
-        if (CMF.GlobalDonatableItems.TryGetValue(item.QualifiedItemId, out var museumDict))
+        if (CMF.GlobalDonatableCache.TryGetValue(item.TypeDefinitionId, out var cache) && cache.TryGetValue(item.QualifiedItemId, out var museumDict))
         {
             if (museumDict.ContainsKey(this)) museumDict[this].IsDonated = false;
             else museumDict.Add(this, new DonationInfo(IsItemSuitableForDonation(item, checkDonatedItems: false), false));
