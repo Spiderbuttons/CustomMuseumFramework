@@ -218,7 +218,7 @@ namespace CustomMuseumFramework
         {
             if (e.Button is SButton.F2)
             {
-                Helper.GameContent.InvalidateCache("Spiderbuttons.CMF/Museums");
+                //
             }
         }
     }

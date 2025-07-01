@@ -89,7 +89,6 @@ public class DonationInfoCache(IItemDataDefinition ItemType)
     
     public void BuildCache()
     {
-        Log.Alert("Buildings donation cache for item type: " + ItemType.Identifier);
         foreach (var itemId in ItemType.GetAllIds())
         {
             Item item = ItemRegistry.Create($"{ItemType.Identifier}{itemId}");
