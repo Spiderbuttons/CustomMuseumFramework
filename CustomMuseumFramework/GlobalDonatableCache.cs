@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
@@ -8,9 +7,9 @@ using StardewValley.ItemTypeDefinitions;
 
 namespace CustomMuseumFramework;
 
-public class GlobalDonatableCache() : Dictionary<string, DonationInfoCache>
+public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
 {
-    private Dictionary<string, List<string>> AssetNameTypeLookup = new()
+    private readonly Dictionary<string, List<string>> AssetNameTypeLookup = new()
     {
         { "Data/Objects", ["(O)"] },
         { "Data/Furniture", ["(F)"] },
@@ -82,10 +81,9 @@ public class GlobalDonatableCache() : Dictionary<string, DonationInfoCache>
     }
 }
 
-public class DonationInfoCache(IItemDataDefinition ItemType)
-    : Dictionary<string, SortedList<MuseumManager, DonationInfo>>
+public class DonationInfoCache(IItemDataDefinition ItemType) : Dictionary<string, SortedList<MuseumManager, DonationInfo>>
 {
-    public bool IsUsed = false;
+    public bool IsUsed;
     
     public void BuildCache()
     {

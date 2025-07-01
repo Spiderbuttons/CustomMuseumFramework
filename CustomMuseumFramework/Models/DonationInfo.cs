@@ -1,13 +1,7 @@
 ﻿namespace CustomMuseumFramework.Models;
 
-public class DonationInfo
+public class DonationInfo(bool isValidDonation, bool isDonated)
 {
-    public bool IsValidDonation = false;
-    public bool IsDonated = false;
-    
-    public DonationInfo(bool isValidDonation, bool isDonated)
-    {
-        IsValidDonation = isValidDonation;
-        IsDonated = isDonated;
-    }
+    public bool IsValidDonation = isValidDonation;
+    public bool IsDonated = isDonated;
 }

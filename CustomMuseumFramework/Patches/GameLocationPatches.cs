@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewValley;
 using System.Collections.Generic;
@@ -7,7 +6,6 @@ using System.Linq;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework.Graphics;
-using StardewValley.Extensions;
 using StardewValley.ItemTypeDefinitions;
 using StardewValley.TokenizableStrings;
 using StardewValley.Triggers;
