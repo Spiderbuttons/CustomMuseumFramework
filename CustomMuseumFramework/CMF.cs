@@ -77,41 +77,6 @@ namespace CustomMuseumFramework
             }
         }
         
-        // private static Dictionary<string, SortedList<MuseumManager, DonationInfo>>? _globalDonatableItems;
-        //
-        // public static Dictionary<string, SortedList<MuseumManager, DonationInfo>> GlobalDonatableItems
-        // {
-        //     get
-        //     {
-        //         if (_globalDonatableItems == null)
-        //         {
-        //             _globalDonatableItems = new Dictionary<string, SortedList<MuseumManager, DonationInfo>>();
-        //             foreach (var type in ItemRegistry.ItemTypes)
-        //             {
-        //                 foreach (var item in type.GetAllIds())
-        //                 {
-        //                     Item itemObj = ItemRegistry.Create($"{type.Identifier}{item}");
-        //                     
-        //                     foreach (var manager in MuseumManagers)
-        //                     {
-        //                         var museum = manager.Value;
-        //                         DonationInfo info = new DonationInfo(
-        //                             museum.IsItemSuitableForDonation(itemObj, checkDonatedItems: false, firstPass: true),
-        //                             museum.HasDonatedItem(itemObj.QualifiedItemId));
-        //                         
-        //                         if (!_globalDonatableItems.ContainsKey(itemObj.QualifiedItemId)) _globalDonatableItems[itemObj.QualifiedItemId] = new SortedList<MuseumManager, DonationInfo>(new MuseumManagerComparer());
-        //                         
-        //                         _globalDonatableItems[itemObj.QualifiedItemId].TryAdd(museum, info);
-        //                         museum.AddPossibleDonation(itemObj);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //
-        //         return _globalDonatableItems;
-        //     }
-        // }
-        
         public static GlobalDonatableCache GlobalDonatableCache { get; } = new();
 
         public static Dictionary<string, MuseumManager> MuseumManagers { get; } = new();
