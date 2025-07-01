@@ -192,12 +192,9 @@ namespace CustomMuseumFramework
                 _museumData = null;
                 GlobalDonatableCache.InvalidateAll();
             }
-            else
+            else foreach (var asset in e.NamesWithoutLocale)
             {
-                foreach (var asset in e.NamesWithoutLocale)
-                {
                     GlobalDonatableCache.Invalidate(asset.BaseName);
-                }
             }
 
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Quests")))
