@@ -594,8 +594,6 @@ public class MuseumManager(string location)
             }
 
             if (reward.Requirements is null) continue;
-            
-            Log.Debug($"Checking requirements for reward '{reward.Id}' in museum '{Museum.Name}'");
             foreach (var requirement in reward.Requirements)
             {
                 bool shouldBreak = false;
@@ -614,7 +612,6 @@ public class MuseumManager(string location)
                     {
                         results[reward.Id] = false;
                         shouldBreak = true;
-                        Log.Debug($"Reward '{reward.Id}' in museum '{Museum.Name}' does not meet the requirement count of {requirement.Count} donations. Current donations: {ValidDonatedItems.Count}");
                     }
                 }
                 else
