@@ -212,7 +212,7 @@ public class MuseumManager(string location)
             var validItems = new Dictionary<Vector2, string>();
             foreach (var item in DonatedItems)
             {
-                if (IsItemSuitableForDonation(item.Value))
+                if (IsItemSuitableForDonation(item.Value, checkDonatedItems: false))
                 {
                     validItems[item.Key] = item.Value;
                 }
@@ -594,6 +594,8 @@ public class MuseumManager(string location)
             }
 
             if (reward.Requirements is null) continue;
+            
+            Log.Debug($"Checking requirements for reward '{reward.Id}' in museum '{Museum.Name}'");
             foreach (var requirement in reward.Requirements)
             {
                 bool shouldBreak = false;
@@ -612,6 +614,7 @@ public class MuseumManager(string location)
                     {
                         results[reward.Id] = false;
                         shouldBreak = true;
+                        Log.Debug($"Reward '{reward.Id}' in museum '{Museum.Name}' does not meet the requirement count of {requirement.Count} donations. Current donations: {ValidDonatedItems.Count}");
                     }
                 }
                 else
