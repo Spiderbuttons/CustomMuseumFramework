@@ -227,9 +227,15 @@ public class MuseumManager(string location)
     public NetMutex Mutex =>
         Game1.player.team.GetOrCreateGlobalInventoryMutex($"{CMF.Manifest.UniqueID}_{Museum.Name}");
 
-    private void GrabPossibleDonations()
+    public void GrabPossibleDonations()
     {
         _totalPossibleDonations.Clear();
+
+        foreach (var itemType in ItemRegistry.ItemTypes)
+        {
+            CMF.GlobalDonatableCache.BuildCacheIfNecessary(itemType.Identifier);
+        }
+        
         foreach (var cache in CMF.GlobalDonatableCache.Values)
         {
             foreach (var (itemId, museums) in cache)
@@ -896,17 +902,13 @@ public class MuseumManager(string location)
     {
         if (HasDonatedItemAt(new Vector2(x, y))) return false;
 
-        int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
-        if (indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238)
-        {
-            return true;
-        }
-
         return IsTileDonationSpot(x, y);
     }
 
-    private bool IsTileDonationSpot(int x, int y)
+    public bool IsTileDonationSpot(int x, int y)
     {
+        if (IsTileDonationSpotByTilesheet(x, y)) return true;
+        
         Tile tile = Museum.map.RequireLayer("Buildings")
             .PickTile(new Location(x * Game1.tileSize, y * Game1.tileSize), Game1.viewport.Size);
         if (tile == null || !tile.Properties.TryGetValue("Spiderbuttons.CMF", out string value))
@@ -915,6 +917,12 @@ public class MuseumManager(string location)
         }
 
         return value is not null && value.EqualsIgnoreCase("ItemPedestal");
+    }
+
+    public bool IsTileDonationSpotByTilesheet(int x, int y)
+    {
+        int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
+        return indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238;
     }
 
     private bool CanCollectReward(CustomMuseumReward reward, string rewardId, Farmer player,

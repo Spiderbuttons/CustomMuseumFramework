@@ -79,6 +79,14 @@ public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
         cache.BuildCache();
         return true;
     }
+
+    public void BuildCacheIfNecessary(string itemType)
+    {
+        if (TryGetValue(itemType, out _)) return;
+        
+        this[itemType] = new DonationInfoCache(ItemRegistry.GetTypeDefinition(itemType));
+        this[itemType].BuildCache();
+    }
 }
 
 public class DonationInfoCache(IItemDataDefinition ItemType) : Dictionary<string, SortedList<MuseumManager, DonationInfo>>
