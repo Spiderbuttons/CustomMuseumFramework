@@ -1,7 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using StardewValley;
 using StardewValley.Delegates;
 using StardewValley.Extensions;
+using StardewValley.Internal;
 
 namespace CustomMuseumFramework;
 
@@ -71,6 +74,52 @@ public class Queries
         {
             return CMF.GlobalDonatableCache.TryGetValue(ItemRegistry.Create(id).TypeDefinitionId, out var cache) && cache.TryGetValue(id, out var museums) && museums.Any(museum => museum.Value.IsDonated);
         });
+    }
+
+    public static IEnumerable<ItemQueryResult> LOST_BOOK_OR_ITEM(string key, string arguments, ItemQueryContext context, bool avoidRepeat, HashSet<string> avoidItemIds, Action<string, string> logError)
+    {
+        var args = ItemQueryResolver.Helpers.SplitArguments(arguments);
+        if (!ArgUtility.TryGet(args, 0, out var museumId, out var error, allowBlank: false, name: "string museum Id") ||
+            !ArgUtility.TryGet(args, 1, out var booksetId, out error, allowBlank: false, name: "string booksetId"))
+        {
+            ItemQueryResolver.Helpers.ErrorResult(key, arguments, logError, error);
+            return Array.Empty<ItemQueryResult>();
+        }
+        
+        if (!CMF.MuseumManagers.TryGetValue(museumId, out var manager))
+        {
+            ItemQueryResolver.Helpers.ErrorResult(key, arguments, logError, "The museum Id provided does not match an existing custom museum");
+            return Array.Empty<ItemQueryResult>();
+        }
+        
+        if (!CMF.LostBookData.TryGetValue(museumId, out var bookList) || !bookList.Any())
+        {
+            ItemQueryResolver.Helpers.ErrorResult(key, arguments, logError, $"The museum with Id '{museumId}' does not have any lost book data");
+            return Array.Empty<ItemQueryResult>();
+        }
+        
+        var bookset = bookList.FirstOrDefault(bookset => bookset.Id.EqualsIgnoreCase(booksetId));
+        if (bookset == null)
+        {
+            ItemQueryResolver.Helpers.ErrorResult(key, arguments, logError, $"The museum '{manager.Museum.Name}' does not have any lost book data with Id '{booksetId}'");
+            return Array.Empty<ItemQueryResult>();
+        }
+        
+        if (manager.FoundBooksFromBookset(booksetId) < manager.TotalBooksInBookset(booksetId))
+        {
+            return new ItemQueryResult[]
+            {
+                new(ItemRegistry.Create(bookset.ItemId))
+            };
+        }
+
+        var fallback = string.Join(" ", args.Skip(2));
+        
+        if (string.IsNullOrWhiteSpace(fallback))
+        {
+            return Array.Empty<ItemQueryResult>();
+        }
+        return ItemQueryResolver.TryResolve(fallback, new ItemQueryContext(context, $"query '{CMF.Manifest.UniqueID}_LOST_BOOK_OR_ITEM'"));
     }
     
     public static bool LOST_BOOKS_FOUND(string[] query, GameStateQueryContext context)

@@ -7,6 +7,7 @@ using StardewValley;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using StardewModdingAPI.Enums;
+using StardewValley.Internal;
 using StardewValley.Triggers;
 
 namespace CustomMuseumFramework
@@ -119,6 +120,8 @@ namespace CustomMuseumFramework
             GameStateQuery.Register($"{Manifest.UniqueID}_IS_ITEM_DONATED", Queries.IS_ITEM_DONATED);
             GameStateQuery.Register($"{Manifest.UniqueID}_LOST_BOOKS_FOUND", Queries.LOST_BOOKS_FOUND);
             GameStateQuery.Register($"{Manifest.UniqueID}_TOTAL_LOST_BOOKS_FOUND", Queries.TOTAL_LOST_BOOKS_FOUND);
+            
+            ItemQueryResolver.Register($"{Manifest.UniqueID}_LOST_BOOK_OR_ITEM", Queries.LOST_BOOK_OR_ITEM);
         }
 
         private static void CreateManagers()

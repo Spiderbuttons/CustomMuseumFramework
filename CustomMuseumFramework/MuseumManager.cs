@@ -1159,6 +1159,23 @@ public class MuseumManager(string location)
         return lostBooksLocations;
     }
 
+    public int TotalBooksInBookset(string booksetId)
+    {
+        if (!CMF.LostBookData.TryGetValue(MuseumData.Id, out var bookList) || !bookList.Any()) return -1;
+        if (!bookList.Any(bookset => bookset.Id.EqualsIgnoreCase(booksetId))) return -1;
+        return bookList.First(bookset => bookset.Id.EqualsIgnoreCase(booksetId)).Entries.Count;
+    }
+
+    public int FoundBooksFromBookset(string booksetId)
+    {
+        if (!CMF.LostBookData.TryGetValue(MuseumData.Id, out var bookList) || !bookList.Any()) return -1;
+        if (!bookList.Any(bookset => bookset.Id.EqualsIgnoreCase(booksetId))) return -1;
+        if (!Museum.modData.TryGetValue($"Spiderbuttons.CMF_LostBooks_{booksetId}", out var countString) ||
+            !int.TryParse(countString, out var count)) return -1;
+        
+        return count;
+    }
+
     private static void AnswerDialogue(Farmer who, string whichAnswer)
     {
         if (!CMF.MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager)) return;
