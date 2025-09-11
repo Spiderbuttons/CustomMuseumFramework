@@ -1225,6 +1225,25 @@ public class MuseumManager(string location)
         return true;
     }
 
+    public static bool ActionHandler_Plaque(GameLocation location, string[] args, Farmer farmer, Point point)
+    {
+        if (!CMF.MuseumManagers.TryGetValue(location.Name, out var manager)) return false;
+        
+        if (!ArgUtility.TryGetPoint(args, 1, out Point pedestalPoint, out string error, name: "Point Pedestal"))
+        {
+            location.LogTileActionError(args, point.X, point.Y, error);
+            return false;
+        }
+        
+        if (!manager.DonatedItems.TryGetValue(new Vector2(pedestalPoint.X, pedestalPoint.Y), out _))
+        {
+            Game1.drawObjectDialogue("Nothin there..."); // TODO: Customizable empty plaque message.
+            return true;
+        }
+
+        return location.checkAction(new Location(pedestalPoint.X, pedestalPoint.Y), Game1.viewport, farmer);
+    }
+
     public static bool ActionHandler_LostBook(GameLocation location, string[] args, Farmer farmer, Point point)
     {
         if (!CMF.LostBookData.TryGetValue(location.Name, out var bookList) || !bookList.Any() ||

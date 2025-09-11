@@ -105,6 +105,7 @@ namespace CustomMuseumFramework
 
             GameLocation.RegisterTileAction($"{Manifest.UniqueID}_MuseumMenu", MuseumManager.ActionHandler_MuseumMenu);
             GameLocation.RegisterTileAction($"{Manifest.UniqueID}_Rearrange", MuseumManager.ActionHandler_Rearrange);
+            GameLocation.RegisterTileAction($"{Manifest.UniqueID}_Plaque", MuseumManager.ActionHandler_Plaque);
             GameLocation.RegisterTileAction($"{Manifest.UniqueID}_LostBook", MuseumManager.ActionHandler_LostBook);
 
             TriggerActionManager.RegisterTrigger($"{Manifest.UniqueID}_MuseumDonation");
