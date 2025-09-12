@@ -179,11 +179,16 @@ public static class GameLocationPatches
         foreach (KeyValuePair<Vector2, string> v in manager.DonatedItems)
         {
             ParsedItemData data = ItemRegistry.GetDataOrErrorItem(v.Value);
+
+            if (ItemContextTagManager.HasBaseTag(data.QualifiedItemId, "spiderbuttons.cmf_hide_shadow"))
+                goto drawItem;
+            
             b.Draw(Game1.shadowTexture, Game1.GlobalToLocal(Game1.viewport, v.Key * 64f + new Vector2(32f, 52f)),
                 Game1.shadowTexture.Bounds, Color.White, 0f,
                 new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f,
                 SpriteEffects.None, (v.Key.Y * 64f - 2f) / 10000f);
 
+            drawItem:
             var texture = data.GetTexture();
             var sourceRect = data.GetSourceRect();
             int textureOffset = data.GetSourceRect().Height - 16;
