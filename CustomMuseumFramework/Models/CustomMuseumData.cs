@@ -27,11 +27,11 @@ public class CustomMuseumData
     
     public bool CountInvalidDonations { get; set; } = false;
 
-    public bool AllowRetrieval { get; set; } = false;
+    public string? AllowRetrieval { get; set; } = "FALSE";
     
-    public bool ShowDonationHint { get; set; } = true;
+    public string? ShowDonationHint { get; set; }
     
-    public bool OverrideDescription { get; set; } = false;
+    public string? OverrideDescription { get; set; } = "FALSE";
 
     public InteractionData PedestalAction { get; set; } = new InteractionData();
     
@@ -46,7 +46,7 @@ public class OwnerData
 {
     public string? Name { get; set; } = null;
     public Rectangle? Area { get; set; } = null;
-    public bool RequiredForDonation { get; set; } = false;
+    public string? RequiredForDonation { get; set; } = "FALSE";
 }
 
 public class MuseumStrings

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using StardewValley;
 
 namespace CustomMuseumFramework.Helpers;
 
@@ -16,11 +17,18 @@ public class MuseumManagerComparer : IComparer<MuseumManager>
         }
 
         if (y == null) return 1;
-        return x.MuseumData.OverrideDescription switch
+        try
         {
-            true when !y.MuseumData.OverrideDescription => -1,
-            false when y.MuseumData.OverrideDescription => 1,
-            _ => String.Compare(x.MuseumData.Id, y.MuseumData.Id, StringComparison.Ordinal)
-        };
+            return GameStateQuery.CheckConditions(x.MuseumData.OverrideDescription, x.Museum) switch
+            {
+                true when !GameStateQuery.CheckConditions(y.MuseumData.OverrideDescription, y.Museum) => -1,
+                false when GameStateQuery.CheckConditions(y.MuseumData.OverrideDescription, y.Museum) => 1,
+                _ => String.Compare(x.MuseumData.Id, y.MuseumData.Id, StringComparison.Ordinal)
+            };
+        }
+        catch (Exception)
+        {
+            return String.Compare(x.MuseumData.Id, y.MuseumData.Id, StringComparison.Ordinal);
+        }
     }
 }

@@ -36,7 +36,7 @@ public static class DescriptionPatches
         
         var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
-            .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
+            .Where(m => GameStateQuery.CheckConditions(m.MuseumData.ShowDonationHint, location: m.Museum) && !m.IsMuseumComplete())
             .ToList();
         
         if (!museums.Any()) return;
@@ -54,7 +54,7 @@ public static class DescriptionPatches
             .GetMethod("getDescriptionWidth", BindingFlags.NonPublic | BindingFlags.Instance)!
             .Invoke(__instance, []) as int? ?? 272;
         
-        if (museum.MuseumData.OverrideDescription) __result = Game1.parseText(text, Game1.smallFont, width);
+        if (GameStateQuery.CheckConditions(museum.MuseumData.OverrideDescription, location: museum.Museum)) __result = Game1.parseText(text, Game1.smallFont, width);
         else __result += "\n\n" + Game1.parseText(text, Game1.smallFont, width);
     }
 }
@@ -73,7 +73,7 @@ public static class RingPatches
         __state = __instance.description;
         var museums = museumDict.Where(kvp => kvp.Value is { IsValidDonation: true, IsDonated: false })
             .Select(kvp => kvp.Key)
-            .Where(m => m.MuseumData.ShowDonationHint && !m.IsMuseumComplete())
+            .Where(m => GameStateQuery.CheckConditions(m.MuseumData.ShowDonationHint, location: m.Museum) && !m.IsMuseumComplete())
             .ToList();
         
         if (!museums.Any()) return;
@@ -81,7 +81,7 @@ public static class RingPatches
         
         var text = museum.CAN_BE_DONATED();
 
-        if (museum.MuseumData.OverrideDescription) __instance.description = text;
+        if (GameStateQuery.CheckConditions(museum.MuseumData.OverrideDescription, location: museum.Museum)) __instance.description = text;
         else __instance.description += "\n\n" + text;
     }
 

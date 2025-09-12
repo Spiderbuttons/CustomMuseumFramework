@@ -761,7 +761,8 @@ public class MuseumManager(string location)
 
         if (!HasRearrangeTile() && !Mutex.IsLocked() && HasDonatedItem())
         {
-            if (MuseumData.AllowRetrieval) choices.Push(new Response("Retrieve", MENU_RETRIEVE()));
+            if (GameStateQuery.CheckConditions(MuseumData.AllowRetrieval, location: Museum)) 
+                choices.Push(new Response("Retrieve", MENU_RETRIEVE()));
             choices.Push(new Response("Rearrange", MENU_REARRANGE()));
         }
 
@@ -771,7 +772,7 @@ public class MuseumManager(string location)
         }
 
         if (!IsMuseumComplete() && DoesFarmerHaveAnythingToDonate(Game1.player) && !Mutex.IsLocked() &&
-            (MuseumData.Owner is null || !MuseumData.Owner.RequiredForDonation ||
+            (MuseumData.Owner is null || !GameStateQuery.CheckConditions(MuseumData.Owner.RequiredForDonation, location: Museum) ||
              IsNpcClockedIn(Game1.getCharacterFromName(MuseumData.Owner?.Name), MuseumData.Owner?.Area)))
         {
             choices.Push(new Response("Donate", MENU_DONATE()));
@@ -797,7 +798,7 @@ public class MuseumManager(string location)
             else Game1.drawObjectDialogue(BUSY());
         }
         else if (DoesFarmerHaveAnythingToDonate(Game1.player) && MuseumData.Owner is not null &&
-                 MuseumData.Owner.RequiredForDonation && !isOwnerClockedIn)
+                 GameStateQuery.CheckConditions(MuseumData.Owner.RequiredForDonation, location: Museum) && !isOwnerClockedIn)
         {
             Game1.drawObjectDialogue(CLOCKED_OUT());
         }
@@ -1223,7 +1224,7 @@ public class MuseumManager(string location)
         choices.Push(new Response("Leave",
             Game1.content.LoadString("Strings\\Locations:ArchaeologyHouse_Gunther_Leave")));
 
-        if (manager.MuseumData.AllowRetrieval)
+        if (GameStateQuery.CheckConditions(manager.MuseumData.AllowRetrieval, location: location))
             choices.Push(new Response("Retrieve", manager.MENU_RETRIEVE()));
         choices.Push(new Response("Rearrange", manager.MENU_REARRANGE()));
 
