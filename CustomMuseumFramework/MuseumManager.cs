@@ -928,7 +928,8 @@ public class MuseumManager(string location)
 
     public bool IsTileDonationSpotByTilesheet(int x, int y)
     {
-        int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings");
+        int indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings", "untitled tile sheet");
+        if (indexOfBuildingsLayer == -1) indexOfBuildingsLayer = Museum.getTileIndexAt(new Point(x, y), "Buildings", "townInterior");
         return indexOfBuildingsLayer is 1073 or 1074 or 1072 or 1237 or 1238;
     }
 
