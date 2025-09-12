@@ -168,6 +168,12 @@ public class MuseumManager(string location)
             owner.displayName));
     }
 
+    public string? EMPTY_PLAQUE()
+    {
+        if (MuseumData.Strings.EmptyPlaque is null) return null;
+        return TokenParser.ParseText(MuseumData.Strings.EmptyPlaque != string.Empty ? MuseumData.Strings.EmptyPlaque : i18n.EmptyPlaque());
+    }
+
     public readonly Dictionary<Item, string> _itemToRewardsLookup = new();
 
     private readonly HashSet<string> _totalPossibleDonations = [];
@@ -1237,7 +1243,7 @@ public class MuseumManager(string location)
         
         if (!manager.DonatedItems.TryGetValue(new Vector2(pedestalPoint.X, pedestalPoint.Y), out _))
         {
-            Game1.drawObjectDialogue("Nothin there..."); // TODO: Customizable empty plaque message.
+            if (manager.EMPTY_PLAQUE() is not null) Game1.drawObjectDialogue(manager.EMPTY_PLAQUE());
             return true;
         }
 

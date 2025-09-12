@@ -30,5 +30,7 @@
 
   "CanBeDonated": "{0} would be interested in this.",
   
+  "EmptyPlaque": "This display is empty.",
+  
   "MissingLostBook": "[LocalizedText Strings\\Notes:Missing]"
 }

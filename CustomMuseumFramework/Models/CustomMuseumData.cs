@@ -75,4 +75,6 @@ public class MuseumStrings
     public string? NoDonations_NoOwner { get; set; }
     
     public string? CanBeDonated { get; set; }
+
+    public string? EmptyPlaque { get; set; } = "";
 }
