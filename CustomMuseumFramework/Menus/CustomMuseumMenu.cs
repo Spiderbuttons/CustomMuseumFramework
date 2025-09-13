@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
 using Microsoft.Xna.Framework;
@@ -21,6 +22,7 @@ public sealed class CustomMuseumMenu : MenuWithInventory
 
     private int fadeTimer;
     private int state;
+    private readonly Point targetTile;
     private int menuPositionOffset;
     private bool fadeIntoBlack;
     private bool menuMovingDown;
@@ -34,11 +36,12 @@ public sealed class CustomMuseumMenu : MenuWithInventory
     private bool holdingMuseumItem;
     private bool reorganizing;
 
-    public CustomMuseumMenu(InventoryMenu.highlightThisItem highlighterMethod) : base(highlighterMethod, okButton: true)
+    public CustomMuseumMenu(InventoryMenu.highlightThisItem highlighterMethod, Point tile = default) : base(highlighterMethod, okButton: true)
     {
         fadeTimer = 800;
         fadeIntoBlack = true;
         movePosition(0, Game1.uiViewport.Height - yPositionOnScreen - height);
+        targetTile = tile;
         Game1.player.forceCanMove();
         if (CMF.MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager))
         {
@@ -401,7 +404,21 @@ public sealed class CustomMuseumMenu : MenuWithInventory
                     case 0:
                         state = 1;
                         Game1.viewportFreeze = true;
-                        Game1.viewport.Location = new Location(1152, 128);
+                        Vector2? freeSpot;
+                        if (targetTile != Point.Zero)
+                        {
+                            Game1.viewport.Location = new Location(targetTile.X * Game1.tileSize + 32, targetTile.Y * Game1.tileSize + 32);
+                        } else if ((freeSpot = MuseumManager.GetFreeDonationSpot()).HasValue)
+                        {
+                            Game1.viewport.Location = new Location((int)freeSpot.Value.X * Game1.tileSize,
+                                (int)freeSpot.Value.Y * Game1.tileSize);
+                        } else
+                        {
+                            var closestBounds = MuseumManager.GetMuseumDonationBounds().FirstOrDefault();
+                            Game1.viewport.Location = new Location(closestBounds.Center.X * Game1.tileSize, closestBounds.Center.Y * Game1.tileSize);
+                        }
+                        Game1.viewport.Y -= Game1.viewport.Height / 2;
+                        Game1.viewport.X -= Game1.viewport.Width / 2;
                         Game1.clampViewportToGameMap();
                         fadeTimer = 800;
                         fadeIntoBlack = false;
