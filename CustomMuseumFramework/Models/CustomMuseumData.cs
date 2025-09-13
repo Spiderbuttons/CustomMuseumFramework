@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using CustomMuseumFramework.Helpers;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 
 namespace CustomMuseumFramework.Models;
 
@@ -15,7 +17,8 @@ public class CustomMuseumData
 
     public OwnerData? Owner { get; set; } = null;
     
-    public Rectangle Bounds { get; set; } = new Rectangle(0, 0, 0, 0);
+    [JsonConverter(typeof(SingleOrListConverter<Rectangle>))]
+    public List<Rectangle> Bounds { get; set; } = [new Rectangle(0, 0, 0, 0)];
     
     public List<DonationRequirement> DonationRequirements { get; set; } = [];
     
