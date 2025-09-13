@@ -22,6 +22,15 @@ namespace CustomMuseumFramework;
 
 public class MuseumManager(string location)
 {
+    private enum TargetBounds
+    {
+        ClosestBounds,
+        FurthestBounds,
+        FreeSpot,
+        Farmer,
+        Tile
+    }
+    
     private readonly string? LocationName = location;
     public GameLocation Museum => Game1.RequireLocation(LocationName);
 
@@ -432,13 +441,8 @@ public class MuseumManager(string location)
     public int DonationsSatisfyingRequirement(DonationRequirement requirement)
     {
         var donatedItems = Game1.player.team.GetOrCreateGlobalInventory($"{CMF.Manifest.UniqueID}_{Museum.Name}");
-        int satisfyingItems = 0;
-        foreach (var item in donatedItems)
-        {
-            if (DoesItemSatisfyRequirement(item, requirement)) satisfyingItems++;
-        }
 
-        return satisfyingItems;
+        return donatedItems.Count(item => DoesItemSatisfyRequirement(item, requirement));
     }
     
     public bool IsItemWhitelistedForDonation(Item? i)
@@ -693,13 +697,25 @@ public class MuseumManager(string location)
         return Game1.player.couldInventoryAcceptThisItem(item);
     }
 
-    private void OpenRearrangeMenu()
+    private Point GetTargetBoundsTile(TargetBounds targetBounds)
+    {
+        return targetBounds switch
+        {
+            TargetBounds.ClosestBounds => GetMuseumDonationBounds().FirstOrDefault().Center,
+            TargetBounds.FurthestBounds => GetMuseumDonationBounds().LastOrDefault().Center,
+            TargetBounds.FreeSpot => GetFreeDonationSpot()?.ToPoint() ?? GetMuseumDonationBounds().FirstOrDefault().Center,
+            TargetBounds.Farmer => Game1.player.TilePoint,
+            _ => throw new ArgumentOutOfRangeException(nameof(targetBounds), targetBounds, null)
+        };
+    }
+
+    private void OpenRearrangeMenu(Point menuTarget)
     {
         if (!Mutex.IsLocked())
         {
             Mutex.RequestLock(delegate
             {
-                Game1.activeClickableMenu = new CustomMuseumMenu(InventoryMenu.highlightNoItems)
+                Game1.activeClickableMenu = new CustomMuseumMenu(InventoryMenu.highlightNoItems, menuTarget)
                 {
                     exitFunction = Mutex.ReleaseLock
                 };
@@ -716,11 +732,11 @@ public class MuseumManager(string location)
             showOrganizeButton: false, 0, null, -1, this, allowExitWithHeldItem: true);
     }
 
-    private void OpenDonationMenu()
+    private void OpenDonationMenu(Point menuTarget)
     {
         Mutex.RequestLock(delegate
         {
-            Game1.activeClickableMenu = new CustomMuseumMenu(IsItemSuitableForDonation)
+            Game1.activeClickableMenu = new CustomMuseumMenu(IsItemSuitableForDonation, menuTarget)
             {
                 exitFunction = OnDonationMenuClosed
             };
@@ -753,7 +769,7 @@ public class MuseumManager(string location)
         }
     }
 
-    private void OpenMuseumDialogueMenu()
+    private void OpenMuseumDialogueMenu(string targetBoundsString)
     {
         Stack<Response> choices = new Stack<Response>();
         choices.Push(new Response("Leave",
@@ -762,8 +778,8 @@ public class MuseumManager(string location)
         if (!HasRearrangeTile() && !Mutex.IsLocked() && HasDonatedItem())
         {
             if (GameStateQuery.CheckConditions(MuseumData.AllowRetrieval, location: Museum)) 
-                choices.Push(new Response("Retrieve", MENU_RETRIEVE()));
-            choices.Push(new Response("Rearrange", MENU_REARRANGE()));
+                choices.Push(new Response($"Retrieve", MENU_RETRIEVE()));
+            choices.Push(new Response($"Rearrange_{targetBoundsString}", MENU_REARRANGE()));
         }
 
         if (GetRewardsForPlayer(Game1.player).Count > 0)
@@ -775,7 +791,7 @@ public class MuseumManager(string location)
             (MuseumData.Owner is null || !GameStateQuery.CheckConditions(MuseumData.Owner.RequiredForDonation, location: Museum) ||
              IsNpcClockedIn(Game1.getCharacterFromName(MuseumData.Owner?.Name), MuseumData.Owner?.Area)))
         {
-            choices.Push(new Response("Donate", MENU_DONATE()));
+            choices.Push(new Response($"Donate_{targetBoundsString}", MENU_DONATE()));
         }
 
         if (choices.Count > 1)
@@ -1041,21 +1057,29 @@ public class MuseumManager(string location)
         return null;
     }
 
-    private Rectangle GetMuseumDonationBounds()
+    public List<Rectangle> GetMuseumDonationBounds()
     {
-        return MuseumData.Bounds;
+        return MuseumData.Bounds.OrderBy(r =>
+        {
+            Vector2 playerPosition = Game1.player.TilePoint.ToVector2();
+            Vector2 rectCenter = new Vector2(r.Center.X, r.Center.Y);
+            return Vector2.DistanceSquared(playerPosition, rectCenter);
+        }).ToList();
     }
 
     public Vector2? GetFreeDonationSpot()
     {
-        Rectangle bounds = GetMuseumDonationBounds();
-        for (int x = bounds.X; x <= bounds.Right; x++)
+        List<Rectangle> bounds = GetMuseumDonationBounds();
+        foreach (var bound in bounds)
         {
-            for (int y = bounds.Y; y <= bounds.Bottom; y++)
+            for (int y = bound.Y; y <= bound.Bottom; y++)
             {
-                if (IsTileSuitableForMuseumItem(x, y))
+                for (int x = bound.X; x <= bound.Right; x++)
                 {
-                    return new Vector2(x, y);
+                    if (IsTileSuitableForMuseumItem(x, y))
+                    {
+                        return new Vector2(x, y);
+                    }
                 }
             }
         }
@@ -1188,13 +1212,34 @@ public class MuseumManager(string location)
     {
         if (!CMF.MuseumManagers.TryGetValue(Game1.currentLocation.Name, out var manager)) return;
 
+        TargetBounds targetBounds = TargetBounds.ClosestBounds;
+        string boundsString = whichAnswer;
+        if (whichAnswer.Contains('_'))
+        {
+            boundsString = whichAnswer.Split('_')[1];
+            whichAnswer = whichAnswer.Split('_')[0];
+            if (whichAnswer is "Donate" or "Rearrange")
+            {
+                if (!Enum.TryParse(ArgUtility.SplitBySpaceAndGet(boundsString, 0), out targetBounds)) targetBounds = TargetBounds.ClosestBounds;
+            }
+        }
+        
+        Point targetTile;
+        if (targetBounds is TargetBounds.Tile)
+        {
+            if (!ArgUtility.TryGetPoint(ArgUtility.SplitBySpace(boundsString), 1, out targetTile, out string error,
+                    name: "Point Target Tile"))
+            {
+                Log.Error(error);
+                return;
+            }
+        }
+        else targetTile = manager.GetTargetBoundsTile(targetBounds);
+
         switch (whichAnswer)
         {
-            // case "Leave":
-            //     Game1.activeClickableMenu?.exitThisMenu();
-            //     break;
             case "Donate":
-                manager.OpenDonationMenu();
+                manager.OpenDonationMenu(targetTile);
                 break;
             case "Collect":
                 manager.OpenRewardMenu();
@@ -1203,7 +1248,7 @@ public class MuseumManager(string location)
                 manager.OpenRetrievalMenu();
                 break;
             case "Rearrange":
-                manager.OpenRearrangeMenu();
+                manager.OpenRearrangeMenu(targetTile);
                 break;
         }
     }
@@ -1212,7 +1257,7 @@ public class MuseumManager(string location)
     {
         if (!CMF.MuseumManagers.TryGetValue(location.Name, out var manager)) return false;
 
-        manager.OpenMuseumDialogueMenu();
+        manager.OpenMuseumDialogueMenu(string.Join(" ", args.Skip(1)));
         return true;
     }
 
