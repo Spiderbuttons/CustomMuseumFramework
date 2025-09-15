@@ -23,7 +23,7 @@ public class TriggerActions
         }
 
         Vector2 location = museum.GetFreeDonationSpot().GetValueOrDefault();
-        if (ArgUtility.HasIndex(args, 3) && !ArgUtility.TryGetVector2(args, 3, out location, out error, name: "vector2 tile"))
+        if (ArgUtility.HasIndex(args, 3) && !ArgUtility.TryGetVector2(args, 3, out location, out error, name: "Vector2 tile"))
         {
             return false;
         }
@@ -52,7 +52,7 @@ public class TriggerActions
         }
 
         Vector2 location = museum.GetFreeDonationSpot().GetValueOrDefault();
-        if (ArgUtility.HasIndex(args, 3) && !ArgUtility.TryGetVector2(args, 3, out location, out error, name: "vector2 tile"))
+        if (ArgUtility.HasIndex(args, 3) && !ArgUtility.TryGetVector2(args, 3, out location, out error, name: "Vector2 tile"))
         {
             return false;
         }
