@@ -1272,7 +1272,7 @@ public class MuseumManager(string location)
 
         if (GameStateQuery.CheckConditions(manager.MuseumData.AllowRetrieval, location: location))
             choices.Push(new Response("Retrieve", manager.MENU_RETRIEVE()));
-        choices.Push(new Response("Rearrange", manager.MENU_REARRANGE()));
+        choices.Push(new Response($"Rearrange_{string.Join(" ", args.Skip(1))}", manager.MENU_REARRANGE()));
 
         manager.Museum.createQuestionDialogue("", choices.ToArray(), AnswerDialogue, Game1.getCharacterFromName(manager.MuseumData.Owner?.Name));
         return true;
