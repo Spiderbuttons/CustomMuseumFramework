@@ -63,7 +63,7 @@ public static class QuestPatches
 
         foreach (var quest in __instance.questLog)
         {
-            if (!quest.id.Value.Equals(data.Id)) continue;
+            if (quest.id.Value is null || !quest.id.Value.Equals(data.Id)) continue;
 
             if (data.Requirements is null || !data.Requirements.Any())
             {
