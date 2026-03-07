@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using CustomMuseumFramework.Helpers;
 using CustomMuseumFramework.Models;
+using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Extensions;
 using StardewValley.ItemTypeDefinitions;
 
 namespace CustomMuseumFramework;
@@ -62,6 +65,12 @@ public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
 
     public new bool TryGetValue(string itemType, [MaybeNullWhen(false)] out DonationInfoCache cache)
     {
+        if (!Context.IsWorldReady)
+        {
+            cache = null;
+            return false;
+        }
+        
         if (this.ContainsKey(itemType))
         {
             cache = base[itemType];
@@ -89,8 +98,9 @@ public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
     }
 }
 
-public class DonationInfoCache(IItemDataDefinition ItemType) : Dictionary<string, SortedList<MuseumManager, DonationInfo>>
+public class DonationInfoCache(IItemDataDefinition itemType) : Dictionary<string, SortedList<MuseumManager, DonationInfo>>
 {
+    public readonly IItemDataDefinition ItemType = itemType;
     public bool IsUsed;
     
     public void BuildCache()

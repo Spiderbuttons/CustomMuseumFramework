@@ -150,9 +150,8 @@ namespace CustomMuseumFramework
 
         private void OnLoadStageChanged(object? sender, LoadStageChangedEventArgs e)
         {
-            if (e.NewStage is not LoadStage.Loaded) return;
-
-            CreateManagers();
+            if (e.NewStage is LoadStage.Loaded) CreateManagers();
+            if (e.NewStage is LoadStage.Ready) GlobalDonatableCache.InvalidateAll(); // Just in case.
         }
 
         private void OnModMessageReceived(object? sender, ModMessageReceivedEventArgs e)
