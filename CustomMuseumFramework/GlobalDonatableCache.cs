@@ -47,7 +47,7 @@ public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
         if (!clearTotals) return;
         foreach (var manager in CMF.MuseumManagers.Values)
         {
-            manager.TotalPossibleDonations.Clear();
+            manager.ClearPossibleDonations();
         }
     }
 
@@ -56,7 +56,7 @@ public class GlobalDonatableCache : Dictionary<string, DonationInfoCache>
         Clear();
         foreach (var manager in CMF.MuseumManagers.Values)
         {
-            manager.TotalPossibleDonations.Clear();
+            manager.ClearPossibleDonations();
         }
     }
 

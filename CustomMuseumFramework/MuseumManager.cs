@@ -262,6 +262,11 @@ public class MuseumManager(string location)
             }
         }
     }
+    
+    public void ClearPossibleDonations()
+    {
+        _totalPossibleDonations.Clear();
+    }
 
     public void AddPossibleDonation(Item? item)
     {

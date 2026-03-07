@@ -192,7 +192,7 @@ namespace CustomMuseumFramework
             if (e.NamesWithoutLocale.Any(name => name.IsEquivalentTo("Spiderbuttons.CMF/Museums")))
             {
                 Log.Trace("Invalidating museum data.");
-                foreach (var manager in MuseumManagers.Values) manager.TotalPossibleDonations.Clear();
+                foreach (var manager in MuseumManagers.Values) manager.ClearPossibleDonations();
                 _museumData = null;
                 GlobalDonatableCache.InvalidateAll();
             }
